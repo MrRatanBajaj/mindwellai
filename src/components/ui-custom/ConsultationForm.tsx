@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, Calendar, Clock } from "lucide-react";
+import { Check, Calendar, Clock, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const timeSlots = [
   "9:00 AM", "10:00 AM", "11:00 AM",
@@ -14,6 +15,7 @@ const timeSlots = [
 ];
 
 const ConsultationForm = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -23,6 +25,10 @@ const ConsultationForm = () => {
     phone: "",
     concerns: "",
   });
+
+  // Simulating a user with a free trial remaining (in a real app this would come from user account)
+  const [freeSessionsRemaining] = useState(3);
+  const hasFreeTrialActive = freeSessionsRemaining > 0;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -60,7 +66,11 @@ const ConsultationForm = () => {
       time: selectedTime,
     });
     
-    toast.success("Consultation scheduled successfully!");
+    if (hasFreeTrialActive) {
+      toast.success(`Consultation scheduled successfully! You have ${freeSessionsRemaining - 1} free sessions remaining.`);
+    } else {
+      toast.success("Consultation scheduled successfully!");
+    }
     
     // Reset form after submission
     setFormData({
@@ -72,6 +82,10 @@ const ConsultationForm = () => {
     setSelectedDate("");
     setSelectedTime("");
     setCurrentStep(1);
+  };
+
+  const handleUpgradePlan = () => {
+    navigate("/plans");
   };
 
   // Generate dates for the next 7 days
@@ -97,6 +111,33 @@ const ConsultationForm = () => {
 
   const renderStep1 = () => (
     <div className="space-y-4 animate-fade-in">
+      {hasFreeTrialActive && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start">
+          <Info className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-green-800 font-medium">Free Trial Active</p>
+            <p className="text-green-700 text-sm">You have {freeSessionsRemaining} free counseling sessions remaining.</p>
+          </div>
+        </div>
+      )}
+      
+      {!hasFreeTrialActive && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start">
+          <Info className="w-5 h-5 text-amber-600 mr-2 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-amber-800 font-medium">No Active Plan</p>
+            <p className="text-amber-700 text-sm">You don't have an active subscription plan.</p>
+            <Button 
+              variant="link" 
+              className="text-mindwell-600 p-0 h-auto text-sm"
+              onClick={handleUpgradePlan}
+            >
+              View available plans
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="name">Full Name <span className="text-red-500">*</span></Label>
         <Input
@@ -308,6 +349,20 @@ const ConsultationForm = () => {
             </Button>
           )}
         </div>
+
+        {!hasFreeTrialActive && currentStep === 1 && (
+          <div className="mt-6 text-center">
+            <p className="text-slate-600 text-sm mb-2">Don't have an active plan?</p>
+            <Button 
+              type="button" 
+              variant="outline"
+              className="border-mindwell-200 text-mindwell-700"
+              onClick={handleUpgradePlan}
+            >
+              View Available Plans
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );
