@@ -9,13 +9,12 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center space-x-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">M</span>
-              </div>
-              <span className="font-display font-semibold text-xl tracking-tight">
-                Mindwell<span className="text-mindwell-500">AI</span>
-              </span>
+            <div className="flex items-center mb-6">
+              <img 
+                src="/lovable-uploads/b438a37f-b172-43e3-9eaf-bffee8ba79f5.png" 
+                alt="MindwellAI Logo" 
+                className="h-12 w-auto"
+              />
             </div>
             <p className="text-slate-600 text-sm max-w-xs">
               Virtual counseling platform providing accessible mental health support through advanced AI technology.

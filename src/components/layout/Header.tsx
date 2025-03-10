@@ -42,14 +42,11 @@ const Header = () => {
           className="flex items-center space-x-2 transition-opacity hover:opacity-80"
           aria-label="MindwellAI Home"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">M</span>
-          </div>
-          <div>
-            <span className="font-display font-semibold text-xl tracking-tight">
-              Mindwell<span className="text-mindwell-500">AI</span>
-            </span>
-          </div>
+          <img 
+            src="/lovable-uploads/b438a37f-b172-43e3-9eaf-bffee8ba79f5.png" 
+            alt="MindwellAI Logo" 
+            className="h-10 w-auto"
+          />
         </NavLink>
 
         {/* Desktop Navigation */}
