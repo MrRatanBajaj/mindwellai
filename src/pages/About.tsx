@@ -53,6 +53,50 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      {/* Founder Section */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 animate-fade-in">
+            <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6">
+              Our Leadership
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
+              Meet Our Founder & CEO
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto text-balance">
+              The visionary behind MindwellAI's mission to transform mental health support
+            </p>
+          </div>
+          
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20">
+            <div className="max-w-md animate-fade-in">
+              <div className="relative overflow-hidden rounded-2xl shadow-xl mb-6">
+                <img 
+                  src="/lovable-uploads/b031e893-3424-4ef3-957f-289210685345.png" 
+                  alt="Mr. Ratan Bajaj, Founder and CEO" 
+                  className="w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              </div>
+            </div>
+            
+            <div className="max-w-xl animate-fade-in">
+              <h3 className="text-2xl font-bold mb-2 text-mindwell-700">Mr. Ratan Bajaj</h3>
+              <p className="text-mindwell-600 font-medium mb-6">Founder & Chief Executive Officer</p>
+              <p className="text-slate-600 mb-4">
+                Mr. Ratan Bajaj founded MindwellAI with a vision to democratize access to mental health support. With an extensive background in both technology and psychology, he recognized the potential for AI to bridge the gap in mental healthcare accessibility.
+              </p>
+              <p className="text-slate-600 mb-4">
+                Under his leadership, MindwellAI has pioneered innovative approaches to AI-assisted therapy, combining cutting-edge technology with evidence-based psychological principles to create a platform that is both effective and accessible.
+              </p>
+              <p className="text-slate-600">
+                "Mental health support should be available to everyone, regardless of location, financial means, or schedule. At MindwellAI, we're committed to making that vision a reality through compassionate technology."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
       
       {/* Values Section */}
       <section className="py-20 px-6 bg-slate-50">
