@@ -10,11 +10,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center mb-6">
-              <img 
-                src="/lovable-uploads/b438a37f-b172-43e3-9eaf-bffee8ba79f5.png" 
-                alt="MindwellAI Logo" 
-                className="h-12 w-auto"
-              />
+              <div className="bg-white p-2 rounded-lg shadow-sm">
+                <img 
+                  src="/lovable-uploads/b438a37f-b172-43e3-9eaf-bffee8ba79f5.png" 
+                  alt="MindwellAI Logo" 
+                  className="h-12 w-auto"
+                />
+              </div>
             </div>
             <p className="text-slate-600 text-sm max-w-xs">
               Virtual counseling platform providing accessible mental health support through advanced AI technology.
