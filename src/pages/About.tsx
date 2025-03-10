@@ -70,14 +70,18 @@ const About = () => {
           </div>
           
           <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20">
-            <div className="max-w-md animate-fade-in">
-              <div className="relative overflow-hidden rounded-2xl shadow-xl mb-6">
+            <div className="max-w-md animate-fade-in animate-float hover:scale-105 transition-transform duration-500">
+              <div className="relative overflow-hidden rounded-2xl shadow-xl mb-6 border-4 border-mindwell-200 hover:border-mindwell-400 transition-colors duration-300">
                 <img 
                   src="/lovable-uploads/b031e893-3424-4ef3-957f-289210685345.png" 
                   alt="Mr. Ratan Bajaj, Founder and CEO" 
                   className="w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 w-full p-6 text-white opacity-0 hover:opacity-100 transition-opacity duration-300">
+                  <h3 className="text-xl font-bold">Mr. Ratan Bajaj</h3>
+                  <p className="text-white/80">Visionary Leader</p>
+                </div>
               </div>
             </div>
             
