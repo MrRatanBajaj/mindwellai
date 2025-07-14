@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -7,15 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { NavLink } from "react-router-dom";
-import { BookOpen, Video, FileText, Play, Clock, Award, CheckCircle, Heart, Share2, BookmarkPlus, Eye, Download, ExternalLink } from "lucide-react";
+import { BookOpen, Video, FileText, Play, Clock, Award, CheckCircle, Heart, Share2, BookmarkPlus, Eye, Download, ExternalLink, Filter, Star, TrendingUp, Users, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import ResourceModal from "@/components/ui-custom/ResourceModal";
 
 const SelfHelp = () => {
   const [savedResources, setSavedResources] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedResource, setSelectedResource] = useState<any>(null);
+  const [modalType, setModalType] = useState<'course' | 'article' | 'exercise' | 'podcast'>('course');
+  const [showModal, setShowModal] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("all");
   
   useEffect(() => {
     // Simulate loading data
@@ -34,6 +38,12 @@ const SelfHelp = () => {
       setSavedResources([...savedResources, id]);
       toast.success("Added to saved resources");
     }
+  };
+
+  const openResourceModal = (resource: any, type: 'course' | 'article' | 'exercise' | 'podcast') => {
+    setSelectedResource(resource);
+    setModalType(type);
+    setShowModal(true);
   };
 
   // Animation variants for staggered children
@@ -58,6 +68,198 @@ const SelfHelp = () => {
       }
     }
   };
+
+  // Enhanced course data with video IDs
+  const courses = [
+    {
+      id: "course1",
+      title: "Managing Anxiety",
+      description: "Learn evidence-based cognitive and behavioral techniques for effectively managing anxiety disorders and panic attacks.",
+      progress: 0,
+      duration: "4 weeks",
+      lessons: 12,
+      creator: "Dr. Sarah Johnson",
+      source: "Stanford University",
+      videoId: "ZToicYcHIOU",
+      rating: 4.8,
+      enrolled: 15420,
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course2",
+      title: "Mindfulness Foundations",
+      description: "Develop a comprehensive mindfulness practice to reduce stress, improve focus, and enhance overall well-being.",
+      progress: 45,
+      duration: "3 weeks",
+      lessons: 9,
+      creator: "Dr. Mark Williams",
+      source: "Oxford Mindfulness Centre",
+      videoId: "inpok4MKVLM",
+      rating: 4.9,
+      enrolled: 28650,
+      image: "https://images.unsplash.com/photo-1484627147104-f5197bcd6651?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course3",
+      title: "Building Healthy Relationships",
+      description: "Master the art of effective communication, boundary setting, and conflict resolution in personal and professional relationships.",
+      progress: 0,
+      duration: "5 weeks",
+      lessons: 15,
+      creator: "Dr. John Gottman",
+      source: "Gottman Institute",
+      videoId: "P2AUat93a8Q",
+      rating: 4.7,
+      enrolled: 12890,
+      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course4",
+      title: "Cognitive Behavioral Therapy for Depression",
+      description: "Learn CBT techniques to identify and change negative thought patterns, proven effective for treating depression.",
+      progress: 0,
+      duration: "6 weeks",
+      lessons: 18,
+      creator: "Dr. David Burns",
+      source: "American Psychological Association",
+      videoId: "0ViaCs0n4dU",
+      rating: 4.8,
+      enrolled: 19340,
+      image: "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course5",
+      title: "Sleep Science & Improvement",
+      description: "Understand sleep architecture and implement evidence-based strategies to improve sleep quality and duration.",
+      progress: 0,
+      duration: "2 weeks",
+      lessons: 7,
+      creator: "Dr. Matthew Walker",
+      source: "UC Berkeley Sleep Lab",
+      videoId: "5MuIMqhT8DM",
+      rating: 4.9,
+      enrolled: 31250,
+      image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course6",
+      title: "Stress Management & Resilience",
+      description: "Build psychological resilience and learn practical stress management techniques for high-pressure situations.",
+      progress: 0,
+      duration: "4 weeks",
+      lessons: 12,
+      creator: "Dr. Kelly McGonigal",
+      source: "Stanford Stress & Health Lab",
+      videoId: "V80llcpw7eE",
+      rating: 4.7,
+      enrolled: 22150,
+      image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course7",
+      title: "Emotional Intelligence Mastery",
+      description: "Develop self-awareness, empathy, and social skills to navigate emotions effectively in all areas of life.",
+      progress: 0,
+      duration: "3 weeks",
+      lessons: 10,
+      creator: "Dr. Daniel Goleman",
+      source: "Harvard Business School",
+      videoId: "Y7m9eNoB3NU",
+      rating: 4.8,
+      enrolled: 18670,
+      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course8",
+      title: "Trauma-Informed Healing",
+      description: "Understand trauma responses and learn gentle, evidence-based approaches to healing and recovery.",
+      progress: 0,
+      duration: "8 weeks",
+      lessons: 24,
+      creator: "Dr. Bessel van der Kolk",
+      source: "Trauma Recovery Network",
+      videoId: "53RX2ESIqsM",
+      rating: 4.9,
+      enrolled: 14580,
+      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    }
+  ];
+
+  // Enhanced exercises with video content
+  const exercises = [
+    {
+      id: "exercise1",
+      title: "5-Minute Breathing Meditation",
+      description: "A quick mindful breathing exercise to center yourself during busy days and reduce immediate stress.",
+      category: "Meditation",
+      duration: "5 min",
+      instructor: "Dr. Tara Brach",
+      source: "Mindfulness Association",
+      videoId: "inpok4MKVLM",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1474418397713-2f1091553e69?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise2",
+      title: "Progressive Muscle Relaxation",
+      description: "Release physical tension systematically and promote deep relaxation throughout your entire body.",
+      category: "Relaxation",
+      duration: "15 min",
+      instructor: "Dr. Edmund Jacobson",
+      source: "Anxiety and Depression Association",
+      videoId: "1nePGXNt1JU",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1545389336-cf090694435e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise3",
+      title: "Body Scan Meditation",
+      description: "Cultivate awareness of your body and reduce stress through mindful observation of physical sensations.",
+      category: "Meditation",
+      duration: "20 min",
+      instructor: "Dr. Jon Kabat-Zinn",
+      source: "Center for Mindfulness",
+      videoId: "15q-N-_kkrU",
+      difficulty: "Intermediate",
+      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise4",
+      title: "Loving-Kindness Meditation",
+      description: "Cultivate feelings of warmth and compassion toward yourself and others through guided practice.",
+      category: "Compassion",
+      duration: "15 min",
+      instructor: "Dr. Sharon Salzberg",
+      source: "Center for Contemplative Mind",
+      videoId: "sz7cpV7ERsM",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1602192509154-0b900ee1f851?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise5",
+      title: "Anxiety Relief Breathing",
+      description: "Learn the 4-7-8 breathing technique to quickly calm anxiety and activate your parasympathetic nervous system.",
+      category: "Anxiety",
+      duration: "8 min",
+      instructor: "Dr. Andrew Weil",
+      source: "Integrative Medicine Center",
+      videoId: "YRPh_GaiL8s",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1552693673-1bf958298935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise6",
+      title: "Mindful Walking Practice",
+      description: "Transform your daily walk into a moving meditation that enhances awareness and reduces stress.",
+      category: "Movement",
+      duration: "12 min",
+      instructor: "Thich Nhat Hanh",
+      source: "Plum Village",
+      videoId: "Hzz1Xne7nH4",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
+    }
+  ];
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -102,6 +304,32 @@ const SelfHelp = () => {
       {/* Resources Navigation */}
       <section className="py-10 px-6 bg-slate-50">
         <div className="max-w-7xl mx-auto">
+          {/* Enhanced Filter Bar */}
+          <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center space-x-4">
+                <Filter className="w-5 h-5 text-slate-600" />
+                <select 
+                  value={filterCategory} 
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mindwell-300"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="anxiety">Anxiety & Stress</option>
+                  <option value="mindfulness">Mindfulness</option>
+                  <option value="depression">Depression</option>
+                  <option value="relationships">Relationships</option>
+                  <option value="sleep">Sleep & Recovery</option>
+                </select>
+              </div>
+              
+              <div className="flex items-center space-x-2 text-sm text-slate-600">
+                <TrendingUp className="w-4 h-4" />
+                <span>Trending topics this week</span>
+              </div>
+            </div>
+          </div>
+
           <Tabs defaultValue="courses" className="w-full" onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-4 w-full max-w-xl mx-auto mb-10 bg-white shadow-md p-1 rounded-full">
               <TabsTrigger value="courses" className="rounded-full py-2">
@@ -129,104 +357,48 @@ const SelfHelp = () => {
                 animate={isLoading ? "hidden" : "visible"}
                 className="space-y-8"
               >
-                <h2 className="text-2xl font-bold mb-6">Self-Paced Courses</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Self-Paced Video Courses</h2>
+                  <div className="flex items-center space-x-2 text-sm text-slate-600">
+                    <Users className="w-4 h-4" />
+                    <span>140,000+ learners enrolled</span>
+                  </div>
+                </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {[
-                    {
-                      id: "course1",
-                      title: "Managing Anxiety",
-                      description: "Learn effective cognitive and behavioral techniques for managing anxiety.",
-                      progress: 0,
-                      duration: "4 weeks",
-                      lessons: 12,
-                      creator: "Dr. Sarah Johnson",
-                      source: "Open University",
-                      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "course2",
-                      title: "Mindfulness Foundations",
-                      description: "Develop a mindfulness practice to reduce stress and improve well-being.",
-                      progress: 45,
-                      duration: "3 weeks",
-                      lessons: 9,
-                      creator: "Dr. Mark Williams",
-                      source: "MIT OpenCourseWare",
-                      image: "https://images.unsplash.com/photo-1484627147104-f5197bcd6651?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "course3",
-                      title: "Building Healthy Relationships",
-                      description: "Enhance your relationship skills through effective communication and boundaries.",
-                      progress: 0,
-                      duration: "5 weeks",
-                      lessons: 15,
-                      creator: "Dr. John Gottman",
-                      source: "Harvard Open Learning",
-                      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "course4",
-                      title: "Overcoming Depression",
-                      description: "Evidence-based strategies to manage and overcome depression symptoms.",
-                      progress: 0,
-                      duration: "6 weeks",
-                      lessons: 18,
-                      creator: "Dr. David Burns",
-                      source: "Stanford Free Courses",
-                      image: "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "course5",
-                      title: "Sleep Improvement",
-                      description: "Techniques to improve sleep quality and establish healthy sleep patterns.",
-                      progress: 0,
-                      duration: "2 weeks",
-                      lessons: 7,
-                      creator: "Dr. Matthew Walker",
-                      source: "Berkeley OpenEdX",
-                      image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "course6",
-                      title: "Stress Management",
-                      description: "Comprehensive approach to managing stress in daily life and work.",
-                      progress: 0,
-                      duration: "4 weeks",
-                      lessons: 12,
-                      creator: "Dr. Kelly McGonigal",
-                      source: "Yale Open Courses",
-                      image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    }
-                  ].map((course) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {courses.map((course) => (
                     <motion.div key={course.id} variants={itemVariants}>
-                      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                        <div className="aspect-video w-full overflow-hidden relative group">
+                      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col group">
+                        <div className="aspect-video w-full overflow-hidden relative">
                           <img src={course.image} alt={course.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-start p-4">
-                            <Button variant="default" size="sm" className="bg-white text-black hover:bg-white/90">
-                              <Play className="w-4 h-4 mr-1" />
-                              Preview
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <Button 
+                              variant="default" 
+                              size="lg" 
+                              className="bg-white text-black hover:bg-white/90 rounded-full"
+                              onClick={() => openResourceModal(course, 'course')}
+                            >
+                              <Play className="w-5 h-5 mr-2" />
+                              Watch Preview
                             </Button>
+                          </div>
+                          <div className="absolute top-4 left-4 bg-mindwell-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            NEW
                           </div>
                         </div>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-medium text-slate-500">{course.source}</span>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleSave(course.id)}>
-                              {savedResources.includes(course.id) ? (
-                                <Heart className="w-4 h-4 fill-red-500 text-red-500" />
-                              ) : (
-                                <Heart className="w-4 h-4" />
-                              )}
-                            </Button>
+                            <div className="flex items-center space-x-1">
+                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                              <span className="text-xs text-slate-600">{course.rating}</span>
+                            </div>
                           </div>
-                          <CardTitle>{course.title}</CardTitle>
-                          <CardDescription>{course.description}</CardDescription>
+                          <CardTitle className="text-lg leading-tight">{course.title}</CardTitle>
+                          <CardDescription className="text-sm">{course.description}</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow">
-                          <div className="flex items-center justify-between text-sm text-slate-500 mb-2">
+                        <CardContent className="flex-grow pb-2">
+                          <div className="flex items-center justify-between text-sm text-slate-500 mb-3">
                             <div className="flex items-center">
                               <Clock className="w-4 h-4 mr-1" />
                               <span>{course.duration}</span>
@@ -246,20 +418,34 @@ const SelfHelp = () => {
                               <Progress value={course.progress} className="h-2" />
                             </div>
                           ) : (
-                            <div className="flex items-center text-xs text-slate-500 mt-4">
-                              <span className="flex items-center">
-                                <Award className="w-3 h-3 mr-1 text-mindwell-500" />
-                                By {course.creator}
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="flex items-center text-slate-500">
+                                <Users className="w-3 h-3 mr-1" />
+                                {course.enrolled.toLocaleString()} enrolled
+                              </span>
+                              <span className="flex items-center text-mindwell-600">
+                                <Award className="w-3 h-3 mr-1" />
+                                Certificate
                               </span>
                             </div>
                           )}
                         </CardContent>
-                        <CardFooter className="flex justify-between">
+                        <CardFooter className="flex justify-between pt-2">
                           <Button variant="outline" size="sm">
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Source
+                            <Heart 
+                              className={`w-4 h-4 mr-1 ${savedResources.includes(course.id) ? 'fill-red-500 text-red-500' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSave(course.id);
+                              }}
+                            />
+                            Save
                           </Button>
-                          <Button size="sm" className="bg-mindwell-500 hover:bg-mindwell-600 text-white">
+                          <Button 
+                            size="sm" 
+                            className="bg-mindwell-500 hover:bg-mindwell-600 text-white"
+                            onClick={() => openResourceModal(course, 'course')}
+                          >
                             <Play className="w-4 h-4 mr-1" />
                             Start Course
                           </Button>
@@ -399,86 +585,41 @@ const SelfHelp = () => {
                 animate={isLoading ? "hidden" : "visible"}
                 className="space-y-8"
               >
-                <h2 className="text-2xl font-bold mb-6">Guided Exercises</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Guided Video Exercises</h2>
+                  <div className="flex items-center space-x-2 text-sm text-slate-600">
+                    <Globe className="w-4 h-4" />
+                    <span>Available in multiple languages</span>
+                  </div>
+                </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {[
-                    {
-                      id: "exercise1",
-                      title: "5-Minute Breathing Meditation",
-                      description: "A quick mindful breathing exercise to center yourself during busy days.",
-                      category: "Meditation",
-                      duration: "5 min",
-                      instructor: "Dr. Tara Brach",
-                      source: "Mindfulness Association",
-                      image: "https://images.unsplash.com/photo-1474418397713-2f1091553e69?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "exercise2",
-                      title: "Progressive Muscle Relaxation",
-                      description: "Release physical tension and promote deep relaxation with this guided exercise.",
-                      category: "Relaxation",
-                      duration: "15 min",
-                      instructor: "Dr. Edmund Jacobson",
-                      source: "Anxiety and Depression Association",
-                      image: "https://images.unsplash.com/photo-1545389336-cf090694435e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "exercise3",
-                      title: "Gratitude Journaling Practice",
-                      description: "Guided journaling exercise to cultivate gratitude and positive perspective.",
-                      category: "Journaling",
-                      duration: "10 min",
-                      instructor: "Dr. Robert Emmons",
-                      source: "Positive Psychology Center",
-                      image: "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "exercise4",
-                      title: "Body Scan Meditation",
-                      description: "Cultivate awareness of your body and reduce stress with this guided practice.",
-                      category: "Meditation",
-                      duration: "20 min",
-                      instructor: "Dr. Jon Kabat-Zinn",
-                      source: "Center for Mindfulness",
-                      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "exercise5",
-                      title: "Self-Compassion Exercise",
-                      description: "Learn to treat yourself with kindness during difficult moments.",
-                      category: "Self-Compassion",
-                      duration: "12 min",
-                      instructor: "Dr. Kristin Neff",
-                      source: "Self-Compassion.org",
-                      image: "https://images.unsplash.com/photo-1529693662653-9d480530a697?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    },
-                    {
-                      id: "exercise6",
-                      title: "Loving-Kindness Meditation",
-                      description: "Cultivate feelings of warmth and kindness toward yourself and others.",
-                      category: "Meditation",
-                      duration: "15 min",
-                      instructor: "Dr. Sharon Salzberg",
-                      source: "Center for Contemplative Mind",
-                      image: "https://images.unsplash.com/photo-1602192509154-0b900ee1f851?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
-                    }
-                  ].map((exercise) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {exercises.map((exercise) => (
                     <motion.div key={exercise.id} variants={itemVariants}>
-                      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
-                        <div className="aspect-video w-full overflow-hidden relative group">
+                      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col group">
+                        <div className="aspect-video w-full overflow-hidden relative">
                           <img src={exercise.image} alt={exercise.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button size="icon" className="rounded-full bg-white/90 text-mindwell-700 hover:bg-white">
+                            <Button 
+                              size="lg" 
+                              className="rounded-full bg-white/90 text-mindwell-700 hover:bg-white"
+                              onClick={() => openResourceModal(exercise, 'exercise')}
+                            >
                               <Play className="w-6 h-6" />
                             </Button>
+                          </div>
+                          <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                            {exercise.duration}
+                          </div>
+                          <div className="absolute top-4 left-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            {exercise.difficulty}
                           </div>
                         </div>
                         <CardHeader>
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center">
+                            <div className="flex items-center space-x-2">
                               <span className="text-xs font-medium bg-slate-100 px-2 py-1 rounded text-slate-700">{exercise.category}</span>
-                              <span className="text-xs text-slate-500 ml-2 flex items-center">
+                              <span className="text-xs text-slate-500 flex items-center">
                                 <Clock className="w-3 h-3 mr-1" />
                                 {exercise.duration}
                               </span>
@@ -506,7 +647,11 @@ const SelfHelp = () => {
                             <Download className="w-4 h-4 mr-1" />
                             Download
                           </Button>
-                          <Button size="sm" className="bg-mindwell-500 hover:bg-mindwell-600 text-white">
+                          <Button 
+                            size="sm" 
+                            className="bg-mindwell-500 hover:bg-mindwell-600 text-white"
+                            onClick={() => openResourceModal(exercise, 'exercise')}
+                          >
                             <Video className="w-4 h-4 mr-1" />
                             Start Exercise
                           </Button>
@@ -838,6 +983,13 @@ const SelfHelp = () => {
           </div>
         </motion.div>
       </section>
+      
+      <ResourceModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        resource={selectedResource}
+        type={modalType}
+      />
       
       <Footer />
     </div>
