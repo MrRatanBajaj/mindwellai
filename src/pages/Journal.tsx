@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Edit3, Save, Search, Filter, BookOpen, Heart, Smile, Meh, Frown } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
