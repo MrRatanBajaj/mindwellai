@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import SelfHelp from "./pages/SelfHelp";
+import Journal from "./pages/Journal";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +29,7 @@ const App = () => (
           <Route path="/payment" element={<Payment />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/self-help" element={<SelfHelp />} />
+          <Route path="/journal" element={<Journal />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
