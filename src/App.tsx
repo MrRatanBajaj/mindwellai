@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import SelfHelp from "./pages/SelfHelp";
 import Journal from "./pages/Journal";
+import PeerConnect from "./pages/PeerConnect";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/self-help" element={<SelfHelp />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/peer-connect" element={<PeerConnect />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

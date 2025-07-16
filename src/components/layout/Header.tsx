@@ -28,6 +28,7 @@ const Header = () => {
     { name: "About", path: "/about", icon: Users },
     { name: "Consultation", path: "/consultation", icon: Calendar },
     { name: "Self-Help", path: "/self-help", icon: BookOpen },
+    { name: "Peer Connect", path: "/peer-connect", icon: Users },
     { name: "Journal", path: "/journal", icon: MessageCircle },
   ];
 

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import Header from "@/components/layout/Header";
@@ -139,6 +138,202 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Features Section */}
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-mindwell-50/30 to-blue-50/30"></div>
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6">
+              Comprehensive Mental Health 
+              <span className="bg-gradient-to-r from-mindwell-600 to-blue-600 bg-clip-text text-transparent"> Solutions</span>
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              From AI-powered therapy to peer support, we provide every tool you need for your mental wellness journey
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="group"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-mindwell-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-mindwell-500 to-mindwell-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Brain className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">AI Therapy Sessions</h3>
+                  <p className="text-slate-600 mb-6">
+                    Connect with our advanced AI therapist for personalized mental health support available 24/7.
+                  </p>
+                  <NavLink 
+                    to="/consultation" 
+                    className="inline-flex items-center text-mindwell-600 font-semibold hover:text-mindwell-700 transition-colors group"
+                  >
+                    Start Session 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </NavLink>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="group"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">Peer Support Groups</h3>
+                  <p className="text-slate-600 mb-6">
+                    Connect with others nearby who share similar experiences. Join audio support groups for peer-to-peer healing.
+                  </p>
+                  <NavLink 
+                    to="/peer-connect" 
+                    className="inline-flex items-center text-blue-600 font-semibold hover:text-blue-700 transition-colors group"
+                  >
+                    Find Peers 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </NavLink>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="group"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <BookOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">Self-Help Resources</h3>
+                  <p className="text-slate-600 mb-6">
+                    Access curated articles, videos, and exercises designed to support your mental wellness journey.
+                  </p>
+                  <NavLink 
+                    to="/self-help" 
+                    className="inline-flex items-center text-emerald-600 font-semibold hover:text-emerald-700 transition-colors group"
+                  >
+                    Explore Resources 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </NavLink>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="group"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <MessageCircle className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">Daily Journal</h3>
+                  <p className="text-slate-600 mb-6">
+                    Track your mood, thoughts, and progress with our intelligent journaling system.
+                  </p>
+                  <NavLink 
+                    to="/journal" 
+                    className="inline-flex items-center text-orange-600 font-semibold hover:text-orange-700 transition-colors group"
+                  >
+                    Start Journaling 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </NavLink>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="group"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Calendar className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">Professional Sessions</h3>
+                  <p className="text-slate-600 mb-6">
+                    Book video sessions with licensed therapists and mental health professionals.
+                  </p>
+                  <NavLink 
+                    to="/consultation" 
+                    className="inline-flex items-center text-purple-600 font-semibold hover:text-purple-700 transition-colors group"
+                  >
+                    Book Session 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </NavLink>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              whileHover={{ scale: 1.05, rotateY: 5 }}
+              className="group"
+            >
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Phone className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">24/7 Crisis Support</h3>
+                  <p className="text-slate-600 mb-6">
+                    Immediate support available anytime you need it. Our crisis counselors are here to help.
+                  </p>
+                  <button className="inline-flex items-center text-rose-600 font-semibold hover:text-rose-700 transition-colors group">
+                    Get Help Now 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
