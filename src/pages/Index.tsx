@@ -273,16 +273,19 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative">
                   <div className="w-16 h-16 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <Phone className="w-8 h-8 text-white" />
+                    <Heart className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-4">24/7 Crisis Support</h3>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">Memorial Chat</h3>
                   <p className="text-slate-600 mb-6">
-                    Immediate support available anytime you need it. Our crisis counselors are here to help.
+                    Connect with memories of lost family members through AI-powered conversations on special occasions.
                   </p>
-                  <button className="inline-flex items-center text-rose-600 font-semibold hover:text-rose-700 transition-colors group">
-                    Get Help Now 
+                  <NavLink 
+                    to="/memorial-chat" 
+                    className="inline-flex items-center text-rose-600 font-semibold hover:text-rose-700 transition-colors group"
+                  >
+                    Start Memorial Chat 
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  </NavLink>
                 </div>
               </div>
             </div>

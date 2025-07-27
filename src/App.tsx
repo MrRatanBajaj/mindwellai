@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import SelfHelp from "./pages/SelfHelp";
 import Journal from "./pages/Journal";
 import PeerConnect from "./pages/PeerConnect";
+import MemorialChat from "./pages/MemorialChat";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/self-help" element={<SelfHelp />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/peer-connect" element={<PeerConnect />} />
+          <Route path="/memorial-chat" element={<MemorialChat />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
