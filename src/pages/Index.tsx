@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FeatureCard from "@/components/ui-custom/FeatureCard";
 import Avatar from "@/components/ui-custom/Avatar";
+import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import { 
   Brain, Video, Lock, Calendar, History, MessageSquare, 
   Users, Award, Shield, Sparkles, Play, ArrowRight,
@@ -527,6 +528,19 @@ const Index = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Feedback Section */}
+      <section className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Help Us Improve</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              MindWelAI is in beta testing. Your feedback is invaluable in helping us create the best mental health platform.
+            </p>
+          </div>
+          <FeedbackForm />
         </div>
       </section>
       
