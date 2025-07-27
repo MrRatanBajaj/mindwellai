@@ -5,8 +5,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, Send, MessageSquare } from 'lucide-react';
+import { Star, Send, MessageSquare, Mic, MicOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const FeedbackForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ export const FeedbackForm = () => {
     suggestions: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const { toast } = useToast();
 
   const handleRatingClick = (rating: number) => {
@@ -29,18 +31,22 @@ export const FeedbackForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call - In production, this would connect to your backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store in localStorage for now (would be replaced with actual API call)
-      const existingFeedback = JSON.parse(localStorage.getItem('feedback') || '[]');
-      const newFeedback = {
-        ...formData,
-        id: Date.now(),
-        timestamp: new Date().toISOString()
-      };
-      existingFeedback.push(newFeedback);
-      localStorage.setItem('feedback', JSON.stringify(existingFeedback));
+      // Insert feedback into Supabase
+      const { error } = await supabase
+        .from('feedback')
+        .insert([
+          {
+            name: formData.name || null,
+            email: formData.email || null,
+            category: formData.category,
+            rating: formData.rating,
+            feedback: formData.feedback,
+            suggestions: formData.suggestions || null
+          }
+        ]);
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Feedback Submitted!",
@@ -57,6 +63,7 @@ export const FeedbackForm = () => {
         suggestions: ''
       });
     } catch (error) {
+      console.error('Error submitting feedback:', error);
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",
@@ -67,10 +74,33 @@ export const FeedbackForm = () => {
     }
   };
 
+  const toggleRecording = async () => {
+    if (isRecording) {
+      setIsRecording(false);
+      // Stop recording logic would go here
+      toast({
+        title: "Voice recording stopped",
+        description: "Voice features will be available soon!",
+      });
+    } else {
+      setIsRecording(true);
+      // Start recording logic would go here
+      toast({
+        title: "Voice recording started",
+        description: "Speak your feedback now...",
+      });
+      
+      // Auto-stop after 30 seconds for demo
+      setTimeout(() => {
+        setIsRecording(false);
+      }, 30000);
+    }
+  };
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto animate-fade-in">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 animate-scale-in">
           <MessageSquare className="h-5 w-5" />
           Beta Testing Feedback
         </CardTitle>
@@ -144,15 +174,46 @@ export const FeedbackForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="feedback">Your Feedback *</Label>
+            <Label htmlFor="feedback" className="flex items-center gap-2">
+              Your Feedback *
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={toggleRecording}
+                className={`ml-auto transition-colors ${
+                  isRecording ? 'bg-red-500 text-white hover:bg-red-600' : ''
+                }`}
+              >
+                {isRecording ? (
+                  <>
+                    <MicOff className="h-4 w-4 mr-1" />
+                    Stop Recording
+                  </>
+                ) : (
+                  <>
+                    <Mic className="h-4 w-4 mr-1" />
+                    Voice Feedback
+                  </>
+                )}
+              </Button>
+            </Label>
             <Textarea
               id="feedback"
               required
               value={formData.feedback}
               onChange={(e) => setFormData(prev => ({ ...prev, feedback: e.target.value }))}
               placeholder="Share your experience, what you liked, what could be improved..."
-              className="min-h-[100px]"
+              className={`min-h-[100px] transition-all duration-300 ${
+                isRecording ? 'border-red-500 bg-red-50/50' : ''
+              }`}
             />
+            {isRecording && (
+              <div className="flex items-center gap-2 text-red-500 animate-pulse">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                Recording... Speak your feedback now
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -168,11 +229,14 @@ export const FeedbackForm = () => {
 
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full hover-scale transition-all duration-300" 
             disabled={isSubmitting || !formData.feedback.trim()}
           >
             {isSubmitting ? (
-              <>Submitting...</>
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Submitting...
+              </div>
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />

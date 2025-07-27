@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import FeatureCard from "@/components/ui-custom/FeatureCard";
 import Avatar from "@/components/ui-custom/Avatar";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
+import { VoiceChat } from "@/components/ui-custom/VoiceChat";
 import { 
   Brain, Video, Lock, Calendar, History, MessageSquare, 
   Users, Award, Shield, Sparkles, Play, ArrowRight,
@@ -540,7 +541,18 @@ const Index = () => {
               MindWelAI is in beta testing. Your feedback is invaluable in helping us create the best mental health platform.
             </p>
           </div>
-          <FeedbackForm />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <FeedbackForm />
+            <div className="space-y-6">
+              <div className="text-center lg:text-left">
+                <h3 className="text-2xl font-bold mb-4">Real-time Voice Support</h3>
+                <p className="text-muted-foreground mb-6">
+                  Try our voice chat feature for real-time communication and immediate support during your feedback session.
+                </p>
+              </div>
+              <VoiceChat />
+            </div>
+          </div>
         </div>
       </section>
       
