@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      feedback: {
+        Row: {
+          category: string
+          created_at: string
+          email: string | null
+          feedback: string
+          id: string
+          name: string | null
+          rating: number | null
+          suggestions: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          email?: string | null
+          feedback: string
+          id?: string
+          name?: string | null
+          rating?: number | null
+          suggestions?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          email?: string | null
+          feedback?: string
+          id?: string
+          name?: string | null
+          rating?: number | null
+          suggestions?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mindwellai: {
         Row: {
           created_at: string
