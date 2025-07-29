@@ -14,6 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          page_url: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          page_url?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          page_url?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      consultations: {
+        Row: {
+          concerns: string | null
+          created_at: string
+          duration_minutes: number | null
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          scheduled_date: string
+          scheduled_time: string
+          session_type: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          concerns?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          scheduled_date: string
+          scheduled_time: string
+          session_type?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          concerns?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          scheduled_date?: string
+          scheduled_time?: string
+          session_type?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string
@@ -62,6 +149,42 @@ export type Database = {
         Update: {
           created_at?: string
           id?: number
+        }
+        Relationships: []
+      }
+      voice_chat_sessions: {
+        Row: {
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          participants_count: number | null
+          session_id: string
+          started_at: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          participants_count?: number | null
+          session_id: string
+          started_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          participants_count?: number | null
+          session_id?: string
+          started_at?: string
+          status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
