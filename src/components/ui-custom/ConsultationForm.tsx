@@ -8,6 +8,7 @@ import { Check, Calendar, Clock, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const timeSlots = [
   "9:00 AM", "10:00 AM", "11:00 AM",
@@ -56,32 +57,77 @@ const ConsultationForm = () => {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, this would send the data to your backend
-    console.log({
-      ...formData,
-      date: selectedDate,
-      time: selectedTime,
-    });
-    
-    if (hasFreeTrialActive) {
-      toast.success(`Consultation scheduled successfully! You have ${freeSessionsRemaining - 1} free sessions remaining.`);
-    } else {
-      toast.success("Consultation scheduled successfully!");
+    try {
+      // Parse date and time for database
+      const scheduledDate = new Date(selectedDate).toISOString().split('T')[0];
+      const scheduledTime = convertTo24Hour(selectedTime);
+      
+      // Save to Supabase
+      const { data, error } = await supabase
+        .from('consultations')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          concerns: formData.concerns || null,
+          scheduled_date: scheduledDate,
+          scheduled_time: scheduledTime,
+          session_type: 'ai_counselor',
+          status: 'scheduled'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Track analytics
+      await supabase.from('analytics').insert({
+        event_type: 'consultation_booked',
+        event_data: {
+          consultation_id: data.id,
+          session_type: 'ai_counselor',
+          date: scheduledDate,
+          time: scheduledTime
+        },
+        page_url: window.location.href,
+        session_id: sessionStorage.getItem('session_id')
+      });
+
+      if (hasFreeTrialActive) {
+        toast.success(`Consultation scheduled successfully! You have ${freeSessionsRemaining - 1} free sessions remaining.`);
+      } else {
+        toast.success("Consultation scheduled successfully!");
+      }
+      
+      // Reset form after submission
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        concerns: "",
+      });
+      setSelectedDate("");
+      setSelectedTime("");
+      setCurrentStep(1);
+    } catch (error) {
+      console.error('Error booking consultation:', error);
+      toast.error("Failed to schedule consultation. Please try again.");
     }
-    
-    // Reset form after submission
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      concerns: "",
-    });
-    setSelectedDate("");
-    setSelectedTime("");
-    setCurrentStep(1);
+  };
+
+  const convertTo24Hour = (time12h: string): string => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = String(parseInt(hours, 10) + 12);
+    }
+    return `${hours}:${minutes}:00`;
   };
 
   const handleUpgradePlan = () => {

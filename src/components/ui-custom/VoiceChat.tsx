@@ -44,6 +44,25 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ sessionId, onSessionEnd })
       // Create a unique channel for this voice chat session
       const channelName = sessionId || `voice-chat-${Date.now()}`;
       
+      // Save session to database
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('voice_chat_sessions')
+        .insert({
+          session_id: channelName,
+          status: 'active',
+          participants_count: 1,
+          metadata: {
+            started_via: 'web_app',
+            user_agent: navigator.userAgent
+          }
+        })
+        .select()
+        .single();
+
+      if (sessionError) {
+        console.error('Error creating session:', sessionError);
+      }
+
       channelRef.current = supabase.channel(channelName, {
         config: {
           presence: { key: 'user' }
@@ -54,7 +73,17 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ sessionId, onSessionEnd })
       channelRef.current
         .on('presence', { event: 'sync' }, () => {
           const presences = channelRef.current.presenceState();
-          setParticipants(Object.keys(presences).length);
+          const participantCount = Object.keys(presences).length;
+          setParticipants(participantCount);
+          
+          // Update participant count in database
+          if (sessionData) {
+            supabase
+              .from('voice_chat_sessions')
+              .update({ participants_count: participantCount })
+              .eq('id', sessionData.id)
+              .then();
+          }
         })
         .on('presence', { event: 'join' }, ({ newPresences }: any) => {
           console.log('User joined:', newPresences);
@@ -62,6 +91,14 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ sessionId, onSessionEnd })
             title: "User joined",
             description: "Someone joined the voice chat",
           });
+
+          // Track analytics
+          supabase.from('analytics').insert({
+            event_type: 'voice_chat_join',
+            event_data: { session_id: channelName },
+            page_url: window.location.href,
+            session_id: sessionStorage.getItem('session_id')
+          }).then();
         })
         .on('presence', { event: 'leave' }, ({ leftPresences }: any) => {
           console.log('User left:', leftPresences);
@@ -90,6 +127,14 @@ export const VoiceChat: React.FC<VoiceChatProps> = ({ sessionId, onSessionEnd })
             toast({
               title: "Connected to voice chat",
               description: "You can now start talking",
+            });
+
+            // Track analytics
+            await supabase.from('analytics').insert({
+              event_type: 'voice_chat_started',
+              event_data: { session_id: channelName },
+              page_url: window.location.href,
+              session_id: sessionStorage.getItem('session_id')
             });
           }
         });

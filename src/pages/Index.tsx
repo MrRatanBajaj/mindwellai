@@ -6,6 +6,7 @@ import FeatureCard from "@/components/ui-custom/FeatureCard";
 import Avatar from "@/components/ui-custom/Avatar";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import { VoiceChat } from "@/components/ui-custom/VoiceChat";
+import { RealtimeAnalytics } from "@/components/ui-custom/RealtimeAnalytics";
 import { 
   Brain, Video, Lock, Calendar, History, MessageSquare, 
   Users, Award, Shield, Sparkles, Play, ArrowRight,
@@ -144,6 +145,22 @@ const Index = () => {
         </div>
       </section>
       
+      {/* Features Section */}
+      {/* Real-time Analytics Section */}
+      <section className="py-12 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-slate-800 mb-4">
+              Real-time Platform Activity
+            </h2>
+            <p className="text-lg text-slate-600">
+              See how our community is actively engaging with mental health support
+            </p>
+          </div>
+          <RealtimeAnalytics />
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-mindwell-50/30 to-blue-50/30"></div>
