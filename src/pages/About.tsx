@@ -4,7 +4,9 @@ import Footer from "@/components/layout/Footer";
 import Avatar from "@/components/ui-custom/Avatar";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
-import { Shield, Heart, Zap, Award } from "lucide-react";
+import { Shield, Heart, Zap, Award, Video, MessageCircle, Brain, Users, Sparkles, PlayCircle, ChevronRight, Star, CheckCircle2, Globe } from "lucide-react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const About = () => {
   return (
@@ -12,44 +14,179 @@ const About = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto">
+      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-mindwell-50/50 via-transparent to-accent/20"></div>
+        <div className="max-w-7xl mx-auto relative">
           <div className="flex flex-col-reverse lg:flex-row items-center">
-            <div className="lg:w-1/2 lg:pr-12 mt-10 lg:mt-0">
-              <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6 animate-fade-in">
-                About MindwellAI
+            <motion.div 
+              className="lg:w-1/2 lg:pr-12 mt-10 lg:mt-0"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="inline-block py-2 px-4 rounded-full bg-gradient-to-r from-mindwell-100 to-mindwell-200 text-mindwell-700 font-medium text-sm mb-6 border border-mindwell-300">
+                ✨ Next-Gen AI Mental Health Platform
               </span>
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6 text-balance animate-fade-in">
-                Redefining Mental Health Support
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 text-balance">
+                Redefining Mental Health with
+                <span className="text-gradient"> AI Companions</span>
               </h1>
-              <p className="text-slate-600 text-lg mb-6 max-w-lg text-balance animate-fade-in">
-                MindwellAI was created with one mission: to make quality mental health support accessible to everyone, everywhere, at any time.
+              <p className="text-slate-600 text-xl mb-6 max-w-lg text-balance leading-relaxed">
+                Experience personalized mental health support through our advanced AI avatars, designed to provide empathetic counseling and therapeutic guidance 24/7.
               </p>
-              <p className="text-slate-600 mb-8 max-w-lg text-balance animate-fade-in">
-                Our platform combines advanced AI technology with evidence-based therapeutic approaches to provide personalized support for a wide range of mental health concerns.
-              </p>
-              <div className="animate-fade-in">
+              <div className="flex flex-wrap gap-4 mb-8">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  AI Video Counseling
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  Voice Cloning Technology
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  Personalized Therapy
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
                 <NavLink to="/consultation">
-                  <Button className="bg-mindwell-500 hover:bg-mindwell-600 text-white">
-                    Book a Consultation
+                  <Button size="lg" className="bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700 text-white shadow-lg">
+                    <Video className="w-5 h-5 mr-2" />
+                    Start AI Session
                   </Button>
                 </NavLink>
+                <Button variant="outline" size="lg" className="border-mindwell-200 hover:bg-mindwell-50">
+                  <PlayCircle className="w-5 h-5 mr-2" />
+                  Watch Demo
+                </Button>
               </div>
-            </div>
+            </motion.div>
             
-            <div className="lg:w-1/2">
-              <div className="relative animate-fade-in">
-                <div className="aspect-square max-w-lg mx-auto overflow-hidden rounded-3xl">
+            <motion.div 
+              className="lg:w-1/2"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="relative">
+                <div className="aspect-square max-w-lg mx-auto overflow-hidden rounded-3xl glass-panel shadow-glass-strong">
                   <img 
                     src="https://images.unsplash.com/photo-1552308995-2baac1ad5490?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" 
-                    alt="Team collaboration" 
+                    alt="AI Mental Health Platform" 
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-mindwell-900/60 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <div className="glass-panel rounded-xl p-4 border border-white/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center">
+                          <Brain className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-white font-medium">Dr. Emma AI</p>
+                          <p className="text-white/80 text-sm">Your AI Therapist</p>
+                        </div>
+                        <div className="ml-auto flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-white/80 text-xs">Online</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="absolute -bottom-6 -right-6 w-40 h-40 bg-mindwell-50 rounded-3xl -z-10"></div>
-                <div className="absolute -top-6 -left-6 w-40 h-40 bg-slate-100 rounded-3xl -z-10"></div>
+                <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-gradient-to-br from-accent/30 to-mindwell-200/50 rounded-3xl -z-10 animate-float"></div>
+                <div className="absolute -top-8 -left-8 w-32 h-32 bg-gradient-to-br from-mindwell-100/50 to-slate-100/30 rounded-3xl -z-10 animate-float" style={{ animationDelay: '3s' }}></div>
               </div>
-            </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Features Section */}
+      <section className="py-20 px-6 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block py-2 px-4 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-sm mb-6 border border-mindwell-200">
+              🤖 Advanced AI Technology
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-balance">
+              Revolutionary AI Mental Health Features
+            </h2>
+            <p className="text-slate-600 max-w-3xl mx-auto text-lg text-balance">
+              Experience the future of mental health support with our cutting-edge AI avatars and personalized therapeutic interventions.
+            </p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Video,
+                title: "AI Video Counseling",
+                description: "Face-to-face sessions with realistic AI therapists that respond with empathy and professional guidance.",
+                color: "from-blue-400 to-blue-600"
+              },
+              {
+                icon: MessageCircle,
+                title: "Intelligent Chat Therapy",
+                description: "Advanced conversational AI trained on evidence-based therapeutic approaches and real-time emotional analysis.",
+                color: "from-green-400 to-green-600"
+              },
+              {
+                icon: Brain,
+                title: "Personalized AI Avatars",
+                description: "Customizable AI companions that adapt to your personality, preferences, and therapeutic needs.",
+                color: "from-purple-400 to-purple-600"
+              },
+              {
+                icon: Sparkles,
+                title: "Voice Cloning Technology",
+                description: "Memorial chat feature with voice synthesis to connect with memories of loved ones.",
+                color: "from-pink-400 to-pink-600"
+              },
+              {
+                icon: Users,
+                title: "Peer Support Network",
+                description: "AI-moderated support groups and community connections for shared healing experiences.",
+                color: "from-orange-400 to-orange-600"
+              },
+              {
+                icon: Globe,
+                title: "24/7 Global Access",
+                description: "Round-the-clock mental health support available in multiple languages and time zones.",
+                color: "from-teal-400 to-teal-600"
+              }
+            ].map((feature, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Card className="glass-panel hover-lift border-white/20 group cursor-pointer">
+                  <CardHeader>
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <feature.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold group-hover:text-mindwell-600 transition-colors">
+                      {feature.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-slate-600 leading-relaxed">{feature.description}</p>
+                    <div className="mt-4 flex items-center text-mindwell-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                      Learn more <ChevronRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

@@ -15,6 +15,7 @@ import SelfHelp from "./pages/SelfHelp";
 import Journal from "./pages/Journal";
 import PeerConnect from "./pages/PeerConnect";
 import MemorialChat from "./pages/MemorialChat";
+import AITherapist from "./pages/AITherapist";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/journal" element={<Journal />} />
           <Route path="/peer-connect" element={<PeerConnect />} />
           <Route path="/memorial-chat" element={<MemorialChat />} />
+          <Route path="/ai-therapist" element={<AITherapist />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
