@@ -137,6 +137,156 @@ export type Database = {
         }
         Relationships: []
       }
+      memorial_chat_messages: {
+        Row: {
+          audio_url: string | null
+          content: string
+          created_at: string
+          id: string
+          sender_type: string
+          session_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          sender_type: string
+          session_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          sender_type?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "memorial_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorial_chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          memorial_id: string
+          session_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          memorial_id: string
+          session_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          memorial_id?: string
+          session_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_chat_sessions_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorial_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorial_memories: {
+        Row: {
+          content: string | null
+          created_at: string
+          description: string | null
+          file_url: string | null
+          id: string
+          memorial_id: string
+          memory_type: string
+          title: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          memorial_id: string
+          memory_type: string
+          title?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          memorial_id?: string
+          memory_type?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorial_memories_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorial_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorial_profiles: {
+        Row: {
+          biography: string | null
+          created_at: string
+          id: string
+          name: string
+          personality_traits: string[] | null
+          profile_image_url: string | null
+          relationship: string
+          updated_at: string
+          user_id: string
+          voice_id: string | null
+        }
+        Insert: {
+          biography?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          personality_traits?: string[] | null
+          profile_image_url?: string | null
+          relationship: string
+          updated_at?: string
+          user_id: string
+          voice_id?: string | null
+        }
+        Update: {
+          biography?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          personality_traits?: string[] | null
+          profile_image_url?: string | null
+          relationship?: string
+          updated_at?: string
+          user_id?: string
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
       mindwellai: {
         Row: {
           created_at: string

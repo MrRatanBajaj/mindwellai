@@ -1,60 +1,336 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { NavLink } from "react-router-dom";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import Avatar from "@/components/ui-custom/Avatar";
+import React, { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { 
   Heart, Upload, Mic, Play, Pause, Volume2, Image, 
   MessageSquare, Calendar, Star, ArrowLeft, Send,
-  Clock, Users, Sparkles, Camera, HeartHandshake
-} from "lucide-react";
+  Clock, Users, Sparkles, Camera, HeartHandshake,
+  User, Plus, MicOff
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+interface MemorialProfile {
+  id: string;
+  name: string;
+  relationship: string;
+  biography?: string;
+  personality_traits?: string[];
+  voice_id?: string;
+  profile_image_url?: string;
+  created_at: string;
+  // Legacy fields for existing UI
+  image?: string;
+  lastActive?: string;
+  voiceSamples?: number;
+  memories?: number;
+  specialDate?: string;
+}
+
+interface ChatMessage {
+  id: string;
+  sender_type: 'user' | 'memorial';
+  content: string;
+  audio_url?: string;
+  created_at: string;
+}
+
+interface ChatSession {
+  id: string;
+  memorial_id: string;
+  session_name?: string;
+  created_at: string;
+}
 
 const MemorialChat = () => {
   const [activeTab, setActiveTab] = useState("create");
-  const [selectedMemorial, setSelectedMemorial] = useState(null);
+  const [selectedMemorial, setSelectedMemorial] = useState<MemorialProfile | null>(null);
+  const [memorialProfiles, setMemorialProfiles] = useState<MemorialProfile[]>([]);
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [message, setMessage] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  
+  // Memorial creation form
+  const [memorialName, setMemorialName] = useState('');
+  const [relationship, setRelationship] = useState('');
+  const [biography, setBiography] = useState('');
+  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  
+  const { toast } = useToast();
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const memorialProfiles = [
-    {
-      id: 1,
-      name: "Mom",
-      image: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80",
-      lastActive: "2 hours ago",
-      voiceSamples: 25,
-      memories: 150,
-      specialDate: "Birthday Tomorrow"
-    },
-    {
-      id: 2,
-      name: "Dad",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80",
-      lastActive: "1 day ago",
-      voiceSamples: 18,
-      memories: 95,
-      specialDate: "Anniversary Next Week"
-    },
-    {
-      id: 3,
-      name: "Grandma",
-      image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80",
-      lastActive: "3 days ago",
-      voiceSamples: 32,
-      memories: 200,
-      specialDate: "Christmas Coming"
-    }
+  const personalityTraits = [
+    'Caring', 'Humorous', 'Wise', 'Gentle', 'Strong', 'Creative',
+    'Adventurous', 'Patient', 'Optimistic', 'Thoughtful', 'Protective', 'Loving'
   ];
 
-  const handleFileUpload = (event) => {
-    const files = Array.from(event.target.files);
+  useEffect(() => {
+    loadMemorialProfiles();
+  }, []);
+
+  useEffect(() => {
+    if (selectedMemorial && currentSession) {
+      loadChatMessages();
+      
+      // Set up realtime subscription for new messages
+      const channel = supabase
+        .channel('chat-messages')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'memorial_chat_messages',
+            filter: `session_id=eq.${currentSession.id}`
+          },
+          (payload) => {
+            setMessages(prev => [...prev, payload.new as ChatMessage]);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [selectedMemorial, currentSession]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const loadMemorialProfiles = async () => {
+    try {
+      const { data: profiles, error } = await supabase
+        .from('memorial_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMemorialProfiles(profiles || []);
+    } catch (error) {
+      console.error('Error loading memorial profiles:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load memorial profiles',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const loadChatMessages = async () => {
+    if (!currentSession) return;
+
+    try {
+      const { data: messages, error } = await supabase
+        .from('memorial_chat_messages')
+        .select('*')
+        .eq('session_id', currentSession.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setMessages((messages || []) as ChatMessage[]);
+    } catch (error) {
+      console.error('Error loading chat messages:', error);
+    }
+  };
+
+  const createMemorialProfile = async () => {
+    if (!memorialName || !relationship) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please provide at least a name and relationship',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please sign in to create memorial profiles',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from('memorial_profiles')
+        .insert({
+          name: memorialName,
+          relationship: relationship,
+          biography: biography || null,
+          personality_traits: selectedTraits.length > 0 ? selectedTraits : null,
+          user_id: user.user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Memorial Created',
+        description: `${memorialName} has been added to your memorials`,
+      });
+
+      // Reset form
+      setMemorialName('');
+      setRelationship('');
+      setBiography('');
+      setSelectedTraits([]);
+      setUploadedFiles([]);
+      
+      // Reload profiles and switch to chat tab
+      await loadMemorialProfiles();
+      setActiveTab('connect');
+    } catch (error) {
+      console.error('Error creating memorial:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create memorial profile',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startChatSession = async (memorial: MemorialProfile) => {
+    setSelectedMemorial(memorial);
+    
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const { data: session, error } = await supabase
+        .from('memorial_chat_sessions')
+        .insert({
+          user_id: user.user.id,
+          memorial_id: memorial.id,
+          session_name: `Chat with ${memorial.name}`
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setCurrentSession(session);
+    } catch (error) {
+      console.error('Error starting chat session:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start chat session',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !currentSession || !selectedMemorial) return;
+
+    const userMessage = newMessage;
+    setNewMessage('');
+    setIsLoadingResponse(true);
+
+    try {
+      // Save user message
+      const { error: userError } = await supabase
+        .from('memorial_chat_messages')
+        .insert({
+          session_id: currentSession.id,
+          sender_type: 'user',
+          content: userMessage
+        });
+
+      if (userError) throw userError;
+
+      // Generate AI response via edge function
+      const { data: aiResponse, error: aiError } = await supabase.functions.invoke('memorial-chat', {
+        body: {
+          message: userMessage,
+          memorialId: selectedMemorial.id,
+          sessionId: currentSession.id
+        }
+      });
+
+      if (aiError) throw aiError;
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoadingResponse(false);
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+
+        mediaRecorder.ondataavailable = (event) => {
+          audioChunksRef.current.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+          audioChunksRef.current = [];
+          // Handle audio upload here
+          console.log('Audio recorded:', audioBlob);
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (error) {
+        toast({
+          title: 'Microphone Access Denied',
+          description: 'Please allow microphone access to record voice messages',
+          variant: 'destructive'
+        });
+      }
+    }
+  };
+
+  const toggleTrait = (trait: string) => {
+    setSelectedTraits(prev =>
+      prev.includes(trait)
+        ? prev.filter(t => t !== trait)
+        : [...prev, trait]
+    );
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
     setUploadedFiles(prev => [...prev, ...files]);
   };
 
@@ -228,11 +504,10 @@ const MemorialChat = () => {
                 <CardContent className="space-y-6">
                   <div className="text-center">
                     <div className="relative inline-block">
-                      <Avatar 
-                        src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80"
-                        size="xl"
-                        className="border-4 border-white shadow-xl"
-                      />
+                      <Avatar className="w-24 h-24 border-4 border-white shadow-xl">
+                        <AvatarImage src="https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80" />
+                        <AvatarFallback><User className="h-8 w-8" /></AvatarFallback>
+                      </Avatar>
                       <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center">
                         <Heart className="w-4 h-4 text-white" />
                       </div>
@@ -297,7 +572,10 @@ const MemorialChat = () => {
                       >
                         <div className="flex items-center space-x-3">
                           <div className="relative">
-                            <Avatar src={profile.image} size="md" />
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={profile.image} />
+                              <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+                            </Avatar>
                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                           </div>
                           <div className="flex-1">
@@ -323,7 +601,10 @@ const MemorialChat = () => {
                   <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm h-[600px] flex flex-col">
                     <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 border-b border-rose-200">
                       <div className="flex items-center space-x-3">
-                        <Avatar src={selectedMemorial.image} size="md" />
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={selectedMemorial.image} />
+                          <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+                        </Avatar>
                         <div className="flex-1">
                           <CardTitle className="text-xl font-bold text-slate-800">
                             Chat with {selectedMemorial.name}
@@ -346,7 +627,10 @@ const MemorialChat = () => {
                     <CardContent className="flex-1 p-6 overflow-y-auto">
                       <div className="space-y-4">
                         <div className="flex items-start space-x-3">
-                          <Avatar src={selectedMemorial.image} size="sm" />
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={selectedMemorial.image} />
+                            <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                          </Avatar>
                           <div className="bg-slate-100 rounded-lg p-3 max-w-xs">
                             <p className="text-sm text-slate-700">
                               Hello sweetheart! I'm so happy you're here. I've been thinking about you on this special day.
@@ -370,7 +654,10 @@ const MemorialChat = () => {
                         </div>
 
                         <div className="flex items-start space-x-3">
-                          <Avatar src={selectedMemorial.image} size="sm" />
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={selectedMemorial.image} />
+                            <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+                          </Avatar>
                           <div className="bg-slate-100 rounded-lg p-3 max-w-xs">
                             <p className="text-sm text-slate-700">
                               Oh my dear, I'm always with you in spirit. Remember what I used to say - every birthday is a celebration of the love we shared, not just the years that passed.
@@ -397,8 +684,9 @@ const MemorialChat = () => {
                           <Mic className={`w-4 h-4 ${isRecording ? 'text-red-500 animate-pulse' : ''}`} />
                         </Button>
                         <Input
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                           placeholder="Type your message..."
                           className="flex-1 border-slate-200 focus:border-rose-500 focus:ring-rose-500"
                         />
