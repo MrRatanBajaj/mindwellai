@@ -1,34 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EmergencyCounseling from '@/components/ui-custom/EmergencyCounseling';
+import EmergencyVideoCall from '@/components/ui-custom/EmergencyVideoCall';
+import EmergencyAIChat from '@/components/ui-custom/EmergencyAIChat';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 
 const Emergency = () => {
   const navigate = useNavigate();
+  const [currentSession, setCurrentSession] = useState<'none' | 'video' | 'chat'>('none');
+  const [sessionConfig, setSessionConfig] = useState<{
+    urgency: string;
+    counselorId: string;
+  }>({ urgency: '', counselorId: 'emma' });
 
   const handleStartSession = (type: 'video' | 'chat', urgency: string) => {
-    if (type === 'video') {
-      // Navigate to AI Video Call with emergency context
-      navigate('/ai-therapist', { 
-        state: { 
-          mode: 'emergency-video', 
-          urgency,
-          counselorId: urgency === 'crisis' ? 'marcus' : 'emma' // Marcus for trauma/crisis, Emma for general
-        } 
-      });
-    } else {
-      // Navigate to AI Chat with emergency context
-      navigate('/ai-therapist', { 
-        state: { 
-          mode: 'emergency-chat', 
-          urgency,
-          counselorId: urgency === 'crisis' ? 'marcus' : 'emma'
-        } 
-      });
-    }
+    const counselorId = urgency === 'high' ? 'marcus' : 'emma'; // Marcus for crisis, Emma for general
+    
+    setSessionConfig({ urgency, counselorId });
+    setCurrentSession(type);
   };
 
+  const handleEndSession = () => {
+    setCurrentSession('none');
+    setSessionConfig({ urgency: '', counselorId: 'emma' });
+  };
+
+  // Render active session
+  if (currentSession === 'video') {
+    return (
+      <EmergencyVideoCall
+        counselorName={sessionConfig.counselorId === 'marcus' ? 'Dr. Marcus Chen' : 'Dr. Emma Rodriguez'}
+        urgencyLevel={sessionConfig.urgency}
+        counselorId={sessionConfig.counselorId}
+        onEndCall={handleEndSession}
+      />
+    );
+  }
+
+  if (currentSession === 'chat') {
+    return (
+      <EmergencyAIChat
+        urgencyLevel={sessionConfig.urgency}
+        counselorId={sessionConfig.counselorId}
+        onEndSession={handleEndSession}
+      />
+    );
+  }
+
+  // Default emergency page
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <Header />
