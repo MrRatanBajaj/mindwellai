@@ -41,6 +41,9 @@ const Header = () => {
             <NavLink to="/peer-connect" className="text-slate-700 hover:text-mindwell-600 transition-colors">
               Peer Connect
             </NavLink>
+            <NavLink to="/emergency" className="text-red-600 hover:text-red-700 transition-colors font-semibold">
+              🚨 Emergency
+            </NavLink>
             <NavLink to="/memorial-chat" className="text-slate-700 hover:text-mindwell-600 transition-colors flex items-center space-x-1">
               <Heart className="w-4 h-4" />
               <span>Memorial Chat</span>
@@ -88,6 +91,9 @@ const Header = () => {
               </NavLink>
               <NavLink to="/peer-connect" className="text-slate-700 hover:text-mindwell-600 transition-colors">
                 Peer Connect
+              </NavLink>
+              <NavLink to="/emergency" className="text-red-600 hover:text-red-700 transition-colors font-semibold">
+                🚨 Emergency
               </NavLink>
               <NavLink to="/memorial-chat" className="text-slate-700 hover:text-mindwell-600 transition-colors flex items-center space-x-1">
                 <Heart className="w-4 h-4" />

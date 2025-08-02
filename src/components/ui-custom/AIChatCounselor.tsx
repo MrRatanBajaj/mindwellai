@@ -33,6 +33,9 @@ interface AIChatCounselorProps {
   sessionId?: string;
   onEndSession?: () => void;
   className?: string;
+  emergencyMode?: boolean;
+  urgencyLevel?: string;
+  counselorId?: string;
 }
 
 const AIChatCounselor = ({
@@ -40,12 +43,17 @@ const AIChatCounselor = ({
   specialty = "Cognitive Behavioral Therapy Specialist",
   sessionId,
   onEndSession,
-  className
+  className,
+  emergencyMode = false,
+  urgencyLevel = '',
+  counselorId = 'emma'
 }: AIChatCounselorProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `Hello! I'm ${counselorName}, your AI mental health counselor. I'm here to provide you with personalized support using evidence-based therapeutic approaches. What's on your mind today?`,
+      content: emergencyMode 
+        ? `Hello, I'm ${counselorName} and I'm here to provide immediate crisis support. I understand you're going through a difficult time right now. You're safe here with me. Take a deep breath - I'm listening and ready to help. What's happening that brought you here today?`
+        : `Hello! I'm ${counselorName}, your AI mental health counselor. I'm here to provide you with personalized support using evidence-based therapeutic approaches. What's on your mind today?`,
       sender: 'ai',
       timestamp: new Date(),
       type: 'text'
