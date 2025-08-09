@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EmergencyCounseling from '@/components/ui-custom/EmergencyCounseling';
-import EmergencyVideoCall from '@/components/ui-custom/EmergencyVideoCall';
+import VideoCallManager from '@/components/ui-custom/VideoCallManager';
 import EmergencyAIChat from '@/components/ui-custom/EmergencyAIChat';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -29,11 +29,13 @@ const Emergency = () => {
   // Render active session
   if (currentSession === 'video') {
     return (
-      <EmergencyVideoCall
+      <VideoCallManager
         counselorName={sessionConfig.counselorId === 'marcus' ? 'Dr. Marcus Chen' : 'Dr. Emma Rodriguez'}
         urgencyLevel={sessionConfig.urgency}
-        counselorId={sessionConfig.counselorId}
         onEndCall={handleEndSession}
+        onAIResponse={(response) => {
+          console.log('AI Response:', response);
+        }}
       />
     );
   }

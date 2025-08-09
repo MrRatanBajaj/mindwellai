@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_counseling_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          message_type: string | null
+          metadata: Json | null
+          sender: string
+          session_id: string
+          timestamp: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string | null
+          metadata?: Json | null
+          sender: string
+          session_id: string
+          timestamp?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string | null
+          metadata?: Json | null
+          sender?: string
+          session_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_ai_counseling_messages_session"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_counseling_sessions"
+            referencedColumns: ["session_id"]
+          },
+        ]
+      }
+      ai_counseling_sessions: {
+        Row: {
+          counselor_id: string
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          session_id: string
+          session_type: string
+          started_at: string
+          status: string
+          updated_at: string
+          urgency_level: string | null
+          user_id: string | null
+        }
+        Insert: {
+          counselor_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_id: string
+          session_type: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          urgency_level?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          counselor_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_id?: string
+          session_type?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          urgency_level?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       analytics: {
         Row: {
           created_at: string

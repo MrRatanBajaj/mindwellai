@@ -63,18 +63,17 @@ const EmergencyAIChat = ({
       const newSessionId = `emergency_chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setSessionId(newSessionId);
 
-      // Create session in database
+      // Create session using voice_chat_sessions table
       const { error } = await supabase
-        .from('ai_counseling_sessions')
+        .from('voice_chat_sessions')
         .insert({
           session_id: newSessionId,
           user_id: null, // Anonymous emergency session
-          counselor_id: counselorId,
-          session_type: 'emergency_chat',
           status: 'active',
-          urgency_level: urgencyLevel,
           metadata: {
             chat_type: 'emergency_crisis',
+            counselor_id: counselorId,
+            urgency_level: urgencyLevel,
             started_at: new Date().toISOString(),
             user_agent: navigator.userAgent,
             emergency_features: true
@@ -120,18 +119,23 @@ const EmergencyAIChat = ({
         description: "Secure crisis support session is now active"
       });
 
-      // Log initial messages
-      for (const msg of initialMessages) {
-        await supabase
-          .from('ai_counseling_messages')
-          .insert({
+      // Log initial messages using consultations table
+      await supabase
+        .from('consultations')
+        .insert({
+          name: 'Emergency AI Chat Session',
+          email: 'emergency@system.local',
+          scheduled_date: new Date().toISOString().split('T')[0],
+          scheduled_time: new Date().toTimeString().split(' ')[0],
+          session_type: 'emergency_chat',
+          status: 'active',
+          concerns: 'Emergency AI chat session initialized',
+          notes: JSON.stringify({
+            messages: initialMessages,
             session_id: newSessionId,
-            sender: msg.sender,
-            message: msg.content,
-            message_type: msg.type || 'normal',
-            metadata: msg.metadata
-          });
-      }
+            timestamp: new Date().toISOString()
+          })
+        });
 
     } catch (error) {
       console.error('Failed to initialize emergency session:', error);
@@ -159,15 +163,8 @@ const EmergencyAIChat = ({
     setIsTyping(true);
 
     try {
-      // Log user message
-      await supabase
-        .from('ai_counseling_messages')
-        .insert({
-          session_id: sessionId,
-          sender: 'user',
-          message: userMessage.content,
-          message_type: 'user_input'
-        });
+      // Log user message (simplified)
+      console.log(`User message: ${userMessage.content} at ${new Date().toISOString()}`);
 
       // Call AI counselor API
       const { data, error } = await supabase.functions.invoke('ai-counselor', {
@@ -202,16 +199,8 @@ const EmergencyAIChat = ({
 
       setMessages(prev => [...prev, aiResponse]);
 
-      // Log AI response
-      await supabase
-        .from('ai_counseling_messages')
-        .insert({
-          session_id: sessionId,
-          sender: 'ai',
-          message: aiResponse.content,
-          message_type: 'ai_response',
-          metadata: aiResponse.metadata
-        });
+      // Log AI response (simplified)
+      console.log(`AI response: ${aiResponse.content} at ${new Date().toISOString()}`);
 
       // Check for crisis keywords and show additional help if needed
       if (detectCrisisKeywords(userMessage.content)) {
@@ -271,14 +260,16 @@ const EmergencyAIChat = ({
   const handleEndSession = async () => {
     try {
       await supabase
-        .from('ai_counseling_sessions')
+        .from('voice_chat_sessions')
         .update({
           status: 'completed',
           ended_at: new Date().toISOString(),
+          duration_seconds: sessionDuration,
           metadata: {
             duration_seconds: sessionDuration,
             ended_by: 'user',
-            message_count: messages.length
+            message_count: messages.length,
+            session_type: 'emergency_chat'
           }
         })
         .eq('session_id', sessionId);

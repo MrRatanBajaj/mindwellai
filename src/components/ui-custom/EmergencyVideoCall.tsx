@@ -70,18 +70,17 @@ const EmergencyVideoCall = ({
       const newSessionId = `emergency_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setSessionId(newSessionId);
 
-      // Log emergency session
+      // Log emergency session using voice_chat_sessions table
       const { error } = await supabase
-        .from('ai_counseling_sessions')
+        .from('voice_chat_sessions')
         .insert({
           session_id: newSessionId,
           user_id: null, // Anonymous for now
-          counselor_id: counselorId,
-          session_type: 'emergency_video',
           status: 'active',
-          urgency_level: urgencyLevel,
           metadata: {
             call_type: 'emergency_video',
+            counselor_id: counselorId,
+            urgency_level: urgencyLevel,
             started_at: new Date().toISOString(),
             user_agent: navigator.userAgent
           }
@@ -133,21 +132,22 @@ const EmergencyVideoCall = ({
         description: "Emergency video session is now active"
       });
 
-      // Log permission grant
+      // Log permission grant using consultations table
       await supabase
-        .from('ai_counseling_messages')
+        .from('consultations')
         .insert({
-          session_id: sessionId,
-          sender: 'system',
-          message: 'Video call permissions granted - Emergency session active',
-          message_type: 'system',
-          metadata: {
-            permissions: {
-              video: true,
-              audio: true
-            },
-            timestamp: new Date().toISOString()
-          }
+          name: 'Emergency Video Session',
+          email: 'emergency@system.local',
+          scheduled_date: new Date().toISOString().split('T')[0],
+          scheduled_time: new Date().toTimeString().split(' ')[0],
+          session_type: 'emergency_video',
+          status: 'active',
+          concerns: 'Video call permissions granted - Emergency session active',
+          notes: JSON.stringify({
+            permissions: { video: true, audio: true },
+            timestamp: new Date().toISOString(),
+            session_id: sessionId
+          })
         });
 
     } catch (error) {
@@ -179,25 +179,18 @@ const EmergencyVideoCall = ({
     // Log session end
     try {
       await supabase
-        .from('ai_counseling_sessions')
+        .from('voice_chat_sessions')
         .update({
           status: 'completed',
           ended_at: new Date().toISOString(),
+          duration_seconds: callDuration,
           metadata: {
             duration_seconds: callDuration,
-            ended_by: 'user'
+            ended_by: 'user',
+            session_type: 'emergency_video'
           }
         })
         .eq('session_id', sessionId);
-
-      await supabase
-        .from('ai_counseling_messages')
-        .insert({
-          session_id: sessionId,
-          sender: 'system',
-          message: `Emergency session ended after ${formatDuration(callDuration)}`,
-          message_type: 'system'
-        });
     } catch (error) {
       console.error('Error logging session end:', error);
     }
@@ -218,15 +211,8 @@ const EmergencyVideoCall = ({
         
         toast.info(isVideoOn ? "Camera turned off" : "Camera turned on");
         
-        // Log video toggle
-        await supabase
-          .from('ai_counseling_messages')
-          .insert({
-            session_id: sessionId,
-            sender: 'system',
-            message: `Video ${isVideoOn ? 'disabled' : 'enabled'}`,
-            message_type: 'system'
-          });
+        // Log video toggle (simplified logging)
+        console.log(`Video ${isVideoOn ? 'disabled' : 'enabled'} at ${new Date().toISOString()}`);
       }
     }
   };
@@ -240,15 +226,8 @@ const EmergencyVideoCall = ({
         
         toast.info(isAudioOn ? "Microphone muted" : "Microphone unmuted");
         
-        // Log audio toggle
-        await supabase
-          .from('ai_counseling_messages')
-          .insert({
-            session_id: sessionId,
-            sender: 'system',
-            message: `Audio ${isAudioOn ? 'muted' : 'unmuted'}`,
-            message_type: 'system'
-          });
+        // Log audio toggle (simplified logging)
+        console.log(`Audio ${isAudioOn ? 'muted' : 'unmuted'} at ${new Date().toISOString()}`);
       }
     }
   };
