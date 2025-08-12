@@ -5,7 +5,7 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "free-trial",
     name: "Free Trial",
-    price: "$0",
+    price: "₹0",
     description: "Try our AI counseling with no commitment",
     features: [
       "3 free counseling sessions",
@@ -20,7 +20,7 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "basic",
     name: "Basic Plan",
-    price: "$49",
+    price: "₹999",
     description: "Perfect for ongoing support needs",
     features: [
       "8 counseling sessions per month",
@@ -28,6 +28,7 @@ const pricingPlans: PricingPlan[] = [
       "Personalized growth plan",
       "Access to all meditation resources",
       "Priority email support",
+      "UPI & Digital wallet payments",
     ],
     buttonText: "Choose Basic",
     sessionsCount: 8
@@ -35,7 +36,7 @@ const pricingPlans: PricingPlan[] = [
   {
     id: "premium",
     name: "Premium Plan",
-    price: "$89",
+    price: "₹1999",
     description: "Comprehensive mental wellness support",
     features: [
       "Unlimited counseling sessions",
@@ -44,6 +45,8 @@ const pricingPlans: PricingPlan[] = [
       "Full access to all resources",
       "Guided meditation sessions",
       "24/7 priority support",
+      "AI Voice counseling included",
+      "UPI & Digital wallet payments",
     ],
     buttonText: "Choose Premium",
     isFeatured: true,

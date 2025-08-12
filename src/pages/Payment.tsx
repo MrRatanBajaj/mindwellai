@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, Lock } from "lucide-react";
+import { Check, CreditCard, Calendar, Lock, Smartphone, Wallet } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
@@ -24,7 +25,13 @@ const Payment = () => {
     cardName: "",
     expiryDate: "",
     cvv: "",
+    name: "",
+    email: "",
+    phone: "",
   });
+  
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'wallet'>('upi');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   useEffect(() => {
     // If user directly navigates to payment without selecting a plan, redirect to plans
@@ -46,7 +53,7 @@ const Payment = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // For free trial, no payment processing needed
@@ -58,16 +65,93 @@ const Payment = () => {
       return;
     }
     
-    // In a real app, this would process the payment
-    if (!paymentDetails.cardNumber || !paymentDetails.cardName || !paymentDetails.expiryDate || !paymentDetails.cvv) {
-      toast.error("Please fill in all payment details");
+    // Validate required fields
+    if (!paymentDetails.name || !paymentDetails.email) {
+      toast.error("Please fill in your name and email");
       return;
     }
-    
-    toast.success("Payment successful! Redirecting to schedule your session.");
-    setTimeout(() => {
-      navigate("/consultation");
-    }, 2000);
+
+    if (paymentMethod === 'card' && (!paymentDetails.cardNumber || !paymentDetails.cardName || !paymentDetails.expiryDate || !paymentDetails.cvv)) {
+      toast.error("Please fill in all card details");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Get amount from plan price (remove ₹ symbol and convert to number)
+      const amount = parseInt(selectedPlan.price.replace('₹', ''));
+      
+      // Create Razorpay order
+      const { data: orderData, error } = await supabase.functions.invoke('razorpay-payment', {
+        body: {
+          amount: amount,
+          currency: 'INR',
+          name: paymentDetails.name,
+          email: paymentDetails.email,
+          phone: paymentDetails.phone,
+          planId: selectedPlan.id,
+          paymentMethod: paymentMethod
+        }
+      });
+
+      if (error) throw error;
+
+      // Load Razorpay script
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: orderData.name,
+          description: orderData.description,
+          order_id: orderData.orderId,
+          prefill: orderData.prefill,
+          theme: orderData.theme,
+          method: orderData.method,
+          handler: async (response: any) => {
+            try {
+              // Verify payment
+              const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+                body: {
+                  razorpayPaymentId: response.razorpay_payment_id,
+                  razorpayOrderId: response.razorpay_order_id,
+                  razorpaySignature: response.razorpay_signature
+                }
+              });
+
+              if (verifyError) throw verifyError;
+
+              toast.success("Payment successful! Redirecting to schedule your session.");
+              setTimeout(() => {
+                navigate("/consultation");
+              }, 2000);
+            } catch (error) {
+              console.error('Payment verification failed:', error);
+              toast.error("Payment verification failed. Please contact support.");
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsProcessing(false);
+              toast.error("Payment cancelled");
+            }
+          }
+        };
+
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
+        setIsProcessing(false);
+      };
+      document.head.appendChild(script);
+
+    } catch (error) {
+      console.error('Payment initiation failed:', error);
+      toast.error("Failed to initiate payment. Please try again.");
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -132,65 +216,176 @@ const Payment = () => {
                 </h3>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Personal Details */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                        value={paymentDetails.name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={paymentDetails.email}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        value={paymentDetails.phone}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+
                   {!selectedPlan.isFree && (
                     <>
-                      <div className="space-y-2">
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <div className="relative">
-                          <Input
-                            id="cardNumber"
-                            name="cardNumber"
-                            placeholder="1234 5678 9012 3456"
-                            className="pl-10"
-                            value={paymentDetails.cardNumber}
-                            onChange={handleInputChange}
-                          />
-                          <CreditCard className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      {/* Payment Method Selection */}
+                      <div className="space-y-3">
+                        <Label>Choose Payment Method</Label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <Button
+                            type="button"
+                            variant={paymentMethod === 'upi' ? 'default' : 'outline'}
+                            onClick={() => setPaymentMethod('upi')}
+                            className="flex flex-col items-center p-4 h-auto"
+                          >
+                            <Smartphone className="w-6 h-6 mb-2" />
+                            <span className="text-sm">UPI</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={paymentMethod === 'wallet' ? 'default' : 'outline'}
+                            onClick={() => setPaymentMethod('wallet')}
+                            className="flex flex-col items-center p-4 h-auto"
+                          >
+                            <Wallet className="w-6 h-6 mb-2" />
+                            <span className="text-sm">Wallet</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={paymentMethod === 'card' ? 'default' : 'outline'}
+                            onClick={() => setPaymentMethod('card')}
+                            className="flex flex-col items-center p-4 h-auto"
+                          >
+                            <CreditCard className="w-6 h-6 mb-2" />
+                            <span className="text-sm">Card</span>
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="cardName">Name on Card</Label>
-                        <Input
-                          id="cardName"
-                          name="cardName"
-                          placeholder="John Doe"
-                          value={paymentDetails.cardName}
-                          onChange={handleInputChange}
-                        />
+
+                      {/* Payment Method Info */}
+                      <div className="p-4 bg-slate-50 rounded-lg">
+                        {paymentMethod === 'upi' && (
+                          <div className="text-sm text-slate-600">
+                            <p className="font-medium mb-2">Supported UPI Apps:</p>
+                            <div className="flex flex-wrap gap-2">
+                              <span className="px-2 py-1 bg-white rounded text-xs">Google Pay</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">PhonePe</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">Paytm</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">BHIM</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">Amazon Pay</span>
+                            </div>
+                          </div>
+                        )}
+                        {paymentMethod === 'wallet' && (
+                          <div className="text-sm text-slate-600">
+                            <p className="font-medium mb-2">Supported Wallets:</p>
+                            <div className="flex flex-wrap gap-2">
+                              <span className="px-2 py-1 bg-white rounded text-xs">Paytm Wallet</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">PhonePe Wallet</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">Amazon Pay</span>
+                              <span className="px-2 py-1 bg-white rounded text-xs">JioMoney</span>
+                            </div>
+                          </div>
+                        )}
+                        {paymentMethod === 'card' && (
+                          <div className="text-sm text-slate-600">
+                            <p>Credit/Debit cards, Net Banking, and EMI options available</p>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="expiryDate">Expiry Date</Label>
-                          <div className="relative">
+
+                      {/* Card Details (only if card is selected) */}
+                      {paymentMethod === 'card' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="cardNumber">Card Number</Label>
+                            <div className="relative">
+                              <Input
+                                id="cardNumber"
+                                name="cardNumber"
+                                placeholder="1234 5678 9012 3456"
+                                className="pl-10"
+                                value={paymentDetails.cardNumber}
+                                onChange={handleInputChange}
+                              />
+                              <CreditCard className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="cardName">Name on Card</Label>
                             <Input
-                              id="expiryDate"
-                              name="expiryDate"
-                              placeholder="MM/YY"
-                              className="pl-10"
-                              value={paymentDetails.expiryDate}
+                              id="cardName"
+                              name="cardName"
+                              placeholder="John Doe"
+                              value={paymentDetails.cardName}
                               onChange={handleInputChange}
                             />
-                            <Calendar className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="expiryDate">Expiry Date</Label>
+                              <div className="relative">
+                                <Input
+                                  id="expiryDate"
+                                  name="expiryDate"
+                                  placeholder="MM/YY"
+                                  className="pl-10"
+                                  value={paymentDetails.expiryDate}
+                                  onChange={handleInputChange}
+                                />
+                                <Calendar className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="cvv">CVV</Label>
+                              <div className="relative">
+                                <Input
+                                  id="cvv"
+                                  name="cvv"
+                                  placeholder="123"
+                                  className="pl-10"
+                                  value={paymentDetails.cvv}
+                                  onChange={handleInputChange}
+                                />
+                                <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="cvv">CVV</Label>
-                          <div className="relative">
-                            <Input
-                              id="cvv"
-                              name="cvv"
-                              placeholder="123"
-                              className="pl-10"
-                              value={paymentDetails.cvv}
-                              onChange={handleInputChange}
-                            />
-                            <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </>
                   )}
                   
@@ -204,8 +399,9 @@ const Payment = () => {
                   <Button 
                     type="submit"
                     className="w-full bg-mindwell-500 hover:bg-mindwell-600 text-white mt-6"
+                    disabled={isProcessing}
                   >
-                    {selectedPlan.isFree 
+                    {isProcessing ? "Processing..." : selectedPlan.isFree 
                       ? "Start Free Trial" 
                       : `Pay ${selectedPlan.price}`}
                   </Button>

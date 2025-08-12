@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import AIAvatar from "@/components/ui-custom/AIAvatar";
 import AIVideoCall from "@/components/ui-custom/AIVideoCall";
 import AIChatCounselor from "@/components/ui-custom/AIChatCounselor";
+import AIVoiceChat from "@/components/ui-custom/AIVoiceChat";
 import EmergencyCounseling from "@/components/ui-custom/EmergencyCounseling";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import {
 import { toast } from "sonner";
 
 const AITherapist = () => {
-  const [currentSession, setCurrentSession] = useState<'none' | 'video' | 'chat' | 'emergency'>('none');
+  const [currentSession, setCurrentSession] = useState<'none' | 'video' | 'chat' | 'voice' | 'emergency'>('none');
   const [selectedCounselor, setSelectedCounselor] = useState<any>(null);
 
   const counselors = [
@@ -72,7 +73,7 @@ const AITherapist = () => {
     }
   ];
 
-  const handleStartSession = (type: 'video' | 'chat', counselor?: any) => {
+  const handleStartSession = (type: 'video' | 'chat' | 'voice', counselor?: any) => {
     if (counselor) {
       setSelectedCounselor(counselor);
     }
@@ -111,6 +112,31 @@ const AITherapist = () => {
             specialty={selectedCounselor?.specialty}
             onEndSession={handleEndSession}
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentSession === 'voice') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-mindwell-50">
+        <Header />
+        <div className="pt-20 pb-10 px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold mb-4">
+                Voice Session with {selectedCounselor?.name || 'AI Counselor'}
+              </h1>
+              <p className="text-slate-600 mb-4">{selectedCounselor?.specialty}</p>
+              <Button onClick={handleEndSession} variant="outline">
+                End Session
+              </Button>
+            </div>
+            <AIVoiceChat 
+              onCallEnd={handleEndSession}
+              className="max-w-3xl mx-auto"
+            />
+          </div>
         </div>
       </div>
     );
@@ -243,23 +269,29 @@ const AITherapist = () => {
                           </div>
                         </div>
                         
-                        <div className="flex gap-2 pt-2">
+                        <div className="grid grid-cols-3 gap-1 pt-2">
                           <Button
                             size="sm"
-                            className="flex-1 bg-mindwell-500 hover:bg-mindwell-600"
+                            className="bg-mindwell-500 hover:bg-mindwell-600 text-xs"
                             onClick={() => handleStartSession('video', counselor)}
                           >
-                            <Video className="w-4 h-4 mr-1" />
-                            Video
+                            <Video className="w-3 h-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1"
+                            className="text-xs"
                             onClick={() => handleStartSession('chat', counselor)}
                           >
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            Chat
+                            <MessageCircle className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="text-xs"
+                            onClick={() => handleStartSession('voice', counselor)}
+                          >
+                            <Phone className="w-3 h-3" />
                           </Button>
                         </div>
                       </CardContent>
