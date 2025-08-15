@@ -133,9 +133,11 @@ const EmergencyVideoCall = ({
       });
 
       // Log permission grant using consultations table
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase
         .from('consultations')
         .insert({
+          user_id: user?.id || '00000000-0000-0000-0000-000000000000', // Use system UUID for emergency sessions
           name: 'Emergency Video Session',
           email: 'emergency@system.local',
           scheduled_date: new Date().toISOString().split('T')[0],

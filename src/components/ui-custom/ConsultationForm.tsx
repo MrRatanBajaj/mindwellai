@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 const timeSlots = [
   "9:00 AM", "10:00 AM", "11:00 AM",
@@ -20,6 +21,8 @@ const ConsultationForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,6 +33,25 @@ const ConsultationForm = () => {
   // Simulating a user with a free trial remaining (in a real app this would come from user account)
   const [freeSessionsRemaining] = useState(3);
   const hasFreeTrialActive = freeSessionsRemaining > 0;
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -60,15 +82,22 @@ const ConsultationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user) {
+      toast.error("Please log in to schedule a consultation");
+      navigate("/auth");
+      return;
+    }
+    
     try {
       // Parse date and time for database
       const scheduledDate = new Date(selectedDate).toISOString().split('T')[0];
       const scheduledTime = convertTo24Hour(selectedTime);
       
-      // Save to Supabase
+      // Save to Supabase with proper user_id
       const { data, error } = await supabase
         .from('consultations')
         .insert({
+          user_id: user.id,
           name: formData.name,
           email: formData.email,
           phone: formData.phone || null,
@@ -332,6 +361,34 @@ const ConsultationForm = () => {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-3xl mx-auto flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mindwell-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="w-full max-w-3xl mx-auto text-center py-12">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
+          <Info className="w-8 h-8 text-amber-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-amber-800 mb-2">Authentication Required</h3>
+          <p className="text-amber-700 mb-4">
+            You need to be logged in to schedule a consultation. Please sign in to continue.
+          </p>
+          <Button 
+            onClick={() => navigate("/auth")}
+            className="bg-mindwell-500 hover:bg-mindwell-600 text-white"
+          >
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-3xl mx-auto">
