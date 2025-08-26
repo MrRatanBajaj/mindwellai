@@ -17,6 +17,7 @@ import PeerConnect from "./pages/PeerConnect";
 import MemorialChat from "./pages/MemorialChat";
 import AITherapist from "./pages/AITherapist";
 import Emergency from "./pages/Emergency";
+import Policy from "./pages/Policy";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/memorial-chat" element={<MemorialChat />} />
           <Route path="/ai-therapist" element={<AITherapist />} />
           <Route path="/emergency" element={<Emergency />} />
+          <Route path="/policy" element={<Policy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

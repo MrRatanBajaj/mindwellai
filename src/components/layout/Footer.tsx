@@ -48,19 +48,19 @@ const Footer = () => {
             <h3 className="font-medium text-sm text-slate-900 mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
+                <NavLink to="/policy" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
                   Privacy Policy
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a href="#" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
+                <NavLink to="/policy" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
                   Terms of Service
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a href="#" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
+                <NavLink to="/policy" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
                   Cookie Policy
-                </a>
+                </NavLink>
               </li>
             </ul>
           </div>
