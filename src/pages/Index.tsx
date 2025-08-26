@@ -290,6 +290,28 @@ const Index = () => {
 
             <div className="group">
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden hover:scale-105">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Phone className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-4">AI Audio Counseling</h3>
+                  <p className="text-slate-600 mb-6">
+                    Experience natural voice conversations with our empathetic AI counselor using advanced speech technology.
+                  </p>
+                  <NavLink 
+                    to="/ai-audio-call" 
+                    className="inline-flex items-center text-green-600 font-semibold hover:text-green-700 transition-colors group"
+                  >
+                    Start Voice Session 
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </NavLink>
+                </div>
+              </div>
+            </div>
+
+            <div className="group">
+              <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-500 h-full relative overflow-hidden hover:scale-105">
                 <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative">
                   <div className="w-16 h-16 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">

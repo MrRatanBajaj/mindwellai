@@ -16,6 +16,7 @@ import Journal from "./pages/Journal";
 import PeerConnect from "./pages/PeerConnect";
 import MemorialChat from "./pages/MemorialChat";
 import AITherapist from "./pages/AITherapist";
+import AIAudioCall from "./pages/AIAudioCall";
 import Emergency from "./pages/Emergency";
 import Policy from "./pages/Policy";
 
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/peer-connect" element={<PeerConnect />} />
           <Route path="/memorial-chat" element={<MemorialChat />} />
           <Route path="/ai-therapist" element={<AITherapist />} />
+          <Route path="/ai-audio-call" element={<AIAudioCall />} />
           <Route path="/emergency" element={<Emergency />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="*" element={<NotFound />} />
