@@ -1,11 +1,25 @@
 
 import { Button } from "@/components/ui/button";
-import { NavLink } from "react-router-dom";
-import { Brain, Menu, X, Heart } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Brain, Menu, X, Heart, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error) {
+      toast.error("Error signing out");
+    }
+  };
 
   return (
     <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/20">
@@ -55,16 +69,35 @@ const Header = () => {
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <NavLink to="/auth">
-              <Button variant="outline" className="border-mindwell-200 text-mindwell-700 hover:bg-mindwell-50">
-                Sign In
-              </Button>
-            </NavLink>
-            <NavLink to="/consultation">
-              <Button className="bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700">
-                Get Started
-              </Button>
-            </NavLink>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-slate-600">
+                  Welcome, {user.email}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="border-mindwell-200 text-mindwell-700 hover:bg-mindwell-50"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <NavLink to="/auth">
+                  <Button variant="outline" className="border-mindwell-200 text-mindwell-700 hover:bg-mindwell-50">
+                    Sign In
+                  </Button>
+                </NavLink>
+                <NavLink to="/consultation">
+                  <Button className="bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700">
+                    Get Started
+                  </Button>
+                </NavLink>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}

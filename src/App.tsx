@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Consultation from "./pages/Consultation";
@@ -27,25 +29,28 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/consultation" element={<Consultation />} />
-          <Route path="/plans" element={<Plans />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/self-help" element={<SelfHelp />} />
-          <Route path="/journal" element={<Journal />} />
-          <Route path="/peer-connect" element={<PeerConnect />} />
-          <Route path="/memorial-chat" element={<MemorialChat />} />
-          <Route path="/ai-therapist" element={<AITherapist />} />
-          <Route path="/ai-audio-call" element={<AIAudioCall />} />
-          <Route path="/emergency" element={<Emergency />} />
-          <Route path="/policy" element={<Policy />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/emergency" element={<Emergency />} />
+            <Route path="/policy" element={<Policy />} />
+            {/* Protected routes requiring authentication */}
+            <Route path="/consultation" element={<ProtectedRoute><Consultation /></ProtectedRoute>} />
+            <Route path="/plans" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
+            <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+            <Route path="/self-help" element={<ProtectedRoute><SelfHelp /></ProtectedRoute>} />
+            <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+            <Route path="/peer-connect" element={<ProtectedRoute><PeerConnect /></ProtectedRoute>} />
+            <Route path="/memorial-chat" element={<ProtectedRoute><MemorialChat /></ProtectedRoute>} />
+            <Route path="/ai-therapist" element={<ProtectedRoute><AITherapist /></ProtectedRoute>} />
+            <Route path="/ai-audio-call" element={<ProtectedRoute><AIAudioCall /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
