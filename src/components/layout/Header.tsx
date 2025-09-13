@@ -4,16 +4,22 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Brain, Menu, X, Heart, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
+import { useSessionManagement } from "@/hooks/useSessionManagement";
 import { toast } from "sonner";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { logLogout } = useSecurityMonitoring();
+  const { terminateSession } = useSessionManagement();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
+      await terminateSession();
       await signOut();
+      logLogout();
       toast.success("Signed out successfully");
       navigate("/");
     } catch (error) {

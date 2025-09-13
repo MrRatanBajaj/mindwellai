@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Lock, User, Mail, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { logLoginAttempt, logSignupAttempt } = useSecurityMonitoring();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [isLoading, setIsLoading] = useState(false);
@@ -49,13 +51,16 @@ const Auth = () => {
       });
 
       if (error) {
+        logLoginAttempt(false, loginData.email);
         toast.error(error.message);
         return;
       }
 
+      logLoginAttempt(true, loginData.email);
       toast.success("Login successful! Redirecting...");
       navigate("/");
     } catch (error) {
+      logLoginAttempt(false, loginData.email);
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -88,12 +93,15 @@ const Auth = () => {
       });
 
       if (error) {
+        logSignupAttempt(false, signupData.email);
         toast.error(error.message);
         return;
       }
 
+      logSignupAttempt(true, signupData.email);
       toast.success("Check your email to confirm your account!");
     } catch (error) {
+      logSignupAttempt(false, signupData.email);
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
