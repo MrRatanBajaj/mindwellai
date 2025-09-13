@@ -11,6 +11,7 @@ import { BookOpen, Video, FileText, Play, Clock, Award, CheckCircle, Heart, Shar
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ResourceModal from "@/components/ui-custom/ResourceModal";
+import MentalHealthMonitor from "@/components/ui-custom/MentalHealthMonitor";
 
 const SelfHelp = () => {
   const [savedResources, setSavedResources] = useState<string[]>([]);
@@ -241,6 +242,86 @@ const SelfHelp = () => {
       category: "addiction",
       difficulty: "Advanced",
       image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course11",
+      title: "Digital Wellness & Social Media Balance",
+      description: "Navigate the digital age mindfully with strategies for healthy social media use, screen time management, and maintaining real-world connections.",
+      progress: 0,
+      duration: "4 weeks",
+      lessons: 12,
+      creator: "Dr. Adam Gazzaley",
+      source: "Digital Wellness Institute",
+      videoId: "wf2VxeIm1no", // Digital wellness
+      rating: 4.7,
+      enrolled: 22340,
+      category: "digital-wellness",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course12",
+      title: "Grief & Loss Support",
+      description: "Compassionate guidance through the stages of grief, coping with loss, and finding meaning and hope during difficult times.",
+      progress: 0,
+      duration: "8 weeks",
+      lessons: 20,
+      creator: "Dr. Elisabeth Kübler-Ross",
+      source: "Grief Recovery Institute",
+      videoId: "gsYL4PC0hyk", // Grief support
+      rating: 4.9,
+      enrolled: 16780,
+      category: "grief",
+      difficulty: "Intermediate",
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course13",
+      title: "Body Image & Self-Acceptance",
+      description: "Develop a healthy relationship with your body, challenge negative self-talk, and build lasting self-confidence and acceptance.",
+      progress: 0,
+      duration: "6 weeks",
+      lessons: 15,
+      creator: "Dr. Kristin Neff",
+      source: "Body Positive Therapy Center",
+      videoId: "IvtZBUSplr4", // Self-acceptance
+      rating: 4.8,
+      enrolled: 19560,
+      category: "self-esteem",
+      difficulty: "Beginner",
+      image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course14",
+      title: "Workplace Mental Health & Burnout Prevention",
+      description: "Recognize signs of burnout, establish work-life boundaries, and create sustainable practices for professional and personal well-being.",
+      progress: 0,
+      duration: "5 weeks",
+      lessons: 18,
+      creator: "Dr. Christina Maslach",
+      source: "Workplace Wellness Foundation",
+      videoId: "jDQ6Cts_4aa", // Burnout prevention
+      rating: 4.7,
+      enrolled: 28940,
+      category: "burnout",
+      difficulty: "Intermediate",
+      image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "course15",
+      title: "Parenting with Mental Health Awareness",
+      description: "Support your child's emotional development while maintaining your own mental health as a parent dealing with stress and challenges.",
+      progress: 0,
+      duration: "7 weeks",
+      lessons: 21,
+      creator: "Dr. Diana Baumrind",
+      source: "Family Mental Health Institute",
+      videoId: "KlJ_Qp8DmGI", // Parenting mental health
+      rating: 4.8,
+      enrolled: 15670,
+      category: "parenting",
+      difficulty: "Intermediate",
+      image: "https://images.unsplash.com/photo-1476703993599-0035a21b17a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
     }
   ];
 
@@ -349,6 +430,58 @@ const SelfHelp = () => {
       difficulty: "Intermediate",
       views: 76000,
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise9",
+      title: "Digital Detox Mindfulness",
+      description: "Learn to disconnect from technology mindfully and reconnect with yourself through guided digital wellness practices.",
+      category: "Digital Wellness",
+      duration: "10 min",
+      instructor: "Dr. Adam Gazzaley",
+      source: "Digital Wellness Center",
+      videoId: "wf2VxeIm1no", // Digital detox
+      difficulty: "Beginner",
+      views: 143000,
+      image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise10",
+      title: "Workplace Stress Relief",
+      description: "Quick stress-relief techniques you can do at your desk to manage workplace pressure and maintain focus.",
+      category: "Work Stress",
+      duration: "7 min",
+      instructor: "Dr. Christina Maslach",
+      source: "Workplace Wellness Institute",
+      videoId: "jDQ6Cts_4aa", // Work stress
+      difficulty: "Beginner",
+      views: 201000,
+      image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise11",
+      title: "Grief Processing Meditation",
+      description: "Gentle guidance for processing grief and loss, allowing emotions to flow naturally while finding inner peace.",
+      category: "Grief Support",
+      duration: "18 min",
+      instructor: "Dr. Elisabeth Kübler-Ross",
+      source: "Grief Recovery Center",
+      videoId: "gsYL4PC0hyk", // Grief meditation
+      difficulty: "Intermediate",
+      views: 89000,
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "exercise12",
+      title: "Body Scan for Self-Acceptance",
+      description: "Practice self-compassion and body acceptance through a guided body scan meditation that promotes self-love.",
+      category: "Self-Acceptance",
+      duration: "15 min",
+      instructor: "Dr. Kristin Neff",
+      source: "Self-Compassion Institute",
+      videoId: "IvtZBUSplr4", // Body acceptance
+      difficulty: "Beginner",
+      views: 167000,
+      image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
     }
   ];
 
@@ -589,6 +722,38 @@ const SelfHelp = () => {
       latestEpisode: "Finding Humor in Dark Times",
       spotifyUrl: "https://open.spotify.com/show/1pI5gRLpqCJGxfMOl8j9Em",
       image: "https://images.unsplash.com/photo-1552508744-1696d4464960?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "podcast9",
+      title: "The Self-Compassion Podcast",
+      description: "Dr. Kristin Neff and guests explore self-compassion practices, research, and real-world applications for mental well-being.",
+      category: "Self-Compassion",
+      episodes: 124,
+      host: "Dr. Kristin Neff",
+      source: "Self-Compassion.org",
+      rating: 4.9,
+      subscribers: 380000,
+      duration: "25-45 min",
+      frequency: "Bi-weekly",
+      latestEpisode: "Self-Compassion in Difficult Times",
+      spotifyUrl: "https://open.spotify.com/show/3kI7j9xZwE4xB5N7pL8mQ1",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+    },
+    {
+      id: "podcast10",
+      title: "Burnout Prevention Podcast",
+      description: "Strategies for preventing and recovering from workplace burnout with experts in occupational psychology and wellness.",
+      category: "Burnout Prevention",
+      episodes: 89,
+      host: "Dr. Christina Maslach",
+      source: "Workplace Wellness Institute",
+      rating: 4.7,
+      subscribers: 290000,
+      duration: "30-50 min",
+      frequency: "Weekly",
+      latestEpisode: "Creating Sustainable Work Habits",
+      spotifyUrl: "https://open.spotify.com/show/5tY3kG7qA9rT6bS2nR8pL4",
+      image: "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
     }
   ];
 
@@ -1066,6 +1231,17 @@ const SelfHelp = () => {
                     </motion.div>
                   ))}
                 </div>
+              </motion.div>
+            </TabsContent>
+            
+            <TabsContent value="monitor">
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate={isLoading ? "hidden" : "visible"}
+                className="space-y-8"
+              >
+                <MentalHealthMonitor />
               </motion.div>
             </TabsContent>
             
