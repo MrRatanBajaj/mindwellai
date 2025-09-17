@@ -13,7 +13,7 @@ const Footer = () => {
               <div className="bg-white p-2 rounded-lg shadow-sm">
                 <img 
                   src="/lovable-uploads/b438a37f-b172-43e3-9eaf-bffee8ba79f5.png" 
-                  alt="MindwellAI Logo" 
+                  alt="MindWell AI Logo" 
                   className="h-12 w-auto"
                 />
               </div>
@@ -89,7 +89,7 @@ const Footer = () => {
         
         <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center">
           <p className="text-slate-500 text-sm">
-            © {currentYear} MindwellAI. All rights reserved.
+            © {currentYear} MindWell AI. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-slate-400 hover:text-mindwell-500 transition-colors">
