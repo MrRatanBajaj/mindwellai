@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AIAudioCounselor from "@/components/ui-custom/AIAudioCounselor";
+import PeerCommunication from "@/components/ui-custom/PeerCommunication";
+import { usePeerPresence } from "@/hooks/usePeerPresence";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Users, 
   MapPin, 
@@ -21,7 +24,9 @@ import {
   Volume2,
   Bot,
   Sparkles,
-  Headphones
+  Headphones,
+  Video,
+  Navigation
 } from "lucide-react";
 
 interface PeerUser {
@@ -84,12 +89,73 @@ const mockPeers: PeerUser[] = [
 ];
 
 const PeerConnect = () => {
+  const { user } = useAuth();
+  const { onlineUsers, updateStatus, updateLocation, isConnected } = usePeerPresence('peer_connect');
   const [peers, setPeers] = useState<PeerUser[]>(mockPeers);
   const [isMicOn, setIsMicOn] = useState(false);
   const [isInGroupCall, setIsInGroupCall] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [searchRadius, setSearchRadius] = useState(5);
   const [showAICounselor, setShowAICounselor] = useState(false);
+  const [selectedPeer, setSelectedPeer] = useState<PeerUser | null>(null);
+  const [showPeerCommunication, setShowPeerCommunication] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+
+  // Get user's location for distance calculations
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+          updateLocation(latitude, longitude);
+        },
+        (error) => {
+          console.log('Location access denied:', error);
+        }
+      );
+    }
+  }, [updateLocation]);
+
+  // Update peers with real online users
+  useEffect(() => {
+    if (onlineUsers.length > 0) {
+      // Merge real online users with mock data
+      const updatedPeers = mockPeers.map(mockPeer => {
+        const onlineUser = onlineUsers.find(u => u.user_id === mockPeer.id);
+        if (onlineUser) {
+          return {
+            ...mockPeer,
+            isActive: true,
+            isInCall: onlineUser.status === 'in_call'
+          };
+        }
+        return {
+          ...mockPeer,
+          isActive: false
+        };
+      });
+      
+      // Add real users not in mock data
+      onlineUsers.forEach(onlineUser => {
+        if (!mockPeers.find(p => p.id === onlineUser.user_id)) {
+          updatedPeers.push({
+            id: onlineUser.user_id,
+            name: onlineUser.name,
+            avatar: onlineUser.name.charAt(0).toUpperCase(),
+            distance: "Unknown",
+            issue: "General Support",
+            isActive: true,
+            isInCall: onlineUser.status === 'in_call',
+            supportGroup: "Community",
+            joinedDate: "Recently"
+          });
+        }
+      });
+      
+      setPeers(updatedPeers);
+    }
+  }, [onlineUsers]);
 
   // Simulate real-time updates
   useEffect(() => {
@@ -97,23 +163,37 @@ const PeerConnect = () => {
       setPeers(prevPeers => 
         prevPeers.map(peer => ({
           ...peer,
-          isActive: Math.random() > 0.3 // 70% chance to be active
+          isActive: onlineUsers.some(u => u.user_id === peer.id) || Math.random() > 0.7
         }))
       );
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [onlineUsers]);
 
-  const joinGroupCall = (groupName: string) => {
+  const joinGroupCall = async (groupName: string) => {
     setSelectedGroup(groupName);
     setIsInGroupCall(true);
+    await updateStatus('in_call');
   };
 
-  const leaveGroupCall = () => {
+  const leaveGroupCall = async () => {
     setIsInGroupCall(false);
     setSelectedGroup("");
     setIsMicOn(false);
+    await updateStatus('available');
+  };
+
+  const connectToPeer = (peer: PeerUser) => {
+    setSelectedPeer(peer);
+    setShowPeerCommunication(true);
+    updateStatus('busy');
+  };
+
+  const closePeerCommunication = () => {
+    setShowPeerCommunication(false);
+    setSelectedPeer(null);
+    updateStatus('available');
   };
 
   const toggleMic = () => {
@@ -172,6 +252,20 @@ const PeerConnect = () => {
                   <Circle className="w-3 h-3 mr-1 fill-green-500" />
                   {activePeers.length} Active Now
                 </Badge>
+                
+                {isConnected && (
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Navigation className="w-3 h-3 mr-1" />
+                    Real-time Connected
+                  </Badge>
+                )}
+                
+                {userLocation && (
+                  <Badge variant="outline" className="text-xs">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    Location Enabled
+                  </Badge>
+                )}
               </div>
             </motion.div>
           </div>
@@ -434,17 +528,19 @@ const PeerConnect = () => {
                             size="sm"
                             variant="outline"
                             className="flex-1 border-mindwell-300 text-mindwell-700 hover:bg-mindwell-50"
+                            onClick={() => connectToPeer(peer)}
                           >
                             <MessageCircle className="w-3 h-3 mr-1" />
                             Chat
                           </Button>
                           <Button
                             size="sm"
-                            className="flex-1 bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700"
+                            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                             disabled={!peer.isActive}
+                            onClick={() => connectToPeer(peer)}
                           >
-                            <UserCheck className="w-3 h-3 mr-1" />
-                            Connect
+                            <Video className="w-3 h-3 mr-1" />
+                            Call
                           </Button>
                         </div>
                       </div>
@@ -464,6 +560,15 @@ const PeerConnect = () => {
         isOpen={showAICounselor} 
         onClose={() => setShowAICounselor(false)} 
       />
+      
+      {/* Peer Communication Modal */}
+      {selectedPeer && (
+        <PeerCommunication
+          peer={selectedPeer}
+          isOpen={showPeerCommunication}
+          onClose={closePeerCommunication}
+        />
+      )}
     </div>
   );
 };
