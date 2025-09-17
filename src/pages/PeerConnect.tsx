@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AIAudioCounselor from "@/components/ui-custom/AIAudioCounselor";
 import { 
   Users, 
   MapPin, 
@@ -17,7 +18,10 @@ import {
   Heart,
   MessageCircle,
   UserCheck,
-  Volume2
+  Volume2,
+  Bot,
+  Sparkles,
+  Headphones
 } from "lucide-react";
 
 interface PeerUser {
@@ -85,6 +89,7 @@ const PeerConnect = () => {
   const [isInGroupCall, setIsInGroupCall] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [searchRadius, setSearchRadius] = useState(5);
+  const [showAICounselor, setShowAICounselor] = useState(false);
 
   // Simulate real-time updates
   useEffect(() => {
@@ -170,6 +175,71 @@ const PeerConnect = () => {
               </div>
             </motion.div>
           </div>
+
+          {/* AI Audio Counselor Feature */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-12"
+          >
+            <Card className="bg-gradient-to-r from-mindwell-500 via-blue-500 to-purple-600 text-white overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/90 via-blue-500/90 to-purple-600/90" />
+              <CardContent className="relative p-8">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                        <Bot className="w-8 h-8 text-white" />
+                      </div>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                        className="absolute -inset-2 border-2 border-white/30 rounded-2xl"
+                      />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                        AI Audio Counselor
+                        <Sparkles className="w-6 h-6 text-yellow-300" />
+                      </h2>
+                      <p className="text-white/90 text-lg mb-3">
+                        Talk with Dr. Alex - Your personal AI therapist available 24/7
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-white/80">
+                        <div className="flex items-center gap-1">
+                          <Headphones className="w-4 h-4" />
+                          <span>Voice Conversations</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Heart className="w-4 h-4" />
+                          <span>Mental Health Support</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Circle className="w-3 h-3 fill-green-400 text-green-400" />
+                          <span>Always Available</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      onClick={() => setShowAICounselor(true)}
+                      size="lg"
+                      className="bg-white text-mindwell-600 hover:bg-white/90 font-semibold"
+                    >
+                      <Mic className="w-5 h-5 mr-2" />
+                      Start Audio Session
+                    </Button>
+                    <Badge variant="secondary" className="bg-green-500 text-white self-center">
+                      FREE
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Current Group Call Status */}
           <AnimatePresence>
@@ -388,6 +458,12 @@ const PeerConnect = () => {
       </main>
       
       <Footer />
+      
+      {/* AI Audio Counselor Modal */}
+      <AIAudioCounselor 
+        isOpen={showAICounselor} 
+        onClose={() => setShowAICounselor(false)} 
+      />
     </div>
   );
 };
