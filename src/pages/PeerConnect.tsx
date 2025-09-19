@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AIAudioCounselor from "@/components/ui-custom/AIAudioCounselor";
 import PeerCommunication from "@/components/ui-custom/PeerCommunication";
+import TherapyModelMatcher from "@/components/ui-custom/TherapyModelMatcher";
+import ResourceSharing from "@/components/ui-custom/ResourceSharing";
 import { usePeerPresence } from "@/hooks/usePeerPresence";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -26,7 +29,10 @@ import {
   Sparkles,
   Headphones,
   Video,
-  Navigation
+  Navigation,
+  Brain,
+  BookOpen,
+  CheckCircle
 } from "lucide-react";
 
 interface PeerUser {
@@ -100,6 +106,8 @@ const PeerConnect = () => {
   const [selectedPeer, setSelectedPeer] = useState<PeerUser | null>(null);
   const [showPeerCommunication, setShowPeerCommunication] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [therapyMatches, setTherapyMatches] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("groups");
 
   // Get user's location for distance calculations
   useEffect(() => {
@@ -196,6 +204,11 @@ const PeerConnect = () => {
     updateStatus('available');
   };
 
+  const handleTherapyMatches = (matches: any[]) => {
+    setTherapyMatches(matches);
+    setActiveTab("therapy-matches");
+  };
+
   const toggleMic = () => {
     setIsMicOn(!isMicOn);
   };
@@ -223,12 +236,12 @@ const PeerConnect = () => {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4">
-                Connect with 
-                <span className="bg-gradient-to-r from-mindwell-600 to-blue-600 bg-clip-text text-transparent"> Peers</span>
+                Mental Health 
+                <span className="bg-gradient-to-r from-mindwell-600 to-blue-600 bg-clip-text text-transparent"> Therapy Connect</span>
               </h1>
               <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
-                Find and connect with others nearby who share similar mental health journeys. 
-                Join audio support groups for peer-to-peer healing.
+                Connect with peers based on therapy models, share resources, and engage with AI counseling.
+                Find your therapeutic community and access 24/7 mental health support.
               </p>
               
               {/* Search Controls */}
@@ -388,15 +401,36 @@ const PeerConnect = () => {
             )}
           </AnimatePresence>
 
-          {/* Support Groups */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Users className="w-6 h-6 text-mindwell-600" />
-              Active Support Groups
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(groupedPeers).map(([groupName, groupPeers]) => (
+          {/* Main Content Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsTrigger value="groups" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Support Groups
+              </TabsTrigger>
+              <TabsTrigger value="therapy-finder" className="flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                Therapy Finder
+              </TabsTrigger>
+              <TabsTrigger value="resources" className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                Resources
+              </TabsTrigger>
+              <TabsTrigger value="therapy-matches" className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Matches ({therapyMatches.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="groups" className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Users className="w-6 h-6 text-mindwell-600" />
+                  Active Support Groups
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Object.entries(groupedPeers).map(([groupName, groupPeers]) => (
                 <motion.div
                   key={groupName}
                   initial={{ opacity: 0, y: 20 }}
@@ -461,9 +495,115 @@ const PeerConnect = () => {
                     </CardContent>
                   </Card>
                 </motion.div>
-              ))}
-            </div>
-          </div>
+                    ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="therapy-finder" className="space-y-6">
+              <TherapyModelMatcher onMatch={handleTherapyMatches} />
+            </TabsContent>
+
+            <TabsContent value="resources" className="space-y-6">
+              <ResourceSharing />
+            </TabsContent>
+
+            <TabsContent value="therapy-matches" className="space-y-6">
+              {therapyMatches.length > 0 ? (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">Your Therapy Matches</h2>
+                    <p className="text-slate-600">Connect with peers who share your therapeutic interests</p>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {therapyMatches.map((match) => (
+                      <Card key={match.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center text-white font-bold text-lg">
+                                {match.avatar}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-lg font-semibold text-slate-800">{match.name}</h3>
+                                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                    {match.matchScore}% match
+                                  </Badge>
+                                  {match.isOnline && (
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                      <Circle className="w-2 h-2 mr-1 fill-blue-600" />
+                                      Online
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-600 mb-2">
+                                  <span>{match.distance}</span>
+                                  <span>•</span>
+                                  <span>{match.experience} level</span>
+                                  <span>•</span>
+                                  <span>{match.lastActive}</span>
+                                </div>
+                                <div className="flex gap-1 mb-2">
+                                  {match.models.map((model: string) => (
+                                    <Badge key={model} variant="outline" className="text-xs">
+                                      {model.toUpperCase()}
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <div className="flex gap-1">
+                                  {match.issues.map((issue: string) => (
+                                    <Badge key={issue} variant="secondary" className="text-xs bg-slate-100">
+                                      {issue}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => connectToPeer({
+                                  id: match.id,
+                                  name: match.name,
+                                  avatar: match.avatar,
+                                  distance: match.distance,
+                                  issue: match.issues.join(', '),
+                                  isActive: match.isOnline,
+                                  isInCall: false,
+                                  supportGroup: 'Therapy Connect',
+                                  joinedDate: 'Recently'
+                                })}
+                              >
+                                <MessageCircle className="w-4 h-4 mr-1" />
+                                Connect
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Video className="w-4 h-4 mr-1" />
+                                Video
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-slate-600 mb-2">No Matches Yet</h3>
+                  <p className="text-slate-500 mb-4">Use the Therapy Finder to discover compatible peers</p>
+                  <Button onClick={() => setActiveTab("therapy-finder")}>
+                    Find Therapy Matches
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
 
           {/* Nearby Peers */}
           <div>
