@@ -210,9 +210,9 @@ const About = () => {
             <div className="max-w-md animate-fade-in animate-float hover:scale-105 transition-transform duration-500">
               <div className="relative overflow-hidden rounded-2xl shadow-xl mb-6 border-4 border-mindwell-200 hover:border-mindwell-400 transition-colors duration-300">
                 <img 
-                  src="/lovable-uploads/b031e893-3424-4ef3-957f-289210685345.png" 
+                  src="/founder-image.jpg" 
                   alt="Mr. Ratan Bajaj, Founder and CEO" 
-                  className="w-full object-cover"
+                  className="w-full h-[400px] object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full p-6 text-white opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -226,16 +226,128 @@ const About = () => {
               <h3 className="text-2xl font-bold mb-2 text-mindwell-700">Mr. Ratan Bajaj</h3>
               <p className="text-mindwell-600 font-medium mb-6">Founder & Chief Executive Officer</p>
               <p className="text-slate-600 mb-4">
-                Mr. Ratan Bajaj founded MindwellAI with a vision to democratize access to mental health support. With an extensive background in both technology and psychology, he recognized the potential for AI to bridge the gap in mental healthcare accessibility.
+                Mr. Ratan Bajaj founded MindwellAI with a profound vision to democratize access to mental health support worldwide. With over a decade of experience in technology innovation and a deep understanding of psychological wellness, he recognized the transformative potential of AI in addressing the global mental health crisis.
               </p>
               <p className="text-slate-600 mb-4">
-                Under his leadership, MindwellAI has pioneered innovative approaches to AI-assisted therapy, combining cutting-edge technology with evidence-based psychological principles to create a platform that is both effective and accessible.
+                His journey began after witnessing firsthand the barriers that prevent millions from accessing quality mental health care - from geographical limitations and financial constraints to stigma and long waiting lists. This sparked his mission to create an accessible, compassionate, and scientifically-backed AI platform.
               </p>
-              <p className="text-slate-600">
-                "Mental health support should be available to everyone, regardless of location, financial means, or schedule. At MindwellAI, we're committed to making that vision a reality through compassionate technology."
+              <p className="text-slate-600 mb-6">
+                Under his visionary leadership, MindwellAI has revolutionized AI-assisted therapy by combining advanced machine learning with evidence-based therapeutic methodologies, creating personalized experiences that adapt to each individual's unique needs and circumstances.
               </p>
+              <blockquote className="border-l-4 border-mindwell-200 pl-4 italic text-slate-700 bg-mindwell-50/50 p-4 rounded-r-lg">
+                "Mental health support should be a fundamental right, not a privilege. Through compassionate AI technology, we're breaking down barriers and creating a world where everyone has access to the support they need, when they need it most."
+              </blockquote>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Founder Vision & Mission Section */}
+      <section className="py-20 px-6 bg-gradient-to-br from-mindwell-50/30 to-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16">
+            {/* Vision */}
+            <motion.div 
+              className="animate-fade-in"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="glass-panel rounded-2xl p-8 h-full border border-mindwell-100">
+                <div className="w-16 h-16 bg-gradient-to-br from-mindwell-400 to-mindwell-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Globe className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-mindwell-700">Our Vision</h3>
+                <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                  To create a world where mental health support is universally accessible, breaking down traditional barriers through innovative AI technology that understands, empathizes, and responds to human emotional needs with genuine care and scientific precision.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-mindwell-500 rounded-full"></div>
+                    <span className="text-slate-600">Global accessibility for all individuals</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-mindwell-500 rounded-full"></div>
+                    <span className="text-slate-600">Elimination of mental health stigma</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-mindwell-500 rounded-full"></div>
+                    <span className="text-slate-600">Personalized therapeutic experiences</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Mission */}
+            <motion.div 
+              className="animate-fade-in"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="glass-panel rounded-2xl p-8 h-full border border-mindwell-100">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Heart className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-mindwell-700">Our Mission</h3>
+                <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                  To provide immediate, compassionate, and effective mental health support through cutting-edge AI technology, while maintaining the highest standards of privacy, security, and therapeutic excellence that empowers individuals on their wellness journey.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-slate-600">24/7 immediate support availability</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-slate-600">Evidence-based therapeutic methodologies</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-slate-600">Complete privacy and data protection</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Founder's Background */}
+          <motion.div 
+            className="mt-16 animate-fade-in"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <div className="glass-panel rounded-2xl p-8 border border-mindwell-100">
+              <h3 className="text-2xl font-bold mb-6 text-center text-mindwell-700">Leadership Excellence & Expertise</h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Brain className="w-6 h-6 text-white" />
+                  </div>
+                  <h4 className="font-semibold mb-2 text-mindwell-700">Technology Innovation</h4>
+                  <p className="text-slate-600 text-sm">Over 10+ years in AI development, machine learning, and healthcare technology solutions</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Award className="w-6 h-6 text-white" />
+                  </div>
+                  <h4 className="font-semibold mb-2 text-mindwell-700">Mental Health Advocacy</h4>
+                  <p className="text-slate-600 text-sm">Certified in psychological wellness principles and mental health first aid practices</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <h4 className="font-semibold mb-2 text-mindwell-700">Global Impact</h4>
+                  <p className="text-slate-600 text-sm">Leading initiatives to democratize mental health access across underserved communities worldwide</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
       
