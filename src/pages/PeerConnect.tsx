@@ -347,36 +347,57 @@ const PeerConnect = () => {
                         </Badge>
                       </div>
                       
-                      {/* Feature Highlights */}
-                      <div className="space-y-2 text-sm text-white/90">
-                        <div className="flex items-center gap-2">
+                    <div className="space-y-4 text-sm text-white/90">
+                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 bg-green-400/20 rounded-full flex items-center justify-center">
                           <Check className="w-4 h-4 text-green-300" />
-                          <span>Real-time voice conversation with empathetic AI</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-300" />
-                          <span>Trained on evidence-based therapy techniques</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-300" />
-                          <span>30-minute free session for new users</span>
-                        </div>
+                        <span>Real-time voice conversation with empathetic AI</span>
                       </div>
+                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 bg-blue-400/20 rounded-full flex items-center justify-center">
+                          <Brain className="w-4 h-4 text-blue-300" />
+                        </div>
+                        <span>Advanced GPT-5 model trained in CBT/DBT techniques</span>
+                      </div>
+                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 bg-purple-400/20 rounded-full flex items-center justify-center">
+                          <Clock className="w-4 h-4 text-purple-300" />
+                        </div>
+                        <span>30-minute free session for new users</span>
+                      </div>
+                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
+                        <div className="w-8 h-8 bg-yellow-400/20 rounded-full flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-yellow-300" />
+                        </div>
+                        <span>Crisis intervention and trauma-informed care</span>
+                      </div>
+                    </div>
                     </div>
                   </div>
                   
                   <div className="flex flex-col gap-3">
-                    <Button
-                      onClick={() => setShowAICounselor(true)}
-                      size="lg"
-                      className="bg-white text-mindwell-600 hover:bg-white/90 font-bold px-8 py-4 text-lg shadow-lg"
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <Mic className="w-5 h-5 mr-2" />
-                      Start Free Session
-                    </Button>
-                    <p className="text-xs text-white/80 text-center max-w-xs">
+                      <Button
+                        onClick={() => setShowAICounselor(true)}
+                        size="lg"
+                        className="bg-white text-mindwell-600 hover:bg-white/90 font-bold px-8 py-4 text-lg shadow-lg relative overflow-hidden group"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <Mic className="w-5 h-5 mr-2 relative z-10" />
+                        <span className="relative z-10">Start Free Session</span>
+                      </Button>
+                    </motion.div>
+                    <motion.p 
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                      className="text-xs text-white/80 text-center max-w-xs"
+                    >
                       No signup required • Completely confidential
-                    </p>
+                    </motion.p>
                   </div>
                 </div>
               </CardContent>

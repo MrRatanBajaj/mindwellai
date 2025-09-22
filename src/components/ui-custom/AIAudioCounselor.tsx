@@ -280,12 +280,40 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
     try {
       setIsSpeaking(true);
       
-      const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
-        body: { text, voice: 'sarah' }
+      // Try OpenAI TTS as primary option (more reliable)
+      const { data, error } = await supabase.functions.invoke('openai-tts', {
+        body: { 
+          text, 
+          voice: 'nova', // Professional, warm female voice
+          model: 'tts-1-hd' // High quality model
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.warn('OpenAI TTS failed, trying ElevenLabs fallback:', error);
+        // Fallback to ElevenLabs if OpenAI fails
+        const fallbackResult = await supabase.functions.invoke('elevenlabs-tts', {
+          body: { text, voice: 'sarah' }
+        });
+        if (fallbackResult.error) throw fallbackResult.error;
+        return await processTTSResponse(fallbackResult.data);
+      }
 
+      return await processTTSResponse(data);
+
+    } catch (error) {
+      console.error('Error speaking text:', error);
+      setIsSpeaking(false);
+      toast({
+        title: "Speech Error",
+        description: "Could not generate speech - continuing with text only",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const processTTSResponse = async (data: any) => {
+    try {
       const audioContent = data.audioContent;
       const audioBlob = new Blob([
         Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))
@@ -295,15 +323,15 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
       
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
-        audioRef.current.play();
+        await audioRef.current.play();
         setIsPlaying(true);
       }
-    } catch (error) {
-      console.error('Error speaking text:', error);
+    } catch (playError) {
+      console.error('Audio playback error:', playError);
       setIsSpeaking(false);
       toast({
-        title: "Speech Error",
-        description: "Could not generate speech",
+        title: "Playback Error",
+        description: "Audio generated but couldn't play - check your speakers",
         variant: "destructive"
       });
     }
@@ -458,66 +486,125 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
                     ))}
                   </div>
 
-                  {/* Controls */}
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-center gap-4">
-                      {/* Recording Button */}
-                      <Button
-                        onMouseDown={startRecording}
-                        onMouseUp={stopRecording}
-                        onTouchStart={startRecording}
-                        onTouchEnd={stopRecording}
-                        disabled={isProcessing || isPlaying}
-                        size="lg"
-                        className={`relative ${
-                          isRecording 
-                            ? 'bg-red-500 hover:bg-red-600' 
-                            : 'bg-mindwell-500 hover:bg-mindwell-600'
-                        }`}
-                      >
-                        {isRecording ? (
-                          <>
-                            <MicOff className="w-5 h-5 mr-2" />
-                            Release to Send
-                          </>
-                        ) : (
-                          <>
-                            <Mic className="w-5 h-5 mr-2" />
-                            Hold to Speak
-                          </>
-                        )}
-                        
-                        {isRecording && (
-                          <motion.div
-                            animate={{ scale: [1, 1.1, 1] }}
-                            transition={{ repeat: Infinity, duration: 1 }}
-                            className="absolute -inset-1 bg-red-400/30 rounded-lg"
-                          />
-                        )}
-                      </Button>
+                      {/* Controls */}
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-center gap-6">
+                          {/* Enhanced Recording Button with Visual Feedback */}
+                          <div className="relative">
+                            <motion.div
+                              animate={isRecording ? { 
+                                scale: [1, 1.1, 1],
+                                boxShadow: [
+                                  "0 0 0 0 rgba(239, 68, 68, 0.4)",
+                                  "0 0 0 20px rgba(239, 68, 68, 0)",
+                                  "0 0 0 0 rgba(239, 68, 68, 0)"
+                                ]
+                              } : {}}
+                              transition={isRecording ? { 
+                                duration: 1.5, 
+                                repeat: Infinity 
+                              } : {}}
+                              className="relative"
+                            >
+                              <Button
+                                onMouseDown={startRecording}
+                                onMouseUp={stopRecording}
+                                onTouchStart={startRecording}
+                                onTouchEnd={stopRecording}
+                                disabled={isProcessing || isPlaying}
+                                size="lg"
+                                className={`relative px-8 py-4 text-lg font-semibold transition-all duration-300 ${
+                                  isRecording 
+                                    ? 'bg-red-500 hover:bg-red-600 shadow-2xl scale-110' 
+                                    : 'bg-mindwell-500 hover:bg-mindwell-600'
+                                }`}
+                              >
+                                <motion.div
+                                  animate={isRecording ? { rotate: 360 } : {}}
+                                  transition={isRecording ? { duration: 2, repeat: Infinity, ease: "linear" } : {}}
+                                  className="mr-3"
+                                >
+                                  {isRecording ? (
+                                    <MicOff className="w-6 h-6" />
+                                  ) : (
+                                    <Mic className="w-6 h-6" />
+                                  )}
+                                </motion.div>
+                                {isRecording ? 'Release to Send' : 'Hold to Speak'}
+                              </Button>
+                            </motion.div>
+                            
+                            {/* Audio Visualizer */}
+                            {isRecording && (
+                              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 flex gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <motion.div
+                                    key={i}
+                                    animate={{ 
+                                      height: [4, 16, 4],
+                                      opacity: [0.5, 1, 0.5]
+                                    }}
+                                    transition={{ 
+                                      duration: 0.8, 
+                                      repeat: Infinity,
+                                      delay: i * 0.1
+                                    }}
+                                    className="w-1 bg-red-400 rounded-full"
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
 
-                      {/* Status Indicators */}
-                      <div className="flex items-center gap-2">
-                        {isProcessing && (
-                          <div className="flex items-center gap-2 text-slate-600">
-                            <div className="w-4 h-4 border-2 border-mindwell-500 border-t-transparent rounded-full animate-spin" />
-                            <span className="text-sm">Processing...</span>
+                          {/* Enhanced Status Indicators */}
+                          <div className="flex flex-col items-center gap-2">
+                            <AnimatePresence>
+                              {isProcessing && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.8 }}
+                                  className="flex items-center gap-2 text-mindwell-600"
+                                >
+                                  <motion.div 
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    className="w-5 h-5 border-2 border-mindwell-500 border-t-transparent rounded-full"
+                                  />
+                                  <span className="text-sm font-medium">Processing...</span>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                            
+                            <AnimatePresence>
+                              {isSpeaking && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                  className="flex items-center gap-2 text-green-600"
+                                >
+                                  <motion.div
+                                    animate={{ scale: [1, 1.2, 1] }}
+                                    transition={{ duration: 0.8, repeat: Infinity }}
+                                  >
+                                    <Volume2 className="w-5 h-5" />
+                                  </motion.div>
+                                  <span className="text-sm font-medium">Dr. Alex is speaking...</span>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
-                        )}
+                        </div>
                         
-                        {isSpeaking && (
-                          <div className="flex items-center gap-2 text-green-600">
-                            <Volume2 className="w-4 h-4" />
-                            <span className="text-sm">Dr. Alex is speaking...</span>
-                          </div>
-                        )}
+                        <motion.p 
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="text-center text-xs text-slate-500 mt-4"
+                        >
+                          Hold the microphone button and speak your thoughts
+                        </motion.p>
                       </div>
-                    </div>
-                    
-                    <p className="text-center text-xs text-slate-500 mt-3">
-                      Hold the microphone button and speak your thoughts
-                    </p>
-                  </div>
                 </>
               )}
             </CardContent>

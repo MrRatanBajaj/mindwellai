@@ -6,6 +6,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Process base64 in chunks to prevent memory issues
+function processBase64Chunks(base64String: string, chunkSize = 32768) {
+  const chunks: Uint8Array[] = [];
+  let position = 0;
+  
+  while (position < base64String.length) {
+    const chunk = base64String.slice(position, position + chunkSize);
+    const binaryChunk = atob(chunk);
+    const bytes = new Uint8Array(binaryChunk.length);
+    
+    for (let i = 0; i < binaryChunk.length; i++) {
+      bytes[i] = binaryChunk.charCodeAt(i);
+    }
+    
+    chunks.push(bytes);
+    position += chunkSize;
+  }
+
+  const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return result;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -18,23 +48,41 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    // Get the audio data from the request
-    const formData = await req.formData();
-    const audioFile = formData.get('audio') as File;
-    
-    if (!audioFile) {
-      throw new Error('No audio file provided');
-    }
+    // Handle both JSON and FormData inputs
+    let audioData: Uint8Array;
+    const contentType = req.headers.get('content-type') || '';
 
-    // Convert audio to base64 for processing
-    const audioBuffer = await audioFile.arrayBuffer();
-    const audioBlob = new Blob([audioBuffer], { type: audioFile.type });
+    if (contentType.includes('application/json')) {
+      // Handle JSON input with base64 audio
+      const { audio } = await req.json();
+      
+      if (!audio) {
+        throw new Error('No audio data provided');
+      }
+
+      console.log('Processing base64 audio data, length:', audio.length);
+      audioData = processBase64Chunks(audio);
+    } else {
+      // Handle FormData input
+      const formData = await req.formData();
+      const audioFile = formData.get('audio') as File;
+      
+      if (!audioFile) {
+        throw new Error('No audio file provided');
+      }
+
+      const audioBuffer = await audioFile.arrayBuffer();
+      audioData = new Uint8Array(audioBuffer);
+    }
     
     // Prepare form data for OpenAI Whisper API
-    const whisperFormData = new FormData();
-    whisperFormData.append('file', audioBlob, 'audio.wav');
-    whisperFormData.append('model', 'whisper-1');
-    whisperFormData.append('language', 'en');
+    const formData = new FormData();
+    const audioBlob = new Blob([audioData], { type: 'audio/webm' });
+    formData.append('file', audioBlob, 'audio.webm');
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'en');
+
+    console.log('Sending to OpenAI Whisper API, blob size:', audioBlob.size);
 
     // Send to OpenAI Whisper API
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -42,7 +90,7 @@ serve(async (req) => {
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
       },
-      body: whisperFormData,
+      body: formData,
     });
 
     if (!response.ok) {
@@ -52,6 +100,7 @@ serve(async (req) => {
     }
 
     const result = await response.json();
+    console.log('Transcription result:', result.text);
     
     return new Response(
       JSON.stringify({ 
