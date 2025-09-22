@@ -32,7 +32,10 @@ import {
   Navigation,
   Brain,
   BookOpen,
-  CheckCircle
+  CheckCircle,
+  Check,
+  Clock,
+  Shield
 } from "lucide-react";
 
 interface PeerUser {
@@ -283,7 +286,7 @@ const PeerConnect = () => {
             </motion.div>
           </div>
 
-          {/* AI Audio Counselor Feature */}
+          {/* AI Audio Counselor Feature - Enhanced */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -292,56 +295,88 @@ const PeerConnect = () => {
           >
             <Card className="bg-gradient-to-r from-mindwell-500 via-blue-500 to-purple-600 text-white overflow-hidden relative">
               <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/90 via-blue-500/90 to-purple-600/90" />
+              
+              {/* Free Session Badge */}
+              <div className="absolute top-4 right-4 z-10">
+                <Badge className="bg-green-500 text-white font-bold px-3 py-1 text-sm animate-pulse">
+                  🆓 30 MIN FREE
+                </Badge>
+              </div>
+
               <CardContent className="relative p-8">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-6">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+                  <div className="flex items-center gap-6 flex-1">
                     <div className="relative">
-                      <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                        <Bot className="w-8 h-8 text-white" />
+                      <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                        <Bot className="w-10 h-10 text-white" />
                       </div>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                        className="absolute -inset-2 border-2 border-white/30 rounded-2xl"
-                      />
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full flex items-center justify-center animate-pulse">
+                        <Heart className="w-4 h-4 text-white" />
+                      </div>
+                      {/* AI Activity Indicator */}
+                      <div className="absolute -bottom-1 -left-1 flex gap-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-                        AI Audio Counselor
+                    <div className="flex-1">
+                      <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
+                        AI Mental Health Counselor
                         <Sparkles className="w-6 h-6 text-yellow-300" />
                       </h2>
-                      <p className="text-white/90 text-lg mb-3">
-                        Talk with Dr. Alex - Your personal AI therapist available 24/7
+                      <p className="text-white/95 mb-3 text-lg">
+                        Talk with Dr. Alex - Pre-trained AI therapist with advanced mental health expertise
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-white/80">
-                        <div className="flex items-center gap-1">
-                          <Headphones className="w-4 h-4" />
-                          <span>Voice Conversations</span>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                          <MessageCircle className="w-3 h-3 mr-1" />
+                          Two-Way Voice
+                        </Badge>
+                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                          <Brain className="w-3 h-3 mr-1" />
+                          CBT/DBT Trained
+                        </Badge>
+                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                          <Shield className="w-3 h-3 mr-1" />
+                          HIPAA Compliant
+                        </Badge>
+                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                          <Clock className="w-3 h-3 mr-1" />
+                          24/7 Available
+                        </Badge>
+                      </div>
+                      
+                      {/* Feature Highlights */}
+                      <div className="space-y-2 text-sm text-white/90">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-300" />
+                          <span>Real-time voice conversation with empathetic AI</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Heart className="w-4 h-4" />
-                          <span>Mental Health Support</span>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-300" />
+                          <span>Trained on evidence-based therapy techniques</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Circle className="w-3 h-3 fill-green-400 text-green-400" />
-                          <span>Always Available</span>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-300" />
+                          <span>30-minute free session for new users</span>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col gap-3">
                     <Button
                       onClick={() => setShowAICounselor(true)}
                       size="lg"
-                      className="bg-white text-mindwell-600 hover:bg-white/90 font-semibold"
+                      className="bg-white text-mindwell-600 hover:bg-white/90 font-bold px-8 py-4 text-lg shadow-lg"
                     >
                       <Mic className="w-5 h-5 mr-2" />
-                      Start Audio Session
+                      Start Free Session
                     </Button>
-                    <Badge variant="secondary" className="bg-green-500 text-white self-center">
-                      FREE
-                    </Badge>
+                    <p className="text-xs text-white/80 text-center max-w-xs">
+                      No signup required • Completely confidential
+                    </p>
                   </div>
                 </div>
               </CardContent>

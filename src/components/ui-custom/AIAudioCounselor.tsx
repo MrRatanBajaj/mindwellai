@@ -14,7 +14,11 @@ import {
   Heart,
   Sparkles,
   Phone,
-  PhoneOff
+  PhoneOff,
+  Clock,
+  Users,
+  Brain,
+  Check
 } from 'lucide-react';
 
 interface Message {
@@ -37,11 +41,14 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationHistory, setConversationHistory] = useState<any[]>([]);
   const [sessionActive, setSessionActive] = useState(false);
+  const [sessionTime, setSessionTime] = useState(0);
+  const [isFreeTrial, setIsFreeTrial] = useState(true);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Initialize audio element
@@ -56,6 +63,43 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
     };
   }, []);
 
+  // Session timer effect
+  useEffect(() => {
+    if (sessionActive && isFreeTrial) {
+      sessionTimerRef.current = setInterval(() => {
+        setSessionTime(prev => {
+          const newTime = prev + 1;
+          // 30 minutes = 1800 seconds
+          if (newTime >= 1800) {
+            endSession();
+            toast({
+              title: "Free Session Ended",
+              description: "Your 30-minute free session has ended. Thank you for using our service!",
+            });
+            return 1800;
+          }
+          return newTime;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
+      }
+    };
+  }, [sessionActive, isFreeTrial]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getRemainingTime = () => {
+    return 1800 - sessionTime; // 30 minutes - elapsed time
+  };
+
   const cleanup = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -65,6 +109,9 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
     }
     if (audioRef.current) {
       audioRef.current.pause();
+    }
+    if (sessionTimerRef.current) {
+      clearInterval(sessionTimerRef.current);
     }
   };
 
@@ -79,9 +126,10 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
       });
       streamRef.current = stream;
       setSessionActive(true);
+      setSessionTime(0);
       
       // Welcome message
-      const welcomeMessage = "Hello! I'm Dr. Alex, your AI counselor. I'm here to listen and support you. How are you feeling today?";
+      const welcomeMessage = "Hello! I'm Dr. Alex, your AI mental health counselor. I'm trained in evidence-based therapy techniques including CBT and DBT. This is your free 30-minute session. How are you feeling today, and what would you like to talk about?";
       await speakText(welcomeMessage);
       
       setMessages([{
@@ -91,8 +139,8 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
       }]);
 
       toast({
-        title: "Session Started",
-        description: "AI counselor is ready to help",
+        title: "Free Session Started",
+        description: "AI counselor is ready - 30 minutes available",
       });
     } catch (error) {
       console.error('Error starting session:', error);
@@ -294,16 +342,30 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
                     )}
                   </div>
                   <div>
-                    <CardTitle className="text-xl">AI Audio Counselor</CardTitle>
-                    <p className="text-white/80 text-sm">Dr. Alex - Mental Health Support</p>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      AI Mental Health Counselor
+                      <Brain className="w-5 h-5" />
+                    </CardTitle>
+                    <p className="text-white/80 text-sm">Dr. Alex - CBT/DBT Trained • Two-Way Communication</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  {sessionActive && isFreeTrial && (
+                    <div className="text-center">
+                      <Badge variant="secondary" className="bg-green-500 text-white mb-1">
+                        <Clock className="w-3 h-3 mr-1" />
+                        FREE SESSION
+                      </Badge>
+                      <div className="text-sm font-mono">
+                        {formatTime(getRemainingTime())} left
+                      </div>
+                    </div>
+                  )}
                   {sessionActive && (
                     <Badge variant="secondary" className="bg-green-500 text-white">
                       <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse" />
-                      Live Session
+                      Live
                     </Badge>
                   )}
                   <Button
@@ -322,24 +384,52 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
               {!sessionActive ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center space-y-6">
-                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-mindwell-100 to-blue-100 rounded-full flex items-center justify-center">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-mindwell-100 to-blue-100 rounded-full flex items-center justify-center relative">
                       <Sparkles className="w-12 h-12 text-mindwell-600" />
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" />
+                      </div>
                     </div>
                     <div>
                       <h3 className="text-2xl font-semibold text-slate-800 mb-2">
-                        Start Your Audio Session
+                        Start Your Free 30-Minute Session
                       </h3>
-                      <p className="text-slate-600 mb-6 max-w-md mx-auto">
-                        Connect with Dr. Alex, your AI counselor, for supportive conversation and mental health guidance.
+                      <p className="text-slate-600 mb-4 max-w-md mx-auto">
+                        Connect with Dr. Alex, your AI mental health counselor trained in CBT and DBT techniques.
+                        Experience real-time two-way voice conversation.
                       </p>
+                      
+                      {/* Features */}
+                      <div className="grid grid-cols-2 gap-3 mb-6 max-w-sm mx-auto">
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <MessageCircle className="w-4 h-4 text-mindwell-600" />
+                          <span>Voice Chat</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <Brain className="w-4 h-4 text-mindwell-600" />
+                          <span>AI Therapist</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <Clock className="w-4 h-4 text-mindwell-600" />
+                          <span>30 Min Free</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                          <Users className="w-4 h-4 text-mindwell-600" />
+                          <span>Confidential</span>
+                        </div>
+                      </div>
+                      
                       <Button
                         onClick={startSession}
                         size="lg"
                         className="bg-gradient-to-r from-mindwell-500 to-blue-600 hover:from-mindwell-600 hover:to-blue-700"
                       >
                         <Phone className="w-5 h-5 mr-2" />
-                        Start Session
+                        Start Free Session
                       </Button>
+                      <p className="text-xs text-slate-500 mt-2">
+                        No registration required • Completely private
+                      </p>
                     </div>
                   </div>
                 </div>
