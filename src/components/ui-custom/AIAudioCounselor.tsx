@@ -280,7 +280,8 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
     try {
       setIsSpeaking(true);
       
-      // Try OpenAI TTS as primary option (more reliable)
+      // Primary: Try OpenAI TTS (more reliable)
+      console.log('Attempting OpenAI TTS for text:', text.substring(0, 50) + '...');
       const { data, error } = await supabase.functions.invoke('openai-tts', {
         body: { 
           text, 
@@ -289,25 +290,41 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
         }
       });
 
-      if (error) {
-        console.warn('OpenAI TTS failed, trying ElevenLabs fallback:', error);
-        // Fallback to ElevenLabs if OpenAI fails
+      if (!error && data) {
+        console.log('OpenAI TTS successful');
+        return await processTTSResponse(data);
+      }
+
+      console.warn('OpenAI TTS failed, trying ElevenLabs fallback:', error);
+      
+      // Fallback: Try ElevenLabs (may fail due to API limits)
+      try {
         const fallbackResult = await supabase.functions.invoke('elevenlabs-tts', {
           body: { text, voice: 'sarah' }
         });
-        if (fallbackResult.error) throw fallbackResult.error;
-        return await processTTSResponse(fallbackResult.data);
+        
+        if (!fallbackResult.error && fallbackResult.data) {
+          console.log('ElevenLabs TTS successful');
+          return await processTTSResponse(fallbackResult.data);
+        }
+        
+        console.warn('ElevenLabs TTS also failed:', fallbackResult.error);
+        throw new Error('Both TTS services failed');
+        
+      } catch (fallbackError) {
+        console.error('ElevenLabs fallback failed:', fallbackError);
+        throw fallbackError;
       }
 
-      return await processTTSResponse(data);
-
     } catch (error) {
-      console.error('Error speaking text:', error);
+      console.error('All TTS attempts failed:', error);
       setIsSpeaking(false);
+      
+      // Show user-friendly error and continue with text-only
       toast({
-        title: "Speech Error",
-        description: "Could not generate speech - continuing with text only",
-        variant: "destructive"
+        title: "Voice Synthesis Unavailable",
+        description: "Continuing with text-only conversation. Your messages are still being processed!",
+        variant: "default"
       });
     }
   };
