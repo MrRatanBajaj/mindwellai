@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useSessionRecording } from "@/hooks/useSessionRecording";
 
 interface AIVideoConsultationProps {
   counselorName?: string;
@@ -37,6 +38,12 @@ const AIVideoConsultation = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   
+  const { startSession, endSession, addMessage } = useSessionRecording(
+    'video',
+    counselorName,
+    specialty
+  );
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -44,13 +51,19 @@ const AIVideoConsultation = ({
   const animationFrameRef = useRef<number>();
 
   useEffect(() => {
+    // Start recording session
+    startSession();
+    
     // Call duration timer
     const timer = setInterval(() => {
       setCallDuration(prev => prev + 1);
       setSessionTimeRemaining(prev => Math.max(0, prev - 1));
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      endSession();
+    };
   }, []);
 
   useEffect(() => {
@@ -157,6 +170,9 @@ const AIVideoConsultation = ({
       
       setCurrentTranscript(userText);
       
+      // Save user message to database
+      await addMessage('user', userText);
+      
       // Add to conversation history
       const newHistory = [...conversationHistory, { role: 'user', content: userText }];
       setConversationHistory(newHistory);
@@ -174,6 +190,9 @@ const AIVideoConsultation = ({
 
       const aiResponse = aiData.response;
       console.log('AI responded:', aiResponse);
+
+      // Save AI response to database
+      await addMessage('assistant', aiResponse);
 
       // Update conversation history with AI response
       setConversationHistory([...newHistory, { role: 'assistant', content: aiResponse }]);
@@ -294,8 +313,9 @@ const AIVideoConsultation = ({
     }
   };
 
-  const handleEndCall = () => {
+  const handleEndCall = async () => {
     stopRecording();
+    await endSession();
     toast.success("Session ended. Your progress has been saved.");
     onEndCall();
   };

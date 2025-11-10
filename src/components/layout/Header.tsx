@@ -71,6 +71,9 @@ const Header = () => {
             <NavLink to="/journal" className="text-slate-700 hover:text-mindwell-600 transition-colors">
               Journal
             </NavLink>
+            <NavLink to="/sessions" className="text-slate-700 hover:text-mindwell-600 transition-colors">
+              My Sessions
+            </NavLink>
           </nav>
 
           {/* Action Buttons */}
@@ -140,6 +143,9 @@ const Header = () => {
               </NavLink>
               <NavLink to="/journal" className="text-slate-700 hover:text-mindwell-600 transition-colors">
                 Journal
+              </NavLink>
+              <NavLink to="/sessions" className="text-slate-700 hover:text-mindwell-600 transition-colors">
+                My Sessions
               </NavLink>
               <div className="flex flex-col space-y-2 pt-4">
                 <NavLink to="/auth">

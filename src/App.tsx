@@ -21,6 +21,7 @@ import AITherapist from "./pages/AITherapist";
 import AIAudioCall from "./pages/AIAudioCall";
 import Emergency from "./pages/Emergency";
 import Policy from "./pages/Policy";
+import Sessions from "./pages/Sessions";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/memorial-chat" element={<ProtectedRoute><MemorialChat /></ProtectedRoute>} />
             <Route path="/ai-therapist" element={<ProtectedRoute><AITherapist /></ProtectedRoute>} />
             <Route path="/ai-audio-call" element={<ProtectedRoute><AIAudioCall /></ProtectedRoute>} />
+            <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

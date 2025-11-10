@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSessionRecording } from '@/hooks/useSessionRecording';
 import { 
   Mic, 
   MicOff, 
@@ -43,6 +44,12 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
   const [sessionActive, setSessionActive] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [isFreeTrial, setIsFreeTrial] = useState(true);
+  
+  const { startSession: startSessionRecording, endSession: endSessionRecording, addMessage } = useSessionRecording(
+    'audio',
+    'Dr. Alex AI',
+    'Mental Health Specialist - CBT/DBT Expert'
+  );
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -117,7 +124,10 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
 
   const startSession = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      // Start database recording
+      await startSessionRecording();
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -137,6 +147,9 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
         content: welcomeMessage,
         timestamp: new Date()
       }]);
+      
+      // Save to database
+      await addMessage('assistant', welcomeMessage);
 
       toast({
         title: "Free Session Started",
@@ -152,7 +165,10 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
     }
   };
 
-  const endSession = () => {
+  const endSession = async () => {
+    // End database recording
+    await endSessionRecording();
+    
     cleanup();
     setSessionActive(false);
     setIsRecording(false);
@@ -238,6 +254,9 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
         timestamp: new Date()
       };
       setMessages(prev => [...prev, newUserMessage]);
+      
+      // Save to database
+      await addMessage('user', userMessage);
 
       // Get AI response
       const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-audio-counselor', {
@@ -260,6 +279,9 @@ const AIAudioCounselor: React.FC<AIAudioCounselorProps> = ({ isOpen, onClose }) 
       };
       setMessages(prev => [...prev, newAiMessage]);
       setConversationHistory(newConversationHistory);
+      
+      // Save to database
+      await addMessage('assistant', aiResponse);
 
       // Speak the AI response
       await speakText(aiResponse);
