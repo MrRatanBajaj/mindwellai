@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AIAudioCounselor from "@/components/ui-custom/AIAudioCounselor";
+import AIVideoConsultation from "@/components/ui-custom/AIVideoConsultation";
 import PeerCommunication from "@/components/ui-custom/PeerCommunication";
 import TherapyModelMatcher from "@/components/ui-custom/TherapyModelMatcher";
 import ResourceSharing from "@/components/ui-custom/ResourceSharing";
@@ -111,6 +112,7 @@ const PeerConnect = () => {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [therapyMatches, setTherapyMatches] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("groups");
+  const [isVideoConsultationOpen, setIsVideoConsultationOpen] = useState(false);
 
   // Get user's location for distance calculations
   useEffect(() => {
@@ -377,20 +379,37 @@ const PeerConnect = () => {
                   </div>
                   
                   <div className="flex flex-col gap-3">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Button
-                        onClick={() => setShowAICounselor(true)}
-                        size="lg"
-                        className="bg-white text-mindwell-600 hover:bg-white/90 font-bold px-8 py-4 text-lg shadow-lg relative overflow-hidden group"
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <Mic className="w-5 h-5 mr-2 relative z-10" />
-                        <span className="relative z-10">Start Free Session</span>
-                      </Button>
-                    </motion.div>
+                        <Button
+                          onClick={() => setShowAICounselor(true)}
+                          size="lg"
+                          className="bg-white text-mindwell-600 hover:bg-white/90 font-bold px-6 py-4 text-base shadow-lg relative overflow-hidden group w-full"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <Mic className="w-5 h-5 mr-2 relative z-10" />
+                          <span className="relative z-10">Audio</span>
+                        </Button>
+                      </motion.div>
+                      
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          onClick={() => setIsVideoConsultationOpen(true)}
+                          size="lg"
+                          className="bg-gradient-to-r from-mindwell-500 to-blue-600 text-white hover:from-mindwell-600 hover:to-blue-700 font-bold px-6 py-4 text-base shadow-lg relative overflow-hidden group w-full"
+                        >
+                          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <Video className="w-5 h-5 mr-2 relative z-10" />
+                          <span className="relative z-10">Video</span>
+                        </Button>
+                      </motion.div>
+                    </div>
                     <motion.p 
                       animate={{ opacity: [0.7, 1, 0.7] }}
                       transition={{ duration: 3, repeat: Infinity }}
@@ -756,6 +775,15 @@ const PeerConnect = () => {
         isOpen={showAICounselor} 
         onClose={() => setShowAICounselor(false)} 
       />
+      
+      {/* AI Video Consultation Modal */}
+      {isVideoConsultationOpen && (
+        <AIVideoConsultation 
+          counselorName="Dr. Alex AI"
+          specialty="Mental Health Specialist - CBT/DBT Expert"
+          onEndCall={() => setIsVideoConsultationOpen(false)} 
+        />
+      )}
       
       {/* Peer Communication Modal */}
       {selectedPeer && (

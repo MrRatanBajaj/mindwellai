@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AIAvatar from "@/components/ui-custom/AIAvatar";
-import AIVideoCall from "@/components/ui-custom/AIVideoCall";
+import AIVideoConsultation from "@/components/ui-custom/AIVideoConsultation";
 import AIChatCounselor from "@/components/ui-custom/AIChatCounselor";
 import AIVoiceChat from "@/components/ui-custom/AIVoiceChat";
 import EmergencyCounseling from "@/components/ui-custom/EmergencyCounseling";
@@ -94,7 +94,7 @@ const AITherapist = () => {
 
   if (currentSession === 'video') {
     return (
-      <AIVideoCall
+      <AIVideoConsultation
         counselorName={selectedCounselor?.name}
         specialty={selectedCounselor?.specialty}
         onEndCall={handleEndSession}
