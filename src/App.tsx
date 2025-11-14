@@ -23,6 +23,7 @@ import Emergency from "./pages/Emergency";
 import Policy from "./pages/Policy";
 import Sessions from "./pages/Sessions";
 import MedicineStore from "./pages/MedicineStore";
+import AuditLogs from "./pages/AuditLogs";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/ai-audio-call" element={<ProtectedRoute><AIAudioCall /></ProtectedRoute>} />
             <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
             <Route path="/medicine-store" element={<ProtectedRoute><MedicineStore /></ProtectedRoute>} />
+            <Route path="/audit-logs" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
