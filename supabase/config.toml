@@ -82,6 +82,9 @@ verify_jwt = false
 [functions.voice-clone]
 verify_jwt = false
 
+[functions.verify-prescription]
+verify_jwt = true
+
 [functions.openai-tts]
 verify_jwt = false
 

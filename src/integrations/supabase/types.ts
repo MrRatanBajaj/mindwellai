@@ -226,6 +226,105 @@ export type Database = {
         }
         Relationships: []
       }
+      medication_orders: {
+        Row: {
+          created_at: string
+          delivery_address: string | null
+          id: string
+          medication_id: string
+          prescription_id: string | null
+          quantity: number
+          status: string
+          total_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery_address?: string | null
+          id?: string
+          medication_id: string
+          prescription_id?: string | null
+          quantity: number
+          status?: string
+          total_price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery_address?: string | null
+          id?: string
+          medication_id?: string
+          prescription_id?: string | null
+          quantity?: number
+          status?: string
+          total_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_orders_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_orders_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medications: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          dosage: string | null
+          id: string
+          image_url: string | null
+          manufacturer: string | null
+          name: string
+          price: number
+          requires_prescription: boolean
+          stock_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          dosage?: string | null
+          id?: string
+          image_url?: string | null
+          manufacturer?: string | null
+          name: string
+          price: number
+          requires_prescription?: boolean
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          dosage?: string | null
+          id?: string
+          image_url?: string | null
+          manufacturer?: string | null
+          name?: string
+          price?: number
+          requires_prescription?: boolean
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       memorial_chat_messages: {
         Row: {
           audio_url: string | null
@@ -388,6 +487,48 @@ export type Database = {
         Update: {
           created_at?: string
           id?: number
+        }
+        Relationships: []
+      }
+      prescriptions: {
+        Row: {
+          ai_verification_result: Json | null
+          created_at: string
+          doctor_license: string | null
+          doctor_name: string | null
+          expires_at: string | null
+          id: string
+          prescription_image_url: string
+          updated_at: string
+          user_id: string
+          verification_status: string
+          verified_at: string | null
+        }
+        Insert: {
+          ai_verification_result?: Json | null
+          created_at?: string
+          doctor_license?: string | null
+          doctor_name?: string | null
+          expires_at?: string | null
+          id?: string
+          prescription_image_url: string
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          ai_verification_result?: Json | null
+          created_at?: string
+          doctor_license?: string | null
+          doctor_name?: string | null
+          expires_at?: string | null
+          id?: string
+          prescription_image_url?: string
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+          verified_at?: string | null
         }
         Relationships: []
       }

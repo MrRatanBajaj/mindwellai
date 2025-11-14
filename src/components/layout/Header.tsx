@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Brain, Menu, X, Heart, LogOut } from "lucide-react";
+import { Brain, Menu, X, Heart, LogOut, Pill } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
@@ -73,6 +73,10 @@ const Header = () => {
             </NavLink>
             <NavLink to="/sessions" className="text-slate-700 hover:text-mindwell-600 transition-colors">
               My Sessions
+            </NavLink>
+            <NavLink to="/medicine-store" className="text-slate-700 hover:text-mindwell-600 transition-colors flex items-center space-x-1">
+              <Pill className="w-4 h-4" />
+              <span>Medicine Store</span>
             </NavLink>
           </nav>
 
@@ -146,6 +150,10 @@ const Header = () => {
               </NavLink>
               <NavLink to="/sessions" className="text-slate-700 hover:text-mindwell-600 transition-colors">
                 My Sessions
+              </NavLink>
+              <NavLink to="/medicine-store" className="text-slate-700 hover:text-mindwell-600 transition-colors flex items-center space-x-1">
+                <Pill className="w-4 h-4" />
+                <span>Medicine Store</span>
               </NavLink>
               <div className="flex flex-col space-y-2 pt-4">
                 <NavLink to="/auth">
