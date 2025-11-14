@@ -110,7 +110,6 @@ export default function MedicineStore() {
     setIsUploading(true);
 
     try {
-      // Upload prescription to storage
       const fileExt = prescriptionFile.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
@@ -120,7 +119,6 @@ export default function MedicineStore() {
 
       if (uploadError) throw uploadError;
 
-      // Create prescription record
       const { data: prescription, error: insertError } = await supabase
         .from('prescriptions')
         .insert({
@@ -133,7 +131,6 @@ export default function MedicineStore() {
 
       if (insertError) throw insertError;
 
-      // Call verification function
       const { data: verificationData, error: verificationError } = await supabase.functions.invoke(
         'verify-prescription',
         {
@@ -151,7 +148,6 @@ export default function MedicineStore() {
         description: 'Your prescription is being verified by our AI system.',
       });
 
-      // Refresh prescription status
       setTimeout(() => checkExistingPrescription(), 3000);
       setShowPrescriptionDialog(false);
       setPrescriptionFile(null);
@@ -184,7 +180,6 @@ export default function MedicineStore() {
       return;
     }
 
-    // Process order
     const totalPrice = medication.price * quantity;
 
     const { error } = await supabase
@@ -223,7 +218,6 @@ export default function MedicineStore() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Disclaimer Alert */}
         <Alert className="border-destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Important Medical Disclaimer</AlertTitle>
@@ -247,7 +241,6 @@ export default function MedicineStore() {
           </AlertDescription>
         </Alert>
 
-        {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold">Medicine Store</h1>
@@ -260,7 +253,6 @@ export default function MedicineStore() {
           )}
         </div>
 
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
@@ -271,7 +263,6 @@ export default function MedicineStore() {
           />
         </div>
 
-        {/* Medications Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredMeds.map((medication) => (
             <Card key={medication.id}>
@@ -314,7 +305,6 @@ export default function MedicineStore() {
           ))}
         </div>
 
-        {/* Prescription Upload Dialog */}
         <Dialog open={showPrescriptionDialog} onOpenChange={setShowPrescriptionDialog}>
           <DialogContent>
             <DialogHeader>
@@ -361,7 +351,6 @@ export default function MedicineStore() {
           </DialogContent>
         </Dialog>
 
-        {/* Purchase Dialog */}
         {selectedMed && userPrescription && (
           <Dialog open={!!selectedMed} onOpenChange={() => setSelectedMed(null)}>
             <DialogContent>
