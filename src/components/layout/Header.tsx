@@ -78,6 +78,9 @@ const Header = () => {
               <Pill className="w-4 h-4" />
               <span>Medicine Store</span>
             </NavLink>
+            <NavLink to="/audit-logs" className="text-slate-700 hover:text-mindwell-600 transition-colors">
+              Audit Logs
+            </NavLink>
           </nav>
 
           {/* Action Buttons */}
@@ -154,6 +157,9 @@ const Header = () => {
               <NavLink to="/medicine-store" className="text-slate-700 hover:text-mindwell-600 transition-colors flex items-center space-x-1">
                 <Pill className="w-4 h-4" />
                 <span>Medicine Store</span>
+              </NavLink>
+              <NavLink to="/audit-logs" className="text-slate-700 hover:text-mindwell-600 transition-colors">
+                Audit Logs
               </NavLink>
               <div className="flex flex-col space-y-2 pt-4">
                 <NavLink to="/auth">
