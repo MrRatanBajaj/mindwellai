@@ -58,6 +58,9 @@ const Header = () => {
             <NavLink to="/self-help" className="text-slate-700 hover:text-mindwell-600 transition-colors">
               Self Help
             </NavLink>
+            <NavLink to="/ai-voice-therapy" className="text-slate-700 hover:text-mindwell-600 transition-colors">
+              Voice Therapy
+            </NavLink>
             <NavLink to="/peer-connect" className="text-slate-700 hover:text-mindwell-600 transition-colors">
               Peer Connect
             </NavLink>
@@ -137,6 +140,9 @@ const Header = () => {
               </NavLink>
               <NavLink to="/self-help" className="text-slate-700 hover:text-mindwell-600 transition-colors">
                 Self Help
+              </NavLink>
+              <NavLink to="/ai-voice-therapy" className="text-slate-700 hover:text-mindwell-600 transition-colors">
+                Voice Therapy
               </NavLink>
               <NavLink to="/peer-connect" className="text-slate-700 hover:text-mindwell-600 transition-colors">
                 Peer Connect
