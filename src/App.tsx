@@ -19,6 +19,7 @@ import PeerConnect from "./pages/PeerConnect";
 import MemorialChat from "./pages/MemorialChat";
 import AITherapist from "./pages/AITherapist";
 import AIAudioCall from "./pages/AIAudioCall";
+import AIVoiceTherapy from "./pages/AIVoiceTherapy";
 import Emergency from "./pages/Emergency";
 import Policy from "./pages/Policy";
 import Sessions from "./pages/Sessions";
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/memorial-chat" element={<ProtectedRoute><MemorialChat /></ProtectedRoute>} />
             <Route path="/ai-therapist" element={<ProtectedRoute><AITherapist /></ProtectedRoute>} />
             <Route path="/ai-audio-call" element={<ProtectedRoute><AIAudioCall /></ProtectedRoute>} />
+            <Route path="/ai-voice-therapy" element={<ProtectedRoute><AIVoiceTherapy /></ProtectedRoute>} />
             <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
             <Route path="/medicine-store" element={<ProtectedRoute><MedicineStore /></ProtectedRoute>} />
             <Route path="/audit-logs" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
