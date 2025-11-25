@@ -265,7 +265,16 @@ export default function MedicineStore() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredMeds.map((medication) => (
-            <Card key={medication.id}>
+            <Card key={medication.id} className="overflow-hidden">
+              {medication.image_url && (
+                <div className="aspect-video w-full overflow-hidden bg-muted">
+                  <img 
+                    src={medication.image_url} 
+                    alt={medication.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <CardTitle>{medication.name}</CardTitle>
@@ -276,12 +285,12 @@ export default function MedicineStore() {
                 <CardDescription>{medication.category}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">{medication.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{medication.description}</p>
                 {medication.dosage && (
-                  <p className="text-sm"><strong>Dosage:</strong> {medication.dosage}</p>
+                  <p className="text-xs text-muted-foreground"><strong>Dosage:</strong> {medication.dosage}</p>
                 )}
                 {medication.manufacturer && (
-                  <p className="text-sm"><strong>Manufacturer:</strong> {medication.manufacturer}</p>
+                  <p className="text-xs text-muted-foreground"><strong>Manufacturer:</strong> {medication.manufacturer}</p>
                 )}
                 <p className="text-2xl font-bold text-primary">₹{medication.price.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground">Stock: {medication.stock_quantity} units</p>
@@ -361,6 +370,15 @@ export default function MedicineStore() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
+                {selectedMed.image_url && (
+                  <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
+                    <img 
+                      src={selectedMed.image_url} 
+                      alt={selectedMed.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Quantity</label>
                   <Input
