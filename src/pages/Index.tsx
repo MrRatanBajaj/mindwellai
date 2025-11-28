@@ -7,6 +7,8 @@ import Avatar from "@/components/ui-custom/Avatar";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import { VoiceChat } from "@/components/ui-custom/VoiceChat";
 import { RealtimeAnalytics } from "@/components/ui-custom/RealtimeAnalytics";
+import VideoShowcase from "@/components/ui-custom/VideoShowcase";
+import { motion } from "framer-motion";
 import { 
   Brain, Video, Lock, Calendar, History, MessageSquare, 
   Users, Award, Shield, Sparkles, Play, ArrowRight,
@@ -18,130 +20,305 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-mindwell-50">
       <Header />
       
-      {/* Enhanced Hero Section */}
+      {/* Enhanced Hero Section with Animations */}
       <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-mindwell-50/50 via-blue-50/30 to-purple-50/20"></div>
-        <div className="absolute top-20 left-10 w-32 h-32 bg-mindwell-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-40 h-40 bg-blue-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50"></div>
+        <motion.div 
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-purple-300 to-blue-300 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+          className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-br from-pink-300 to-purple-300 rounded-full blur-3xl"
+        />
         
         <div className="relative max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2 lg:pr-12">
-              <div className="space-y-6 animate-fade-in">
-                <div className="inline-flex items-center space-x-2 py-2 px-4 rounded-full bg-gradient-to-r from-mindwell-100 to-blue-100 border border-mindwell-200">
-                  <Sparkles className="w-4 h-4 text-mindwell-600 animate-pulse" />
-                  <span className="text-mindwell-700 font-medium text-sm">AI-Powered Mental Health Platform</span>
-                </div>
+              <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="inline-flex items-center space-x-2 py-2 px-4 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200 shadow-lg"
+                >
+                  <motion.div
+                    animate={{
+                      rotate: [0, 360],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4 text-purple-600" />
+                  </motion.div>
+                  <span className="text-purple-700 font-medium text-sm">AI-Powered Mental Health Platform</span>
+                </motion.div>
                 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-slate-900 via-mindwell-800 to-blue-900 bg-clip-text text-transparent">
-                  Your Personal 
-                  <span className="block bg-gradient-to-r from-mindwell-600 to-blue-600 bg-clip-text text-transparent animate-pulse">
-                    AI Counselor
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight"
+                >
+                  <span className="bg-gradient-to-r from-slate-900 via-purple-900 to-blue-900 bg-clip-text text-transparent">
+                    Your Personal{" "}
                   </span>
-                  Awaits
-                </h1>
+                  <motion.span 
+                    className="block bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent"
+                    animate={{
+                      backgroundPosition: ["0%", "100%", "0%"],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                    style={{
+                      backgroundSize: "200% 200%",
+                    }}
+                  >
+                    AI Counselor
+                  </motion.span>
+                  <span className="bg-gradient-to-r from-slate-900 via-purple-900 to-blue-900 bg-clip-text text-transparent">
+                    Awaits
+                  </span>
+                </motion.h1>
                 
-                <p className="text-xl text-slate-600 leading-relaxed max-w-xl">
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="text-xl text-slate-600 leading-relaxed max-w-xl"
+                >
                   Experience breakthrough mental health support with our advanced AI counselors. 
                   Get personalized therapy sessions, crisis intervention, and 24/7 emotional support.
-                </p>
+                </motion.p>
                 
-                <div className="flex flex-col sm:flex-row gap-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="flex flex-col sm:flex-row gap-4"
+                >
                   <NavLink to="/consultation">
-                    <Button className="group w-full sm:w-auto bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700 text-white px-8 py-4 text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-                      <Video className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-                      Start Video Session
-                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                    </Button>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button className="group w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300">
+                        <Video className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+                        Start Video Session
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
+                      </Button>
+                    </motion.div>
                   </NavLink>
-                  <NavLink to="/about">
-                    <Button variant="outline" className="group w-full sm:w-auto border-2 border-mindwell-200 text-mindwell-700 hover:bg-mindwell-50 px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105">
-                      <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                      Watch Demo
-                    </Button>
+                  <NavLink to="/ai-voice-therapy">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button variant="outline" className="group w-full sm:w-auto border-2 border-purple-200 text-purple-700 hover:bg-purple-50 px-8 py-6 text-lg font-medium transition-all duration-300">
+                        <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                        Try Voice AI
+                      </Button>
+                    </motion.div>
                   </NavLink>
-                </div>
+                </motion.div>
                 
-                {/* Social Proof */}
-                <div className="flex items-center space-x-6 pt-8">
+                {/* Social Proof with Animation */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.8 }}
+                  className="flex items-center space-x-6 pt-8"
+                >
                   <div className="flex -space-x-3">
                     {[
-                      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80",
-                      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80",
-                      "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80"
+                      "https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=256&h=256&fit=crop",
+                      "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=256&h=256&fit=crop",
+                      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=256&h=256&fit=crop",
+                      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop"
                     ].map((src, i) => (
-                      <Avatar key={i} src={src} size="md" className="border-2 border-white shadow-lg hover:scale-110 transition-transform duration-300" />
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.8 + i * 0.1 }}
+                      >
+                        <Avatar src={src} size="md" className="border-3 border-white shadow-xl hover:scale-110 hover:z-10 transition-transform duration-300" />
+                      </motion.div>
                     ))}
                   </div>
                   <div>
                     <div className="flex items-center space-x-1">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="w-4 h-4 text-amber-400 fill-current animate-pulse" style={{ animationDelay: `${star * 100}ms` }} />
+                        <motion.div
+                          key={star}
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: 1.0 + star * 0.05 }}
+                        >
+                          <Star className="w-4 h-4 text-amber-400 fill-current" />
+                        </motion.div>
                       ))}
                     </div>
-                    <p className="text-sm text-slate-600 font-medium">Trusted by 10,000+ users</p>
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6, delay: 1.2 }}
+                      className="text-sm text-slate-600 font-medium"
+                    >
+                      Trusted by <span className="font-bold text-purple-600">10,000+</span> users
+                    </motion.p>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </div>
             
-            {/* Enhanced Hero Visual */}
-            <div className="lg:w-1/2 relative">
-              <div className="relative group">
-                {/* Floating elements */}
-                <div className="absolute -top-8 -left-8 w-16 h-16 bg-gradient-to-br from-mindwell-200 to-mindwell-300 rounded-2xl flex items-center justify-center shadow-lg animate-bounce">
-                  <Brain className="w-8 h-8 text-mindwell-600" />
-                </div>
-                <div className="absolute -bottom-8 -right-8 w-16 h-16 bg-gradient-to-br from-blue-200 to-blue-300 rounded-2xl flex items-center justify-center shadow-lg animate-bounce delay-500">
-                  <Heart className="w-8 h-8 text-blue-600" />
-                </div>
+            {/* Enhanced Interactive Video Showcase */}
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="lg:w-1/2 relative"
+            >
+              <div className="relative">
+                {/* Animated Floating Elements */}
+                <motion.div
+                  animate={{
+                    y: [0, -20, 0],
+                    rotate: [0, 10, 0],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute -top-8 -left-8 w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl z-10"
+                >
+                  <Brain className="w-10 h-10 text-white" />
+                </motion.div>
                 
-                {/* Main card */}
-                <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/50 group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105">
-                  <div className="aspect-video relative">
-                    <img 
-                      src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&h=980&q=80"
-                      alt="AI Counselor Session" 
-                      className="w-full h-full object-cover"
-                      fetchPriority="high"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                    
-                    {/* Play button overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform duration-300 cursor-pointer group">
-                        <Play className="w-8 h-8 text-mindwell-600 ml-1 group-hover:scale-110 transition-transform duration-300" />
-                      </div>
-                    </div>
-                  </div>
+                <motion.div
+                  animate={{
+                    y: [0, 20, 0],
+                    rotate: [0, -10, 0],
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 1
+                  }}
+                  className="absolute -bottom-8 -right-8 w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl z-10"
+                >
+                  <Heart className="w-10 h-10 text-white" />
+                </motion.div>
+                
+                {/* Video Showcase Component */}
+                <div className="relative glass-panel p-2 rounded-3xl shadow-2xl">
+                  <VideoShowcase
+                    thumbnailUrl="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=1200&h=675&fit=crop&q=80"
+                    videoUrl="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    title="Meet Your AI Counselor"
+                    description="Watch how Dr. Maya provides personalized mental health support"
+                  />
                   
-                  {/* Session info overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-white/90 backdrop-blur-md border-t border-white/30">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                  {/* Animated Status Badge */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 1 }}
+                    className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+                  >
+                    <div className="glass-panel px-6 py-3 rounded-full shadow-xl border-2 border-white">
+                      <div className="flex items-center gap-3">
                         <div className="relative">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center text-white shadow-lg">
-                            <Brain className="w-6 h-6" />
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                            <Brain className="w-5 h-5 text-white" />
                           </div>
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                          <motion.div
+                            animate={{
+                              scale: [1, 1.2, 1],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                            }}
+                            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-400 rounded-full border-2 border-white"
+                          />
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-800">Dr. Aria AI</p>
-                          <p className="text-xs text-slate-600">Cognitive Behavioral Specialist</p>
+                          <p className="font-bold text-slate-900 text-sm">Dr. Maya AI</p>
+                          <p className="text-xs text-slate-600">Mental Health Specialist</p>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full flex items-center space-x-1 font-medium">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          <span>Available Now</span>
+                        <div className="ml-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium flex items-center gap-1.5">
+                          <motion.div
+                            animate={{
+                              scale: [1, 1.3, 1],
+                            }}
+                            transition={{
+                              duration: 1.5,
+                              repeat: Infinity,
+                            }}
+                            className="w-2 h-2 bg-emerald-500 rounded-full"
+                          />
+                          Online
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
+
+                {/* Decorative Gradient Orbs */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.4, 0.6, 0.4],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute top-1/4 -right-20 w-64 h-64 bg-gradient-to-br from-purple-300 to-pink-300 rounded-full blur-3xl -z-10"
+                />
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{
+                    duration: 7,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 2
+                  }}
+                  className="absolute bottom-1/4 -left-20 w-64 h-64 bg-gradient-to-br from-blue-300 to-purple-300 rounded-full blur-3xl -z-10"
+                />
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
