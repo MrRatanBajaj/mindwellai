@@ -5,6 +5,7 @@ import { Mic, MicOff, Volume2, Loader2, Heart, Brain, Shield } from 'lucide-reac
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import AIAvatar from './AIAvatar';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -239,183 +240,264 @@ export default function AIVoiceTherapist() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-2"
+          className="text-center space-y-3"
         >
-          <h1 className="text-4xl font-bold text-foreground">AI Voice Therapist</h1>
-          <p className="text-muted-foreground">
-            Have a natural conversation with Dr. Maya, your AI mental health counselor
+          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
+            Your AI Companion
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Always here to listen and talk. Dr. Maya cares about your mental wellbeing
           </p>
         </motion.div>
 
-        {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card className="border-primary/20">
-            <CardHeader className="pb-3">
-              <Brain className="w-8 h-8 text-primary mb-2" />
-              <CardTitle className="text-lg">Evidence-Based</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Trained in CBT, DBT, and mindfulness techniques
-              </CardDescription>
-            </CardContent>
-          </Card>
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Avatar Section - Main Focus */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col gap-4"
+          >
+            <AIAvatar
+              name="Dr. Maya"
+              specialty="Mental Health & Emotional Wellbeing"
+              mood={
+                isRecording ? "focused" :
+                isSpeaking ? "empathetic" :
+                messages.length > 0 ? "calm" : "empathetic"
+              }
+              isActive={sessionActive}
+              isSpeaking={isSpeaking}
+              className="w-full"
+            />
 
-          <Card className="border-primary/20">
-            <CardHeader className="pb-3">
-              <Heart className="w-8 h-8 text-primary mb-2" />
-              <CardTitle className="text-lg">Compassionate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Non-judgmental support in a safe space
-              </CardDescription>
-            </CardContent>
-          </Card>
+            {/* Quick Stats */}
+            {sessionActive && (
+              <Card className="glass-panel border-white/20">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-rose-500" />
+                      <span className="text-muted-foreground">Session Time</span>
+                    </div>
+                    <span className="font-semibold text-foreground">{formatTime(sessionTime)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm mt-2">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-blue-500" />
+                      <span className="text-muted-foreground">Messages</span>
+                    </div>
+                    <span className="font-semibold text-foreground">{messages.length}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-          <Card className="border-primary/20">
-            <CardHeader className="pb-3">
-              <Shield className="w-8 h-8 text-primary mb-2" />
-              <CardTitle className="text-lg">Private & Secure</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Your conversations are confidential and secure
-              </CardDescription>
-            </CardContent>
-          </Card>
+            {/* Feature Highlights */}
+            <div className="grid grid-cols-3 gap-3">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="glass-panel p-4 text-center border-white/20"
+              >
+                <Brain className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Evidence-Based</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="glass-panel p-4 text-center border-white/20"
+              >
+                <Heart className="w-6 h-6 text-rose-500 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Empathetic</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="glass-panel p-4 text-center border-white/20"
+              >
+                <Shield className="w-6 h-6 text-green-500 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">Private</p>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Chat Section */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="glass-panel border-white/20 h-full flex flex-col">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl">Conversation</CardTitle>
+                  {sessionActive && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={endSession}
+                      disabled={isRecording || isProcessing}
+                    >
+                      End Session
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col gap-4">
+                {!sessionActive ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6 py-8">
+                    <motion.div
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
+                    >
+                      <Heart className="w-12 h-12 text-white" />
+                    </motion.div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-foreground">
+                        Ready to talk?
+                      </h3>
+                      <p className="text-muted-foreground max-w-sm">
+                        I'm here whenever you need someone to listen. Your thoughts matter.
+                      </p>
+                    </div>
+                    <Button 
+                      size="lg" 
+                      onClick={startSession} 
+                      className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    >
+                      <Heart className="w-5 h-5" />
+                      Start Conversation
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Messages */}
+                    <div className="flex-1 space-y-4 overflow-y-auto max-h-96 pr-2">
+                      {messages.length === 0 ? (
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-muted-foreground text-sm">
+                            Tap the microphone to start speaking...
+                          </p>
+                        </div>
+                      ) : (
+                        <AnimatePresence>
+                          {messages.map((msg, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                              <div
+                                className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
+                                  msg.role === 'user'
+                                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white'
+                                    : 'bg-white dark:bg-slate-800 text-foreground border border-border/50'
+                                }`}
+                              >
+                                <p className="text-xs font-medium mb-1 opacity-70">
+                                  {msg.role === 'user' ? 'You' : 'Dr. Maya'}
+                                </p>
+                                <p className="text-sm leading-relaxed">{msg.content}</p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      )}
+                    </div>
+
+                    {/* Voice Controls */}
+                    <div className="flex flex-col items-center gap-4 pt-4 border-t border-border/50">
+                      {/* Status */}
+                      <AnimatePresence mode="wait">
+                        {isRecording && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex items-center gap-2"
+                          >
+                            <div className="w-3 h-3 bg-rose-500 rounded-full animate-pulse" />
+                            <span className="text-sm font-medium text-rose-500">Listening to you...</span>
+                          </motion.div>
+                        )}
+                        {isProcessing && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex items-center gap-2"
+                          >
+                            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                            <span className="text-sm font-medium text-blue-500">Thinking...</span>
+                          </motion.div>
+                        )}
+                        {isSpeaking && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="flex items-center gap-2"
+                          >
+                            <Volume2 className="w-4 h-4 animate-pulse text-purple-500" />
+                            <span className="text-sm font-medium text-purple-500">Dr. Maya is speaking...</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Mic Button */}
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          size="lg"
+                          variant={isRecording ? "destructive" : "default"}
+                          onClick={isRecording ? stopRecording : startRecording}
+                          disabled={isProcessing || isSpeaking}
+                          className={`rounded-full w-16 h-16 shadow-lg ${
+                            !isRecording && 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                          }`}
+                        >
+                          {isRecording ? (
+                            <MicOff className="w-7 h-7" />
+                          ) : (
+                            <Mic className="w-7 h-7" />
+                          )}
+                        </Button>
+                      </motion.div>
+
+                      <p className="text-xs text-muted-foreground text-center">
+                        {isRecording ? 'Tap to stop recording' : 'Tap to speak'}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
-        {/* Session Interface */}
-        <Card className="border-primary/20">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Therapy Session</CardTitle>
-              {sessionActive && (
-                <span className="text-sm text-muted-foreground">
-                  {formatTime(sessionTime)}
-                </span>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {!sessionActive ? (
-              <div className="text-center space-y-4 py-8">
-                <p className="text-muted-foreground">
-                  Ready to start your therapy session?
-                </p>
-                <Button size="lg" onClick={startSession} className="gap-2">
-                  <Heart className="w-5 h-5" />
-                  Start Session
-                </Button>
-              </div>
-            ) : (
-              <>
-                {/* Conversation History */}
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  <AnimatePresence>
-                    {messages.map((msg, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`p-4 rounded-lg ${
-                          msg.role === 'user'
-                            ? 'bg-primary/10 ml-8'
-                            : 'bg-muted mr-8'
-                        }`}
-                      >
-                        <p className="text-sm font-medium mb-1">
-                          {msg.role === 'user' ? 'You' : 'Dr. Maya'}
-                        </p>
-                        <p className="text-foreground">{msg.content}</p>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-
-                {/* Voice Controls */}
-                <div className="flex flex-col items-center gap-4">
-                  {/* Status Indicator */}
-                  <AnimatePresence mode="wait">
-                    {isRecording && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="flex items-center gap-2 text-destructive"
-                      >
-                        <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
-                        <span className="text-sm font-medium">Recording...</span>
-                      </motion.div>
-                    )}
-                    {isProcessing && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="flex items-center gap-2 text-primary"
-                      >
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm font-medium">Processing...</span>
-                      </motion.div>
-                    )}
-                    {isSpeaking && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="flex items-center gap-2 text-primary"
-                      >
-                        <Volume2 className="w-4 h-4 animate-pulse" />
-                        <span className="text-sm font-medium">Dr. Maya is speaking...</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Microphone Button */}
-                  <Button
-                    size="lg"
-                    variant={isRecording ? "destructive" : "default"}
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing || isSpeaking}
-                    className="rounded-full w-20 h-20"
-                  >
-                    {isRecording ? (
-                      <MicOff className="w-8 h-8" />
-                    ) : (
-                      <Mic className="w-8 h-8" />
-                    )}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={endSession}
-                    disabled={isRecording || isProcessing}
-                  >
-                    End Session
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Crisis Notice */}
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardContent className="pt-6">
-            <p className="text-sm text-center text-muted-foreground">
-              <strong>Crisis Support:</strong> If you're in immediate danger, please call your
-              local emergency services or crisis hotline immediately.
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card className="border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/20">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-center text-muted-foreground">
+                <strong className="text-rose-600 dark:text-rose-400">Crisis Support:</strong> If you're experiencing a mental health emergency, please call your local emergency services or crisis hotline immediately.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
