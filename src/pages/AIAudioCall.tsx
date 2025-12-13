@@ -1,101 +1,183 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Phone } from 'lucide-react';
+import { ArrowLeft, Phone, Brain, Sparkles, Heart, MessageCircle, Shield, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AIAudioCall from '@/components/ui-custom/AIAudioCall';
+import { motion } from 'framer-motion';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const AIAudioCallPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCallEnd = () => {
-    // Optionally navigate back or show a summary
-    console.log('Call ended');
+    console.log('Session ended');
   };
 
+  const features = [
+    {
+      icon: Brain,
+      title: "Evidence-Based Support",
+      description: "Juli uses CBT and DBT techniques to provide effective mental health support"
+    },
+    {
+      icon: MessageCircle,
+      title: "Natural Conversation",
+      description: "Speak naturally - Juli understands context and responds empathetically"
+    },
+    {
+      icon: Heart,
+      title: "Emotional Intelligence",
+      description: "Advanced AI trained to recognize and respond to emotional cues"
+    },
+    {
+      icon: Shield,
+      title: "Safe Space",
+      description: "Non-judgmental environment to express your thoughts freely"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8 pt-24">
+        {/* Back Button */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <Button
             variant="ghost"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
+            className="mb-6 hover:bg-primary/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
+        </motion.div>
+
+        {/* Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
+            <Sparkles className="h-4 w-4" />
+            <span className="text-sm font-medium">AI-Powered Mental Health Support</span>
+          </div>
           
-          <h1 className="text-2xl font-bold text-center flex items-center gap-2">
-            <Phone className="h-6 w-6 text-primary" />
-            AI Audio Counseling
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Meet <span className="text-primary">Juli</span>
           </h1>
-          
-          <div className="w-20" /> {/* Spacer for centering */}
-        </div>
-
-        {/* Description */}
-        <div className="max-w-2xl mx-auto text-center mb-8">
-          <p className="text-lg text-muted-foreground mb-4">
-            Connect with our AI counselor through voice conversation. 
-            Experience natural, empathetic support through advanced voice AI technology.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Your AI Mental Health Counselor. Experience compassionate, confidential voice 
+            conversations powered by advanced AI technology.
           </p>
-          
-          <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-              What to expect:
-            </h3>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <li>• Natural voice conversation with AI counselor</li>
-              <li>• Real-time emotional support and guidance</li>
-              <li>• Private and confidential session</li>
-              <li>• Available 24/7 whenever you need support</li>
-            </ul>
-          </div>
-        </div>
+        </motion.div>
 
-        {/* Audio Call Component */}
-        <div className="flex justify-center">
+        {/* Main Call Component */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mb-16"
+        >
           <AIAudioCall onCallEnd={handleCallEnd} />
-        </div>
+        </motion.div>
 
-        {/* Additional Information */}
-        <div className="max-w-2xl mx-auto mt-12">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-              <h3 className="font-semibold mb-3 text-green-700 dark:text-green-400">
-                Benefits of Voice Therapy
-              </h3>
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li>• More natural and expressive communication</li>
-                <li>• Enhanced emotional connection</li>
-                <li>• Immediate response and support</li>
-                <li>• Helps practice verbal expression of feelings</li>
-              </ul>
+        {/* Features Grid */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mb-16"
+        >
+          <h2 className="text-2xl font-bold text-center mb-8">Why Talk to Juli?</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                className="bg-card border border-border rounded-xl p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <feature.icon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* How It Works */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="bg-card border border-border rounded-2xl p-8 mb-16"
+        >
+          <h2 className="text-2xl font-bold text-center mb-8">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary">1</span>
+              </div>
+              <h3 className="font-semibold mb-2">Start Session</h3>
+              <p className="text-sm text-muted-foreground">
+                Click "Start Session" and allow microphone access to begin
+              </p>
             </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-              <h3 className="font-semibold mb-3 text-purple-700 dark:text-purple-400">
-                Privacy & Safety
-              </h3>
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li>• Your conversations are not stored</li>
-                <li>• End-to-end encrypted communication</li>
-                <li>• No recording or data retention</li>
-                <li>• Professional counseling backup available</li>
-              </ul>
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary">2</span>
+              </div>
+              <h3 className="font-semibold mb-2">Talk Naturally</h3>
+              <p className="text-sm text-muted-foreground">
+                Share your thoughts and feelings - Juli listens and responds
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-primary">3</span>
+              </div>
+              <h3 className="font-semibold mb-2">Get Support</h3>
+              <p className="text-sm text-muted-foreground">
+                Receive empathetic guidance and coping strategies
+              </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Emergency Notice */}
-        <div className="max-w-2xl mx-auto mt-8 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-800 dark:text-red-200 text-center">
-            <strong>Crisis Support:</strong> If you're experiencing thoughts of self-harm or suicide, 
-            please contact emergency services immediately or call a crisis helpline.
-          </p>
-        </div>
-      </div>
+        {/* Trust Indicators */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          className="flex flex-wrap justify-center gap-6 mb-16"
+        >
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Shield className="h-5 w-5 text-green-500" />
+            <span>End-to-End Encrypted</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-5 w-5 text-blue-500" />
+            <span>Available 24/7</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Heart className="h-5 w-5 text-red-500" />
+            <span>Evidence-Based Approach</span>
+          </div>
+        </motion.div>
+      </main>
+
+      <Footer />
     </div>
   );
 };
