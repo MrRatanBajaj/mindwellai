@@ -6,17 +6,20 @@ import ConsultationForm from "@/components/ui-custom/ConsultationForm";
 import RegistrationForm from "@/components/ui-custom/RegistrationForm";
 import EmergencyCounseling from "@/components/ui-custom/EmergencyCounseling";
 import VideoCallSession from "@/components/ui-custom/VideoCallSession";
+import TavusVideoConsultation from "@/components/ui-custom/TavusVideoConsultation";
 import MentalHealthChat from "@/components/ui-custom/MentalHealthChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Shield, Video, MessageCircle, Clock, Heart, AlertTriangle, CheckCircle } from "lucide-react";
+import { Calendar, Shield, Video, MessageCircle, Clock, Heart, AlertTriangle, CheckCircle, Stethoscope, User, Brain } from "lucide-react";
 
-type ConsultationStep = 'selection' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'completed';
+type ConsultationStep = 'selection' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'tavus-video' | 'completed';
+type DoctorType = 'general' | 'dermatologist' | 'mental_health';
 
 const Consultation = () => {
   const [currentStep, setCurrentStep] = useState<ConsultationStep>('selection');
   const [registrationData, setRegistrationData] = useState<any>(null);
   const [sessionType, setSessionType] = useState<'scheduled' | 'emergency'>('scheduled');
+  const [selectedDoctorType, setSelectedDoctorType] = useState<DoctorType>('general');
 
   const handleServiceSelection = (type: 'scheduled' | 'emergency') => {
     setSessionType(type);
@@ -25,6 +28,11 @@ const Consultation = () => {
     } else {
       setCurrentStep('registration');
     }
+  };
+
+  const handleStartTavusConsultation = (doctorType: DoctorType) => {
+    setSelectedDoctorType(doctorType);
+    setCurrentStep('tavus-video');
   };
 
   const handleRegistrationComplete = (data: any) => {
@@ -63,6 +71,93 @@ const Consultation = () => {
                 <p className="text-slate-600 text-lg mb-8 max-w-2xl mx-auto text-balance animate-fade-in">
                   Select the type of support you need. We offer both scheduled consultations and immediate emergency support.
                 </p>
+              </div>
+
+              {/* AI Video Consultation Options */}
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold text-center mb-6">AI Video Consultation</h2>
+                <p className="text-center text-muted-foreground mb-8">Talk face-to-face with our AI healthcare professionals</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* General Physician */}
+                  <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-200 cursor-pointer group animate-fade-in">
+                    <CardHeader className="text-center pb-4">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-colors">
+                        <Stethoscope className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <CardTitle className="text-xl mb-1">Dr. Sarah</CardTitle>
+                      <CardDescription>General Physician</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4 text-center">
+                        General health consultations, symptom assessment, and wellness guidance
+                      </p>
+                      <Button 
+                        onClick={() => handleStartTavusConsultation('general')}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Video className="w-4 h-4 mr-2" />
+                        Start Video Call
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Dermatologist */}
+                  <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-green-200 cursor-pointer group animate-fade-in">
+                    <CardHeader className="text-center pb-4">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-colors">
+                        <User className="w-8 h-8 text-green-600" />
+                      </div>
+                      <CardTitle className="text-xl mb-1">Dr. Michael</CardTitle>
+                      <CardDescription>Dermatologist</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4 text-center">
+                        Skin conditions, hair issues, and cosmetic dermatology advice
+                      </p>
+                      <Button 
+                        onClick={() => handleStartTavusConsultation('dermatologist')}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                      >
+                        <Video className="w-4 h-4 mr-2" />
+                        Start Video Call
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Mental Health */}
+                  <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-purple-200 cursor-pointer group animate-fade-in">
+                    <CardHeader className="text-center pb-4">
+                      <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-colors">
+                        <Brain className="w-8 h-8 text-purple-600" />
+                      </div>
+                      <CardTitle className="text-xl mb-1">Dr. Emma</CardTitle>
+                      <CardDescription>Mental Health Counselor</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4 text-center">
+                        Anxiety, stress, depression support and emotional well-being
+                      </p>
+                      <Button 
+                        onClick={() => handleStartTavusConsultation('mental_health')}
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                      >
+                        <Video className="w-4 h-4 mr-2" />
+                        Start Video Call
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-12">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-4 text-muted-foreground">Or choose another option</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -234,6 +329,9 @@ const Consultation = () => {
       case 'video-call':
         return <VideoCallSession onEndCall={handleCallEnd} />;
 
+      case 'tavus-video':
+        return <TavusVideoConsultation doctorType={selectedDoctorType} onEndCall={handleCallEnd} />;
+
       case 'completed':
         return (
           <section className="py-20 px-6">
@@ -265,9 +363,11 @@ const Consultation = () => {
     }
   };
 
+  const isVideoSession = currentStep === 'video-call' || currentStep === 'tavus-video';
+
   return (
     <div className="min-h-screen flex flex-col">
-      {currentStep !== 'video-call' && <Header />}
+      {!isVideoSession && <Header />}
       
       {currentStep === 'selection' && (
         <section className="pt-32 pb-10 px-6 bg-gradient-to-br from-mindwell-50 to-blue-50">
@@ -288,9 +388,9 @@ const Consultation = () => {
       {renderStepContent()}
       
       {/* Live AI Chat Component - Only show when not in video call */}
-      {currentStep !== 'video-call' && <MentalHealthChat />}
+      {!isVideoSession && <MentalHealthChat />}
       
-      {currentStep !== 'video-call' && <Footer />}
+      {!isVideoSession && <Footer />}
     </div>
   );
 };

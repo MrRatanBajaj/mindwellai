@@ -94,6 +94,9 @@ verify_jwt = false
 [functions.generate-ai-image]
 verify_jwt = false
 
+[functions.tavus-conversation]
+verify_jwt = false
+
 [edge-runtime]
 enabled = true
 port = 54329
