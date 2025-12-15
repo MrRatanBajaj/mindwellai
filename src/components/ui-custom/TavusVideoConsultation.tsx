@@ -124,7 +124,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       const { data: conversationData, error: conversationError } = await supabase.functions.invoke(
         'tavus-conversation',
         {
-          body: { action: 'create_conversation', personaId: createdPersonaId },
+          body: { action: 'create_conversation', personaId: createdPersonaId, doctorType },
         }
       );
 

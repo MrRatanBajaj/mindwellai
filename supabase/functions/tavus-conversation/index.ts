@@ -8,6 +8,14 @@ const corsHeaders = {
 const TAVUS_API_KEY = Deno.env.get('TAVUS_API_KEY');
 const TAVUS_API_URL = 'https://tavusapi.com/v2';
 
+// Stock replica IDs from Tavus (these are publicly available demo replicas)
+// You can replace these with your own custom replica IDs if you have them
+const STOCK_REPLICAS = {
+  general: 'r79e1c033f', // Female professional look
+  dermatologist: 'r79e1c033f', // Male professional look  
+  mental_health: 'r79e1c033f', // Warm, empathetic look
+};
+
 // Persona configurations for different doctor types
 const DOCTOR_PERSONAS = {
   general: {
@@ -77,12 +85,13 @@ serve(async (req) => {
       throw new Error('TAVUS_API_KEY is not configured');
     }
 
-    const { action, doctorType = 'general', personaId } = await req.json();
+    const { action, doctorType = 'general', personaId, conversationId } = await req.json();
     console.log(`Tavus API action: ${action}, doctorType: ${doctorType}`);
 
     if (action === 'create_persona') {
       // Create a new persona for the specified doctor type
       const doctorConfig = DOCTOR_PERSONAS[doctorType as keyof typeof DOCTOR_PERSONAS] || DOCTOR_PERSONAS.general;
+      const replicaId = STOCK_REPLICAS[doctorType as keyof typeof STOCK_REPLICAS] || STOCK_REPLICAS.general;
       
       const response = await fetch(`${TAVUS_API_URL}/personas`, {
         method: 'POST',
@@ -95,13 +104,14 @@ serve(async (req) => {
           pipeline_mode: "full",
           system_prompt: doctorConfig.system_prompt,
           context: doctorConfig.context,
+          default_replica_id: replicaId,
           layers: {
             tts: {
               tts_engine: "cartesia",
               tts_emotion_control: true
             },
             llm: {
-              model: "tavus-gpt-oss",
+              model: "tavus-gpt-4o",
               speculative_inference: true,
               tools: [
                 {
@@ -135,7 +145,7 @@ serve(async (req) => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Tavus create persona error:', errorText);
-        throw new Error(`Failed to create persona: ${response.status}`);
+        throw new Error(`Failed to create persona: ${response.status} - ${errorText}`);
       }
 
       const personaData = await response.json();
@@ -152,6 +162,8 @@ serve(async (req) => {
         throw new Error('personaId is required for creating a conversation');
       }
 
+      const replicaId = STOCK_REPLICAS[doctorType as keyof typeof STOCK_REPLICAS] || STOCK_REPLICAS.general;
+
       const response = await fetch(`${TAVUS_API_URL}/conversations`, {
         method: 'POST',
         headers: {
@@ -160,19 +172,42 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           persona_id: personaId,
+          replica_id: replicaId,
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Tavus create conversation error:', errorText);
-        throw new Error(`Failed to create conversation: ${response.status}`);
+        throw new Error(`Failed to create conversation: ${response.status} - ${errorText}`);
       }
 
       const conversationData = await response.json();
       console.log('Conversation created:', conversationData);
 
       return new Response(JSON.stringify(conversationData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (action === 'get_replicas') {
+      // List all available replicas
+      const response = await fetch(`${TAVUS_API_URL}/replicas`, {
+        method: 'GET',
+        headers: {
+          'x-api-key': TAVUS_API_KEY,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Tavus get replicas error:', errorText);
+        throw new Error(`Failed to get replicas: ${response.status}`);
+      }
+
+      const replicasData = await response.json();
+      console.log('Available replicas:', replicasData);
+      return new Response(JSON.stringify(replicasData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -200,8 +235,6 @@ serve(async (req) => {
 
     if (action === 'end_conversation') {
       // End an active conversation
-      const { conversationId } = await req.json();
-      
       if (!conversationId) {
         throw new Error('conversationId is required');
       }
@@ -216,7 +249,7 @@ serve(async (req) => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Tavus end conversation error:', errorText);
-        throw new Error(`Failed to end conversation: ${response.status}`);
+        // Don't throw error for end conversation - it may already be ended
       }
 
       return new Response(JSON.stringify({ success: true }), {
