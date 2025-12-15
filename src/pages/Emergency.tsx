@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EmergencyCounseling from '@/components/ui-custom/EmergencyCounseling';
-import VideoCallManager from '@/components/ui-custom/VideoCallManager';
+import EmergencyElevenLabsCall from '@/components/ui-custom/EmergencyElevenLabsCall';
 import EmergencyAIChat from '@/components/ui-custom/EmergencyAIChat';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -15,7 +15,7 @@ const Emergency = () => {
   }>({ urgency: '', counselorId: 'emma' });
 
   const handleStartSession = (type: 'video' | 'chat', urgency: string) => {
-    const counselorId = urgency === 'high' ? 'marcus' : 'emma'; // Marcus for crisis, Emma for general
+    const counselorId = urgency === 'high' ? 'marcus' : 'emma';
     
     setSessionConfig({ urgency, counselorId });
     setCurrentSession(type);
@@ -26,16 +26,12 @@ const Emergency = () => {
     setSessionConfig({ urgency: '', counselorId: 'emma' });
   };
 
-  // Render active session
+  // Render ElevenLabs voice session with Dr. Aria
   if (currentSession === 'video') {
     return (
-      <VideoCallManager
-        counselorName={sessionConfig.counselorId === 'marcus' ? 'Dr. Marcus Chen' : 'Dr. Emma Rodriguez'}
+      <EmergencyElevenLabsCall
         urgencyLevel={sessionConfig.urgency}
-        onEndCall={handleEndSession}
-        onAIResponse={(response) => {
-          console.log('AI Response:', response);
-        }}
+        onEndSession={handleEndSession}
       />
     );
   }
