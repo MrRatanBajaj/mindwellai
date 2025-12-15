@@ -8,12 +8,18 @@ const corsHeaders = {
 const TAVUS_API_KEY = Deno.env.get('TAVUS_API_KEY');
 const TAVUS_API_URL = 'https://tavusapi.com/v2';
 
-// Stock replica IDs from Tavus (these are publicly available demo replicas)
-// You can replace these with your own custom replica IDs if you have them
+// Stock replica IDs - You may need to replace with your own replica ID from Tavus dashboard
 const STOCK_REPLICAS = {
-  general: 'r79e1c033f', // Female professional look
-  dermatologist: 'r79e1c033f', // Male professional look  
-  mental_health: 'r79e1c033f', // Warm, empathetic look
+  general: 'r79e1c033f',
+  dermatologist: 'r79e1c033f',
+  mental_health: 'r79e1c033f',
+};
+
+// ElevenLabs voice IDs for each doctor type
+const DOCTOR_VOICES = {
+  general: 'EXAVITQu4vr4xnSDxMaL', // Sarah - professional female voice
+  dermatologist: 'JBFqnCBsd6RMkjVDRZzb', // George - professional male voice
+  mental_health: 'FGY2WhTYpPnrIDTdsKH5', // Laura - warm empathetic voice
 };
 
 // Persona configurations for different doctor types
@@ -92,6 +98,9 @@ serve(async (req) => {
       // Create a new persona for the specified doctor type
       const doctorConfig = DOCTOR_PERSONAS[doctorType as keyof typeof DOCTOR_PERSONAS] || DOCTOR_PERSONAS.general;
       const replicaId = STOCK_REPLICAS[doctorType as keyof typeof STOCK_REPLICAS] || STOCK_REPLICAS.general;
+      const voiceId = DOCTOR_VOICES[doctorType as keyof typeof DOCTOR_VOICES] || DOCTOR_VOICES.general;
+      
+      console.log(`Creating persona with replica: ${replicaId}, voice: ${voiceId}`);
       
       const response = await fetch(`${TAVUS_API_URL}/personas`, {
         method: 'POST',
@@ -107,7 +116,8 @@ serve(async (req) => {
           default_replica_id: replicaId,
           layers: {
             tts: {
-              tts_engine: "cartesia",
+              tts_engine: "elevenlabs",
+              elevenlabs_voice_id: voiceId,
               tts_emotion_control: true
             },
             llm: {
