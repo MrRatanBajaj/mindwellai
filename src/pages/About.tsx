@@ -1,187 +1,500 @@
-
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import Avatar from "@/components/ui-custom/Avatar";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
-import { Shield, Heart, Zap, Award, Video, MessageCircle, Brain, Users, Sparkles, PlayCircle, ChevronRight, Star, CheckCircle2, Globe } from "lucide-react";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Shield, Heart, Zap, Award, Video, MessageCircle, Brain, Users, 
+  Sparkles, PlayCircle, ChevronRight, Star, CheckCircle2, Globe,
+  Target, Eye, Lightbulb, ArrowRight, Quote, Phone, Mail, MapPin
+} from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import { useRef } from "react";
 
 const About = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+  
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+
+  const features = [
+    {
+      icon: Video,
+      title: "AI Video Counseling",
+      description: "Face-to-face sessions with realistic AI therapists that respond with empathy and professional guidance.",
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: MessageCircle,
+      title: "Intelligent Chat Therapy",
+      description: "Advanced conversational AI trained on evidence-based therapeutic approaches.",
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: Brain,
+      title: "Personalized AI Avatars",
+      description: "Customizable AI companions that adapt to your personality and therapeutic needs.",
+      color: "from-purple-500 to-violet-500"
+    },
+    {
+      icon: Sparkles,
+      title: "Voice Cloning Technology",
+      description: "Memorial chat feature with voice synthesis to connect with memories of loved ones.",
+      color: "from-pink-500 to-rose-500"
+    },
+    {
+      icon: Users,
+      title: "Peer Support Network",
+      description: "AI-moderated support groups and community connections for shared healing.",
+      color: "from-orange-500 to-amber-500"
+    },
+    {
+      icon: Globe,
+      title: "24/7 Global Access",
+      description: "Round-the-clock mental health support available in multiple languages.",
+      color: "from-teal-500 to-cyan-500"
+    }
+  ];
+
+  const stats = [
+    { value: "50K+", label: "Active Users", icon: Users },
+    { value: "1M+", label: "Sessions Completed", icon: MessageCircle },
+    { value: "98%", label: "Satisfaction Rate", icon: Star },
+    { value: "24/7", label: "Available Support", icon: Globe },
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div ref={containerRef} className="min-h-screen flex flex-col bg-background overflow-hidden">
       <Header />
       
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-mindwell-50/50 via-transparent to-accent/20"></div>
-        <div className="max-w-7xl mx-auto relative">
-          <div className="flex flex-col-reverse lg:flex-row items-center">
-            <motion.div 
-              className="lg:w-1/2 lg:pr-12 mt-10 lg:mt-0"
+      {/* Hero Section - Immersive */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-mindwell-900 via-mindwell-800 to-purple-900" />
+          <motion.div 
+            className="absolute inset-0"
+            style={{ opacity }}
+          >
+            {/* Floating orbs */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: Math.random() * 400 + 200,
+                  height: Math.random() * 400 + 200,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  background: `radial-gradient(circle, ${
+                    ['rgba(139, 92, 246, 0.3)', 'rgba(59, 130, 246, 0.3)', 'rgba(236, 72, 153, 0.3)'][i % 3]
+                  } 0%, transparent 70%)`,
+                }}
+                animate={{
+                  x: [0, 30, 0],
+                  y: [0, -30, 0],
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 10 + i * 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </motion.div>
+          {/* Grid overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-32">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
             >
-              <span className="inline-block py-2 px-4 rounded-full bg-gradient-to-r from-mindwell-100 to-mindwell-200 text-mindwell-700 font-medium text-sm mb-6 border border-mindwell-300">
-                ✨ Next-Gen AI Mental Health Platform
-              </span>
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 text-balance">
-                Redefining Mental Health with
-                <span className="text-gradient"> AI Companions</span>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-sm mb-8"
+              >
+                <Sparkles className="w-4 h-4 text-yellow-400" />
+                <span>Next-Gen AI Mental Health Platform</span>
+              </motion.div>
+              
+              <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-8">
+                Redefining
+                <br />
+                <span className="bg-gradient-to-r from-mindwell-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Mental Health
+                </span>
+                <br />
+                with AI
               </h1>
-              <p className="text-slate-600 text-xl mb-6 max-w-lg text-balance leading-relaxed">
-                Experience personalized mental health support through our advanced AI avatars, designed to provide empathetic counseling and therapeutic guidance 24/7.
+              
+              <p className="text-xl text-white/70 mb-10 max-w-lg leading-relaxed">
+                Experience personalized mental health support through our advanced AI avatars, 
+                designed to provide empathetic counseling and therapeutic guidance 24/7.
               </p>
-              <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  AI Video Counseling
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Voice Cloning Technology
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Personalized Therapy
-                </div>
-              </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <NavLink to="/consultation">
-                  <Button size="lg" className="bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700 text-white shadow-lg">
+                  <Button size="lg" className="bg-white text-mindwell-900 hover:bg-white/90 shadow-2xl h-14 px-8 text-lg">
                     <Video className="w-5 h-5 mr-2" />
                     Start AI Session
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </NavLink>
-                <Button variant="outline" size="lg" className="border-mindwell-200 hover:bg-mindwell-50">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm h-14 px-8 text-lg"
+                >
                   <PlayCircle className="w-5 h-5 mr-2" />
                   Watch Demo
                 </Button>
               </div>
             </motion.div>
-            
-            <motion.div 
-              className="lg:w-1/2"
-              initial={{ opacity: 0, scale: 0.9 }}
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="relative"
             >
               <div className="relative">
-                <div className="aspect-square max-w-lg mx-auto overflow-hidden rounded-3xl glass-panel shadow-glass-strong">
+                {/* Main card */}
+                <motion.div
+                  className="relative z-10 rounded-3xl overflow-hidden shadow-2xl"
+                  style={{ y: y1 }}
+                >
                   <img 
-                    src="https://images.unsplash.com/photo-1552308995-2baac1ad5490?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" 
+                    src="https://images.unsplash.com/photo-1552308995-2baac1ad5490?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80" 
                     alt="AI Mental Health Platform" 
-                    className="w-full h-full object-cover"
+                    className="w-full aspect-[4/5] object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-mindwell-900/60 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <div className="glass-panel rounded-xl p-4 border border-white/20">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center">
-                          <Brain className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">Dr. Emma AI</p>
-                          <p className="text-white/80 text-sm">Your AI Therapist</p>
-                        </div>
-                        <div className="ml-auto flex items-center gap-1">
-                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                          <span className="text-white/80 text-xs">Online</span>
-                        </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-mindwell-900/90 via-mindwell-900/40 to-transparent" />
+                  
+                  {/* Floating info card */}
+                  <motion.div
+                    className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-mindwell-400 to-purple-500 flex items-center justify-center">
+                        <Brain className="w-7 h-7 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-semibold text-lg">Dr. Emma AI</p>
+                        <p className="text-white/70 text-sm">Your Personal AI Therapist</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+                        <span className="text-white/70 text-sm">Online</span>
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-gradient-to-br from-accent/30 to-mindwell-200/50 rounded-3xl -z-10 animate-float"></div>
-                <div className="absolute -top-8 -left-8 w-32 h-32 bg-gradient-to-br from-mindwell-100/50 to-slate-100/30 rounded-3xl -z-10 animate-float" style={{ animationDelay: '3s' }}></div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Decorative elements */}
+                <motion.div
+                  className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 blur-2xl"
+                  style={{ y: y2 }}
+                />
+                <motion.div
+                  className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 blur-2xl"
+                  style={{ y: y1 }}
+                />
               </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+            <motion.div
+              className="w-1.5 h-1.5 bg-white rounded-full"
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 px-6 bg-gradient-to-b from-mindwell-900 to-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center"
+              >
+                <motion.div
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-mindwell-500/20 to-purple-500/20 border border-mindwell-500/30 mb-4"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <stat.icon className="w-8 h-8 text-mindwell-400" />
+                </motion.div>
+                <h3 className="text-4xl font-bold text-white mb-2">{stat.value}</h3>
+                <p className="text-white/60">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Bento Grid */}
+      <section className="py-32 px-6 bg-background relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-mindwell-500/10 to-purple-500/10 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div 
+            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-mindwell-500/10 border border-mindwell-500/30 text-mindwell-600 text-sm mb-6"
+            >
+              <Zap className="w-4 h-4" />
+              <span>Revolutionary Technology</span>
+            </motion.div>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6">
+              AI-Powered Mental
+              <br />
+              <span className="text-gradient">Health Features</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Experience the future of mental health support with our cutting-edge AI technology.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -8 }}
+                className="group"
+              >
+                <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-mindwell-500/50 transition-all duration-500 overflow-hidden">
+                  <CardContent className="p-8 relative">
+                    <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${feature.color} opacity-10 blur-2xl group-hover:opacity-20 transition-opacity duration-500`} />
+                    
+                    <motion.div
+                      className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg`}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                    >
+                      <feature.icon className="w-7 h-7 text-white" />
+                    </motion.div>
+                    
+                    <h3 className="text-xl font-bold mb-3 group-hover:text-mindwell-500 transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                    
+                    <motion.div 
+                      className="mt-6 flex items-center text-mindwell-500 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                      initial={{ x: -10 }}
+                      whileHover={{ x: 0 }}
+                    >
+                      Learn more <ChevronRight className="w-4 h-4 ml-1" />
+                    </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Section - Cinematic */}
+      <section className="py-32 px-6 bg-gradient-to-b from-background via-mindwell-950/50 to-background relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 text-sm mb-6">
+              <Award className="w-4 h-4" />
+              <span>Leadership</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6">
+              Meet Our
+              <br />
+              <span className="text-gradient">Visionary Founder</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="relative">
+                <motion.div
+                  className="rounded-3xl overflow-hidden shadow-2xl"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <img 
+                    src="/founder-image.jpg" 
+                    alt="Mr. Ratan Bajaj, Founder and CEO" 
+                    className="w-full aspect-[3/4] object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-mindwell-900/80 via-transparent to-transparent" />
+                </motion.div>
+                
+                {/* Floating badge */}
+                <motion.div
+                  className="absolute -bottom-6 -right-6 p-6 rounded-2xl bg-gradient-to-br from-mindwell-500 to-purple-600 shadow-2xl"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Award className="w-10 h-10 text-white" />
+                </motion.div>
+                
+                <div className="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-gradient-to-br from-amber-400/30 to-orange-500/30 blur-xl" />
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <div>
+                <h3 className="text-3xl font-bold mb-2">Mr. Ratan Bajaj</h3>
+                <p className="text-mindwell-500 font-medium text-lg">Founder & Chief Executive Officer</p>
+              </div>
+
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>
+                  Mr. Ratan Bajaj founded MindwellAI with a profound vision to democratize access 
+                  to mental health support worldwide. With over a decade of experience in technology 
+                  innovation and a deep understanding of psychological wellness, he recognized the 
+                  transformative potential of AI in addressing the global mental health crisis.
+                </p>
+                <p>
+                  His journey began after witnessing firsthand the barriers that prevent millions 
+                  from accessing quality mental health care - from geographical limitations and 
+                  financial constraints to stigma and long waiting lists.
+                </p>
+              </div>
+
+              <motion.blockquote
+                className="relative pl-6 py-4 border-l-4 border-mindwell-500 bg-mindwell-500/5 rounded-r-xl"
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+              >
+                <Quote className="absolute -top-4 -left-4 w-8 h-8 text-mindwell-500/30" />
+                <p className="italic text-lg text-foreground">
+                  "Mental health support should be a fundamental right, not a privilege. 
+                  Through compassionate AI technology, we're breaking down barriers and 
+                  creating a world where everyone has access to the support they need."
+                </p>
+              </motion.blockquote>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* AI Features Section */}
-      <section className="py-20 px-6 bg-gradient-to-b from-white to-slate-50">
+      {/* Vision & Mission */}
+      <section className="py-32 px-6 bg-background">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block py-2 px-4 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-sm mb-6 border border-mindwell-200">
-              🤖 Advanced AI Technology
-            </span>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-balance">
-              Revolutionary AI Mental Health Features
-            </h2>
-            <p className="text-slate-600 max-w-3xl mx-auto text-lg text-balance">
-              Experience the future of mental health support with our cutting-edge AI avatars and personalized therapeutic interventions.
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-2 gap-8">
             {[
               {
-                icon: Video,
-                title: "AI Video Counseling",
-                description: "Face-to-face sessions with realistic AI therapists that respond with empathy and professional guidance.",
-                color: "from-blue-400 to-blue-600"
+                icon: Eye,
+                title: "Our Vision",
+                color: "from-blue-500 to-cyan-500",
+                description: "To create a world where mental health support is universally accessible, breaking down traditional barriers through innovative AI technology.",
+                points: ["Global accessibility for all individuals", "Elimination of mental health stigma", "Personalized therapeutic experiences"]
               },
               {
-                icon: MessageCircle,
-                title: "Intelligent Chat Therapy",
-                description: "Advanced conversational AI trained on evidence-based therapeutic approaches and real-time emotional analysis.",
-                color: "from-green-400 to-green-600"
-              },
-              {
-                icon: Brain,
-                title: "Personalized AI Avatars",
-                description: "Customizable AI companions that adapt to your personality, preferences, and therapeutic needs.",
-                color: "from-purple-400 to-purple-600"
-              },
-              {
-                icon: Sparkles,
-                title: "Voice Cloning Technology",
-                description: "Memorial chat feature with voice synthesis to connect with memories of loved ones.",
-                color: "from-pink-400 to-pink-600"
-              },
-              {
-                icon: Users,
-                title: "Peer Support Network",
-                description: "AI-moderated support groups and community connections for shared healing experiences.",
-                color: "from-orange-400 to-orange-600"
-              },
-              {
-                icon: Globe,
-                title: "24/7 Global Access",
-                description: "Round-the-clock mental health support available in multiple languages and time zones.",
-                color: "from-teal-400 to-teal-600"
+                icon: Target,
+                title: "Our Mission",
+                color: "from-purple-500 to-pink-500",
+                description: "To provide immediate, compassionate, and effective mental health support through cutting-edge AI technology.",
+                points: ["24/7 immediate support availability", "Evidence-based therapeutic methodologies", "Complete privacy and data protection"]
               }
-            ].map((feature, index) => (
-              <motion.div 
+            ].map((item, index) => (
+              <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ delay: index * 0.2 }}
               >
-                <Card className="glass-panel hover-lift border-white/20 group cursor-pointer">
-                  <CardHeader>
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                      <feature.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <CardTitle className="text-xl font-semibold group-hover:text-mindwell-600 transition-colors">
-                      {feature.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-600 leading-relaxed">{feature.description}</p>
-                    <div className="mt-4 flex items-center text-mindwell-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                      Learn more <ChevronRight className="w-4 h-4 ml-1" />
+                <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-mindwell-500/50 transition-all duration-500 overflow-hidden group">
+                  <CardContent className="p-10 relative">
+                    <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${item.color} opacity-5 blur-3xl group-hover:opacity-10 transition-opacity`} />
+                    
+                    <motion.div
+                      className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-8 shadow-lg`}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                    >
+                      <item.icon className="w-8 h-8 text-white" />
+                    </motion.div>
+                    
+                    <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
+                    <p className="text-muted-foreground text-lg leading-relaxed mb-8">
+                      {item.description}
+                    </p>
+                    
+                    <div className="space-y-4">
+                      {item.points.map((point, i) => (
+                        <motion.div
+                          key={i}
+                          className="flex items-center gap-3"
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.3 + i * 0.1 }}
+                        >
+                          <CheckCircle2 className="w-5 h-5 text-mindwell-500 flex-shrink-0" />
+                          <span className="text-muted-foreground">{point}</span>
+                        </motion.div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -191,403 +504,68 @@ const About = () => {
         </div>
       </section>
 
-      {/* Founder Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6">
-              Our Leadership
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
-              Meet Our Founder & CEO
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto text-balance">
-              The visionary behind MindwellAI's mission to transform mental health support
-            </p>
-          </div>
-          
-          <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20">
-            <div className="max-w-md animate-fade-in animate-float hover:scale-105 transition-transform duration-500">
-              <div className="relative overflow-hidden rounded-2xl shadow-xl mb-6 border-4 border-mindwell-200 hover:border-mindwell-400 transition-colors duration-300">
-                <img 
-                  src="/founder-image.jpg" 
-                  alt="Mr. Ratan Bajaj, Founder and CEO" 
-                  className="w-full h-[400px] object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 w-full p-6 text-white opacity-0 hover:opacity-100 transition-opacity duration-300">
-                  <h3 className="text-xl font-bold">Mr. Ratan Bajaj</h3>
-                  <p className="text-white/80">Visionary Leader</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="max-w-xl animate-fade-in">
-              <h3 className="text-2xl font-bold mb-2 text-mindwell-700">Mr. Ratan Bajaj</h3>
-              <p className="text-mindwell-600 font-medium mb-6">Founder & Chief Executive Officer</p>
-              <p className="text-slate-600 mb-4">
-                Mr. Ratan Bajaj founded MindwellAI with a profound vision to democratize access to mental health support worldwide. With over a decade of experience in technology innovation and a deep understanding of psychological wellness, he recognized the transformative potential of AI in addressing the global mental health crisis.
-              </p>
-              <p className="text-slate-600 mb-4">
-                His journey began after witnessing firsthand the barriers that prevent millions from accessing quality mental health care - from geographical limitations and financial constraints to stigma and long waiting lists. This sparked his mission to create an accessible, compassionate, and scientifically-backed AI platform.
-              </p>
-              <p className="text-slate-600 mb-6">
-                Under his visionary leadership, MindwellAI has revolutionized AI-assisted therapy by combining advanced machine learning with evidence-based therapeutic methodologies, creating personalized experiences that adapt to each individual's unique needs and circumstances.
-              </p>
-              <blockquote className="border-l-4 border-mindwell-200 pl-4 italic text-slate-700 bg-mindwell-50/50 p-4 rounded-r-lg">
-                "Mental health support should be a fundamental right, not a privilege. Through compassionate AI technology, we're breaking down barriers and creating a world where everyone has access to the support they need, when they need it most."
-              </blockquote>
-            </div>
-          </div>
+      {/* CTA Section */}
+      <section className="py-32 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-mindwell-600 via-purple-600 to-mindwell-700" />
+        <div className="absolute inset-0">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-white/20 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0.2, 0.8, 0.2],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
         </div>
-      </section>
-
-      {/* Founder Vision & Mission Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-mindwell-50/30 to-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16">
-            {/* Vision */}
-            <motion.div 
-              className="animate-fade-in"
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="glass-panel rounded-2xl p-8 h-full border border-mindwell-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-mindwell-400 to-mindwell-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Globe className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-mindwell-700">Our Vision</h3>
-                <p className="text-slate-600 text-lg leading-relaxed mb-6">
-                  To create a world where mental health support is universally accessible, breaking down traditional barriers through innovative AI technology that understands, empathizes, and responds to human emotional needs with genuine care and scientific precision.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-mindwell-500 rounded-full"></div>
-                    <span className="text-slate-600">Global accessibility for all individuals</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-mindwell-500 rounded-full"></div>
-                    <span className="text-slate-600">Elimination of mental health stigma</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-mindwell-500 rounded-full"></div>
-                    <span className="text-slate-600">Personalized therapeutic experiences</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Mission */}
-            <motion.div 
-              className="animate-fade-in"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="glass-panel rounded-2xl p-8 h-full border border-mindwell-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Heart className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-mindwell-700">Our Mission</h3>
-                <p className="text-slate-600 text-lg leading-relaxed mb-6">
-                  To provide immediate, compassionate, and effective mental health support through cutting-edge AI technology, while maintaining the highest standards of privacy, security, and therapeutic excellence that empowers individuals on their wellness journey.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-slate-600">24/7 immediate support availability</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-slate-600">Evidence-based therapeutic methodologies</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span className="text-slate-600">Complete privacy and data protection</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Founder's Background */}
-          <motion.div 
-            className="mt-16 animate-fade-in"
-            initial={{ opacity: 0, y: 50 }}
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <div className="glass-panel rounded-2xl p-8 border border-mindwell-100">
-              <h3 className="text-2xl font-bold mb-6 text-center text-mindwell-700">Leadership Excellence & Expertise</h3>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Brain className="w-6 h-6 text-white" />
-                  </div>
-                  <h4 className="font-semibold mb-2 text-mindwell-700">Technology Innovation</h4>
-                  <p className="text-slate-600 text-sm">Over 10+ years in AI development, machine learning, and healthcare technology solutions</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Award className="w-6 h-6 text-white" />
-                  </div>
-                  <h4 className="font-semibold mb-2 text-mindwell-700">Mental Health Advocacy</h4>
-                  <p className="text-slate-600 text-sm">Certified in psychological wellness principles and mental health first aid practices</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <h4 className="font-semibold mb-2 text-mindwell-700">Global Impact</h4>
-                  <p className="text-slate-600 text-sm">Leading initiatives to democratize mental health access across underserved communities worldwide</p>
-                </div>
-              </div>
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              Ready to Transform
+              <br />
+              Your Mental Health Journey?
+            </h2>
+            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
+              Join thousands of users who have already discovered the power of 
+              AI-assisted mental health support.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <NavLink to="/consultation">
+                <Button size="lg" className="bg-white text-mindwell-700 hover:bg-white/90 shadow-2xl h-14 px-10 text-lg">
+                  <Video className="w-5 h-5 mr-2" />
+                  Start Free Session
+                </Button>
+              </NavLink>
+              <NavLink to="/plans">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="border-white/30 text-white hover:bg-white/10 h-14 px-10 text-lg"
+                >
+                  View Plans
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </NavLink>
             </div>
           </motion.div>
         </div>
       </section>
-      
-      {/* Values Section */}
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6">
-              Our Core Values
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
-              What Drives Our Innovation
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto text-balance">
-              At MindwellAI, our values guide everything we create and every interaction we design.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: Shield,
-                title: "Privacy & Security",
-                description: "We prioritize your confidentiality with end-to-end encryption and strict data protection policies."
-              },
-              {
-                icon: Heart,
-                title: "Empathy",
-                description: "Our AI counselors are designed to understand and respond to emotional needs with genuine care."
-              },
-              {
-                icon: Zap,
-                title: "Innovation",
-                description: "We continuously refine our technology to provide the most effective therapeutic experience."
-              },
-              {
-                icon: Award,
-                title: "Excellence",
-                description: "We maintain high standards in our AI training, therapeutic approaches, and user experience."
-              }
-            ].map((value, index) => (
-              <div key={index} className="glass-panel rounded-xl p-6 hover-lift animate-fade-in">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-mindwell-50 text-mindwell-600 mb-5">
-                  <value.icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{value.title}</h3>
-                <p className="text-slate-600 text-sm">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      {/* Our Approach Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center">
-            <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
-              <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6 animate-fade-in">
-                Our Therapeutic Approach
-              </span>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance animate-fade-in">
-                Science-Backed Methodology
-              </h2>
-              <p className="text-slate-600 mb-6 animate-fade-in">
-                Our AI counselors utilize established therapeutic frameworks, including:
-              </p>
-              
-              <div className="space-y-4 animate-fade-in">
-                {[
-                  {
-                    title: "Cognitive Behavioral Therapy (CBT)",
-                    description: "Helps identify and change negative thought patterns to improve emotional response and behavior."
-                  },
-                  {
-                    title: "Mindfulness-Based Techniques",
-                    description: "Incorporates present-moment awareness to reduce stress and anxiety."
-                  },
-                  {
-                    title: "Solution-Focused Brief Therapy",
-                    description: "Concentrates on finding solutions in the present and exploring hope for the future."
-                  },
-                  {
-                    title: "Emotion-Focused Therapy",
-                    description: "Helps identify, experience, express, and regulate emotions in a healthier way."
-                  }
-                ].map((approach, index) => (
-                  <div key={index} className="p-4 border border-slate-200 rounded-lg hover:border-mindwell-200 transition-colors">
-                    <h3 className="font-medium text-mindwell-700 mb-1">{approach.title}</h3>
-                    <p className="text-sm text-slate-600">{approach.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="lg:w-1/2">
-              <div className="relative">
-                <div className="relative glass-panel rounded-3xl overflow-hidden shadow-lg border border-white/50 animate-fade-in">
-                  <div className="aspect-video">
-                    <img 
-                      src="https://images.unsplash.com/photo-1551739440-5dd934d3a94a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80" 
-                      alt="Therapeutic approach" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold text-white mb-2">Continuous Improvement</h3>
-                      <p className="text-white/80 text-sm">Our AI counselors learn and adapt from interactions to provide increasingly personalized support.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Team Section */}
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6">
-              Our AI Counselors
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
-              Meet Your Virtual Support Team
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto text-balance">
-              Our AI counselors are designed with specific therapeutic specializations to provide tailored support for your unique needs.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Dr. Emma AI",
-                specialty: "Anxiety & Stress Management",
-                description: "Specialized in cognitive behavioral techniques for managing anxiety, panic, and stress-related concerns.",
-                avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80"
-              },
-              {
-                name: "Dr. Marcus AI",
-                specialty: "Depression & Mood Disorders",
-                description: "Focused on evidence-based approaches for depression, bipolar disorder, and other mood-related challenges.",
-                avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80"
-              },
-              {
-                name: "Dr. Sophia AI",
-                specialty: "Relationship & Family Dynamics",
-                description: "Expert in navigating relationship challenges, family conflicts, and interpersonal communication issues.",
-                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&h=256&q=80"
-              }
-            ].map((counselor, index) => (
-              <div key={index} className="glass-panel rounded-xl p-6 hover-lift animate-fade-in">
-                <div className="flex flex-col items-center text-center mb-4">
-                  <Avatar src={counselor.avatar} size="xl" status="online" />
-                  <h3 className="text-xl font-semibold mt-4">{counselor.name}</h3>
-                  <p className="text-mindwell-600 text-sm font-medium">{counselor.specialty}</p>
-                </div>
-                <p className="text-slate-600 text-sm text-center mb-6">{counselor.description}</p>
-                <NavLink to="/consultation" className="block">
-                  <Button variant="outline" className="w-full">
-                    Schedule Session
-                  </Button>
-                </NavLink>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      {/* FAQ Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6">
-              Frequently Asked Questions
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
-              Common Questions
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto text-balance">
-              Find answers to frequently asked questions about our platform, technology, and therapeutic approach.
-            </p>
-          </div>
-          
-          <div className="space-y-6 animate-fade-in">
-            {[
-              {
-                question: "How do AI counselors compare to human therapists?",
-                answer: "AI counselors provide evidence-based therapeutic approaches similar to human therapists, with the advantages of 24/7 availability and complete privacy. While they don't replace human connection, they offer valuable support, especially for those who face barriers to traditional therapy."
-              },
-              {
-                question: "Is my conversation data secure and private?",
-                answer: "Absolutely. We use end-to-end encryption for all sessions, and your data is never shared with third parties. You can also delete your conversation history at any time from your account settings."
-              },
-              {
-                question: "What mental health issues can the platform help with?",
-                answer: "Our AI counselors are trained to support a wide range of concerns including anxiety, depression, stress management, relationship issues, grief, and personal growth. However, they are not equipped to handle crisis situations or severe mental health conditions that require immediate intervention."
-              },
-              {
-                question: "How are the sessions structured?",
-                answer: "Sessions typically last 30-45 minutes and adapt to your needs. Each session begins with a check-in about your current state, followed by exploration of specific concerns and practical strategies or insights. You can choose video, audio, or text-based communication."
-              },
-              {
-                question: "What if I need human support during a crisis?",
-                answer: "Our platform includes clear pathways to human support in crisis situations. The AI is programmed to recognize signs of severe distress and will provide immediate resources for appropriate emergency services and crisis helplines."
-              }
-            ].map((faq, index) => (
-              <div key={index} className="border border-slate-200 rounded-lg hover:border-mindwell-200 transition-colors">
-                <div className="p-6">
-                  <h3 className="font-medium text-lg mb-2">{faq.question}</h3>
-                  <p className="text-slate-600">{faq.answer}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-mindwell-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance animate-fade-in">
-            Begin Your Wellness Journey
-          </h2>
-          <p className="text-slate-600 mb-8 max-w-2xl mx-auto text-balance animate-fade-in">
-            Take the first step towards better mental well-being with personalized AI counseling sessions designed around your needs.
-          </p>
-          <div className="animate-fade-in">
-            <NavLink to="/consultation">
-              <Button size="lg" className="bg-mindwell-500 hover:bg-mindwell-600 text-white">
-                Book Your First Session
-              </Button>
-            </NavLink>
-          </div>
-        </div>
-      </section>
-      
+
       <Footer />
     </div>
   );
