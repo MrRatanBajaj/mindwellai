@@ -6,10 +6,10 @@ import RegistrationForm from "@/components/ui-custom/RegistrationForm";
 import EmergencyCounseling from "@/components/ui-custom/EmergencyCounseling";
 import VideoCallSession from "@/components/ui-custom/VideoCallSession";
 import TavusVideoConsultation from "@/components/ui-custom/TavusVideoConsultation";
-import MentalHealthChat from "@/components/ui-custom/MentalHealthChat";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Shield, Video, MessageCircle, Clock, Heart, AlertTriangle, CheckCircle, Stethoscope, User, Brain, Activity, Baby, Apple, Sparkles } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Shield, Video, Clock, Heart, AlertTriangle, CheckCircle, Stethoscope, User, Brain, Activity, Baby, Apple, Sparkles, Phone, Star, Zap, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -22,9 +22,10 @@ interface DoctorCardInfo {
   specialty: string;
   description: string;
   icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  hoverBorder: string;
+  gradient: string;
+  accent: string;
+  rating: number;
+  available: boolean;
 }
 
 const DOCTORS: DoctorCardInfo[] = [
@@ -32,81 +33,89 @@ const DOCTORS: DoctorCardInfo[] = [
     type: 'general',
     name: 'Dr. Sarah',
     specialty: 'General Physician',
-    description: 'General health consultations, symptom assessment, and wellness guidance',
+    description: 'General health consultations and wellness guidance',
     icon: Stethoscope,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-    hoverBorder: 'hover:border-blue-300',
+    gradient: 'from-blue-500 via-blue-600 to-indigo-600',
+    accent: 'blue',
+    rating: 4.9,
+    available: true,
   },
   {
     type: 'mental_health',
     name: 'Dr. Emma',
     specialty: 'Mental Health Counselor',
-    description: 'Anxiety, stress, depression support and emotional well-being',
+    description: 'Anxiety, stress, and emotional well-being support',
     icon: Brain,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-    hoverBorder: 'hover:border-purple-300',
+    gradient: 'from-purple-500 via-purple-600 to-violet-600',
+    accent: 'purple',
+    rating: 4.8,
+    available: true,
   },
   {
     type: 'cardiologist',
     name: 'Dr. James',
     specialty: 'Cardiologist',
-    description: 'Heart health, blood pressure, and cardiovascular wellness',
+    description: 'Heart health and cardiovascular wellness',
     icon: Heart,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
-    hoverBorder: 'hover:border-red-300',
+    gradient: 'from-red-500 via-rose-500 to-pink-600',
+    accent: 'red',
+    rating: 4.9,
+    available: true,
   },
   {
     type: 'dermatologist',
     name: 'Dr. Michael',
     specialty: 'Dermatologist',
-    description: 'Skin conditions, hair issues, and cosmetic dermatology advice',
+    description: 'Skin conditions and cosmetic dermatology',
     icon: Sparkles,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
-    hoverBorder: 'hover:border-amber-300',
+    gradient: 'from-amber-500 via-orange-500 to-yellow-500',
+    accent: 'amber',
+    rating: 4.7,
+    available: true,
   },
   {
     type: 'pediatrician',
     name: 'Dr. Lily',
     specialty: 'Pediatrician',
-    description: 'Children\'s health, development milestones, and pediatric care',
+    description: 'Children\'s health and development',
     icon: Baby,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100',
-    hoverBorder: 'hover:border-pink-300',
+    gradient: 'from-pink-500 via-pink-600 to-rose-500',
+    accent: 'pink',
+    rating: 4.9,
+    available: true,
   },
   {
     type: 'neurologist',
     name: 'Dr. Nathan',
     specialty: 'Neurologist',
-    description: 'Brain health, headaches, memory, and nervous system issues',
+    description: 'Brain health and nervous system',
     icon: Activity,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100',
-    hoverBorder: 'hover:border-indigo-300',
+    gradient: 'from-indigo-500 via-indigo-600 to-blue-600',
+    accent: 'indigo',
+    rating: 4.8,
+    available: true,
   },
   {
     type: 'gynecologist',
     name: 'Dr. Maya',
     specialty: 'Gynecologist',
-    description: 'Women\'s reproductive health and wellness consultations',
+    description: 'Women\'s reproductive health',
     icon: User,
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-100',
-    hoverBorder: 'hover:border-rose-300',
+    gradient: 'from-rose-500 via-pink-500 to-fuchsia-500',
+    accent: 'rose',
+    rating: 4.9,
+    available: true,
   },
   {
     type: 'nutritionist',
     name: 'Dr. Sophie',
     specialty: 'Nutritionist',
-    description: 'Dietary health, weight management, and nutrition planning',
+    description: 'Dietary health and nutrition planning',
     icon: Apple,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    hoverBorder: 'hover:border-green-300',
+    gradient: 'from-green-500 via-emerald-500 to-teal-500',
+    accent: 'green',
+    rating: 4.8,
+    available: true,
   },
 ];
 
@@ -115,6 +124,7 @@ const Consultation = () => {
   const [registrationData, setRegistrationData] = useState<any>(null);
   const [sessionType, setSessionType] = useState<'scheduled' | 'emergency'>('scheduled');
   const [selectedDoctorType, setSelectedDoctorType] = useState<DoctorType>('general');
+  const [hoveredDoctor, setHoveredDoctor] = useState<string | null>(null);
 
   const handleServiceSelection = (type: 'scheduled' | 'emergency') => {
     setSessionType(type);
@@ -141,10 +151,6 @@ const Consultation = () => {
     }
   };
 
-  const handleSchedulingComplete = () => {
-    setCurrentStep('completed');
-  };
-
   const handleCallEnd = () => {
     setCurrentStep('completed');
   };
@@ -153,201 +159,266 @@ const Consultation = () => {
     switch (currentStep) {
       case 'selection':
         return (
-          <section className="py-10 px-6">
-            <div className="max-w-7xl mx-auto">
-              <motion.div 
-                className="text-center mb-12"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <span className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-sm mb-6">
-                  <Video className="w-4 h-4" />
-                  AI Video Consultation
-                </span>
-                <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
-                  Choose Your AI Doctor
-                </h1>
-                <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto text-balance">
-                  Talk face-to-face with our AI healthcare professionals. Select a specialist based on your health concerns.
-                </p>
-              </motion.div>
+          <section className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5" />
+              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              
+              <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-12">
+                <motion.div 
+                  className="text-center max-w-3xl mx-auto"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6"
+                  >
+                    <Zap className="w-4 h-4" />
+                    <span className="text-sm font-medium">AI-Powered Healthcare</span>
+                  </motion.div>
+                  
+                  <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+                    Meet Your AI
+                    <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                      Healthcare Team
+                    </span>
+                  </h1>
+                  
+                  <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                    Connect instantly with specialized AI doctors for personalized medical guidance. 
+                    Available 24/7 with HD video consultations.
+                  </p>
 
-              {/* AI Doctors Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                  <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+                    {[
+                      { icon: Video, text: 'HD Video Call' },
+                      { icon: Shield, text: 'HIPAA Compliant' },
+                      { icon: Clock, text: 'Available 24/7' },
+                      { icon: Star, text: '4.9 Rating' },
+                    ].map((item, i) => (
+                      <motion.div
+                        key={item.text}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50"
+                      >
+                        <item.icon className="w-4 h-4 text-primary" />
+                        <span>{item.text}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Doctors Grid */}
+            <div className="max-w-7xl mx-auto px-6 pb-16">
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
                 {DOCTORS.map((doctor, index) => (
                   <motion.div
                     key={doctor.type}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: 0.1 * index }}
+                    onMouseEnter={() => setHoveredDoctor(doctor.type)}
+                    onMouseLeave={() => setHoveredDoctor(null)}
                   >
                     <Card 
                       className={cn(
-                        "h-full hover:shadow-xl transition-all duration-300 border-2 cursor-pointer group",
-                        doctor.hoverBorder
+                        "group relative h-full overflow-hidden cursor-pointer transition-all duration-500",
+                        "border-2 border-transparent hover:border-primary/30",
+                        "hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2",
+                        hoveredDoctor === doctor.type && "scale-[1.02]"
                       )}
                       onClick={() => handleStartTavusConsultation(doctor.type)}
                     >
-                      <CardHeader className="text-center pb-3">
-                        <motion.div 
-                          className={cn(
-                            "w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all duration-300",
-                            doctor.bgColor,
-                            "group-hover:scale-110"
-                          )}
-                          whileHover={{ rotate: 5 }}
-                        >
-                          <doctor.icon className={cn("w-8 h-8", doctor.color)} />
-                        </motion.div>
-                        <CardTitle className="text-lg mb-1">{doctor.name}</CardTitle>
-                        <CardDescription className="text-sm font-medium">{doctor.specialty}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <p className="text-sm text-muted-foreground mb-4 text-center line-clamp-2">
+                      {/* Gradient Background */}
+                      <div className={cn(
+                        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                        `bg-gradient-to-br ${doctor.gradient}`
+                      )} style={{ opacity: hoveredDoctor === doctor.type ? 0.05 : 0 }} />
+                      
+                      <CardContent className="relative p-6">
+                        {/* Status Badge */}
+                        <div className="flex justify-between items-start mb-4">
+                          <motion.div 
+                            className={cn(
+                              "w-14 h-14 rounded-2xl flex items-center justify-center",
+                              `bg-gradient-to-br ${doctor.gradient}`,
+                              "shadow-lg"
+                            )}
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            transition={{ type: "spring", stiffness: 400 }}
+                          >
+                            <doctor.icon className="w-7 h-7 text-white" />
+                          </motion.div>
+                          
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "bg-green-500/10 text-green-600 border-green-500/30",
+                              "flex items-center gap-1"
+                            )}
+                          >
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                            Online
+                          </Badge>
+                        </div>
+
+                        {/* Doctor Info */}
+                        <div className="mb-4">
+                          <h3 className="text-lg font-bold text-foreground mb-1">{doctor.name}</h3>
+                          <p className="text-sm font-medium text-primary">{doctor.specialty}</p>
+                        </div>
+
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                           {doctor.description}
                         </p>
+
+                        {/* Rating */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={cn(
+                                  "w-3.5 h-3.5",
+                                  i < Math.floor(doctor.rating) ? "text-yellow-500 fill-yellow-500" : "text-muted"
+                                )} 
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm font-medium">{doctor.rating}</span>
+                        </div>
+
+                        {/* CTA Button */}
                         <Button 
                           className={cn(
-                            "w-full",
-                            doctor.type === 'general' && "bg-blue-600 hover:bg-blue-700",
-                            doctor.type === 'mental_health' && "bg-purple-600 hover:bg-purple-700",
-                            doctor.type === 'cardiologist' && "bg-red-600 hover:bg-red-700",
-                            doctor.type === 'dermatologist' && "bg-amber-600 hover:bg-amber-700",
-                            doctor.type === 'pediatrician' && "bg-pink-600 hover:bg-pink-700",
-                            doctor.type === 'neurologist' && "bg-indigo-600 hover:bg-indigo-700",
-                            doctor.type === 'gynecologist' && "bg-rose-600 hover:bg-rose-700",
-                            doctor.type === 'nutritionist' && "bg-green-600 hover:bg-green-700",
+                            "w-full group/btn relative overflow-hidden",
+                            `bg-gradient-to-r ${doctor.gradient}`,
+                            "hover:shadow-lg transition-all duration-300"
                           )}
                         >
-                          <Video className="w-4 h-4 mr-2" />
-                          Start Call
+                          <span className="relative z-10 flex items-center gap-2">
+                            <Video className="w-4 h-4" />
+                            Start Consultation
+                            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                          </span>
                         </Button>
                       </CardContent>
                     </Card>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
 
-              {/* Divider */}
-              <div className="relative my-12">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-4 text-muted-foreground">Or choose another option</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                {/* Scheduled Consultation */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 hover:border-mindwell-200 cursor-pointer group">
-                    <CardHeader className="text-center pb-4">
-                      <motion.div 
-                        className="w-20 h-20 bg-mindwell-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-mindwell-200 transition-colors"
-                        whileHover={{ scale: 1.05, rotate: 5 }}
-                      >
-                        <Calendar className="w-10 h-10 text-mindwell-600" />
-                      </motion.div>
-                      <CardTitle className="text-2xl mb-2">Schedule Consultation</CardTitle>
-                      <CardDescription className="text-base">
-                        Book a planned session with our AI counselor at your convenience
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-3">
-                        {[
-                          'Complete registration and assessment',
-                          'Choose your preferred time slot',
-                          'Structured 50-minute sessions',
-                          'Follow-up care and resources'
-                        ].map((item, i) => (
-                          <div key={i} className="flex items-center space-x-3">
-                            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                            <span className="text-sm">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <Button 
-                        onClick={() => handleServiceSelection('scheduled')}
-                        className="w-full bg-mindwell-500 hover:bg-mindwell-600 text-white py-3 mt-6"
-                        size="lg"
-                      >
-                        Schedule Consultation
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Emergency Counseling */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 hover:border-red-200 cursor-pointer group">
-                    <CardHeader className="text-center pb-4">
-                      <motion.div 
-                        className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-red-200 transition-colors"
-                        whileHover={{ scale: 1.05, rotate: -5 }}
-                      >
-                        <AlertTriangle className="w-10 h-10 text-red-600" />
-                      </motion.div>
-                      <CardTitle className="text-2xl mb-2 text-red-800">Emergency Support</CardTitle>
-                      <CardDescription className="text-base">
-                        Get immediate help from our AI crisis counselor
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-3">
-                        {[
-                          'Available 24/7 instantly',
-                          'Crisis intervention trained AI',
-                          'Video or chat support options',
-                          'Connect to human support if needed'
-                        ].map((item, i) => (
-                          <div key={i} className="flex items-center space-x-3">
-                            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                            <span className="text-sm">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <Button 
-                        onClick={() => handleServiceSelection('emergency')}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white py-3 mt-6"
-                        size="lg"
-                      >
-                        Get Emergency Help
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </div>
-
-              {/* Features Overview */}
+              {/* Additional Options */}
               <motion.div 
-                className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6"
+                className="mt-16"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.8 }}
               >
-                {[
-                  { icon: Shield, color: 'bg-blue-100', iconColor: 'text-blue-600', title: 'Secure & Private', desc: 'End-to-end encrypted sessions with complete confidentiality' },
-                  { icon: Video, color: 'bg-green-100', iconColor: 'text-green-600', title: 'AI Avatar Counselor', desc: 'Interact with lifelike AI counselors trained in healthcare' },
-                  { icon: Heart, color: 'bg-purple-100', iconColor: 'text-purple-600', title: 'Personalized Care', desc: 'Tailored approaches based on your unique health needs' },
-                ].map((feature, i) => (
-                  <div key={i} className="text-center">
-                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4", feature.color)}>
-                      <feature.icon className={cn("w-6 h-6", feature.iconColor)} />
-                    </div>
-                    <h3 className="font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground text-sm">{feature.desc}</p>
+                <div className="relative mb-10">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
                   </div>
-                ))}
+                  <div className="relative flex justify-center">
+                    <span className="px-4 text-sm text-muted-foreground bg-background">
+                      Or explore other options
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                  {/* Schedule Consultation */}
+                  <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 400 }}>
+                    <Card 
+                      className="group cursor-pointer border-2 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden"
+                      onClick={() => handleServiceSelection('scheduled')}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <CardContent className="relative p-8">
+                        <div className="flex items-start gap-5">
+                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all">
+                            <Calendar className="w-8 h-8 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold mb-2">Schedule Consultation</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Book a planned session with our AI counselor at your convenience
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {['50-min sessions', 'Follow-up care', 'Resources'].map((item) => (
+                                <Badge key={item} variant="secondary" className="text-xs">
+                                  {item}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  {/* Emergency Support */}
+                  <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 400 }}>
+                    <Card 
+                      className="group cursor-pointer border-2 border-red-500/20 hover:border-red-500/40 hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300 overflow-hidden"
+                      onClick={() => handleServiceSelection('emergency')}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <CardContent className="relative p-8">
+                        <div className="flex items-start gap-5">
+                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all">
+                            <AlertTriangle className="w-8 h-8 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold mb-2 text-red-600">Emergency Support</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Get immediate help from our AI crisis counselor
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {['Available 24/7', 'Crisis trained', 'Instant connect'].map((item) => (
+                                <Badge key={item} variant="secondary" className="text-xs bg-red-500/10 text-red-600 border-red-500/20">
+                                  {item}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* Trust Indicators */}
+              <motion.div 
+                className="mt-16 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+              >
+                <p className="text-sm text-muted-foreground mb-6">Trusted by thousands of patients worldwide</p>
+                <div className="flex flex-wrap justify-center gap-8 items-center opacity-50">
+                  {['10,000+ Consultations', 'HIPAA Compliant', '99.9% Uptime', '24/7 Support'].map((item) => (
+                    <div key={item} className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <span className="text-sm font-medium">{item}</span>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             </div>
           </section>
@@ -358,12 +429,8 @@ const Consultation = () => {
           <section className="py-10 px-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCurrentStep('selection')}
-                  className="mb-4"
-                >
-                  ← Back to Service Selection
+                <Button variant="outline" onClick={() => setCurrentStep('selection')} className="mb-4">
+                  ← Back
                 </Button>
               </div>
               <RegistrationForm onComplete={handleRegistrationComplete} />
@@ -376,12 +443,8 @@ const Consultation = () => {
           <section className="py-10 px-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCurrentStep('selection')}
-                  className="mb-4"
-                >
-                  ← Back to Service Selection
+                <Button variant="outline" onClick={() => setCurrentStep('selection')} className="mb-4">
+                  ← Back
                 </Button>
               </div>
               <EmergencyCounseling onStartSession={handleEmergencySession} />
@@ -394,17 +457,11 @@ const Consultation = () => {
           <section className="py-10 px-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setCurrentStep('registration')}
-                  className="mb-4"
-                >
-                  ← Back to Registration
+                <Button variant="outline" onClick={() => setCurrentStep('registration')} className="mb-4">
+                  ← Back
                 </Button>
               </div>
-              <div className="glass-panel rounded-xl p-6 md:p-10 shadow-lg animate-fade-in">
-                <ConsultationForm />
-              </div>
+              <ConsultationForm />
             </div>
           </section>
         );
@@ -417,31 +474,27 @@ const Consultation = () => {
 
       case 'completed':
         return (
-          <section className="py-20 px-6">
-            <div className="max-w-2xl mx-auto text-center">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
-              >
-                <CheckCircle className="w-10 h-10 text-green-600" />
-              </motion.div>
-              <h1 className="text-3xl font-bold mb-4">Session Completed</h1>
-              <p className="text-muted-foreground mb-8">
-                Thank you for using our consultation services. Remember that support is always available when you need it.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button 
-                  onClick={() => setCurrentStep('selection')}
-                  className="bg-mindwell-500 hover:bg-mindwell-600"
-                >
-                  Book Another Session
-                </Button>
-                <Button variant="outline">
-                  View Resources
-                </Button>
+          <section className="py-20 px-6 min-h-screen flex items-center justify-center">
+            <motion.div 
+              className="max-w-lg mx-auto text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                <CheckCircle className="w-12 h-12 text-white" />
               </div>
-            </div>
+              <h2 className="text-3xl font-bold mb-4">Session Complete</h2>
+              <p className="text-muted-foreground mb-8">
+                Thank you for your consultation. Take care of your health!
+              </p>
+              <Button 
+                onClick={() => setCurrentStep('selection')}
+                size="lg"
+                className="bg-gradient-to-r from-primary to-purple-500"
+              >
+                Start New Consultation
+              </Button>
+            </motion.div>
           </section>
         );
 
@@ -450,39 +503,13 @@ const Consultation = () => {
     }
   };
 
-  const isVideoSession = currentStep === 'video-call' || currentStep === 'tavus-video';
-
   return (
-    <div className="min-h-screen flex flex-col">
-      {!isVideoSession && <Header />}
-      
-      {currentStep === 'selection' && (
-        <section className="pt-24 pb-10 px-6 bg-gradient-to-b from-mindwell-50/50 to-transparent">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-3xl md:text-4xl font-bold mb-4"
-            >
-              AI Healthcare Consultation
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-muted-foreground text-lg"
-            >
-              Get instant medical guidance from our AI-powered healthcare specialists
-            </motion.p>
-          </div>
-        </section>
-      )}
-      
-      <main className="flex-1">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-grow pt-20">
         {renderStepContent()}
       </main>
-      
-      {!isVideoSession && <Footer />}
+      {currentStep === 'selection' && <Footer />}
     </div>
   );
 };
