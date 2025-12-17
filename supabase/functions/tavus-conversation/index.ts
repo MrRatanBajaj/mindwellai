@@ -9,28 +9,16 @@ const TAVUS_API_KEY = Deno.env.get('TAVUS_API_KEY');
 const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 const TAVUS_API_URL = 'https://tavusapi.com/v2';
 
-// Stock replica IDs - You may need to replace with your own replica ID from Tavus dashboard
-const STOCK_REPLICAS = {
-  general: 'r79e1c033f',
-  dermatologist: 'r79e1c033f',
-  mental_health: 'r79e1c033f',
-  cardiologist: 'r79e1c033f',
-  pediatrician: 'r79e1c033f',
-  neurologist: 'r79e1c033f',
-  gynecologist: 'r79e1c033f',
-  nutritionist: 'r79e1c033f',
-};
-
 // ElevenLabs voice IDs for each doctor type
 const DOCTOR_VOICES = {
-  general: 'EXAVITQu4vr4xnSDxMaL', // Sarah - professional female voice
-  dermatologist: 'JBFqnCBsd6RMkjVDRZzb', // George - professional male voice
-  mental_health: 'FGY2WhTYpPnrIDTdsKH5', // Laura - warm empathetic voice
-  cardiologist: 'onwK4e9ZLuTAKqWW03F9', // Daniel - authoritative male voice
-  pediatrician: 'pFZP5JQG7iQjIQuC4Bku', // Lily - gentle female voice
-  neurologist: 'TX3LPaxmHKxFdv7VOQHJ', // Liam - calm professional voice
-  gynecologist: 'XrExE9yKIg1WjnnlVkGX', // Matilda - caring female voice
-  nutritionist: 'cgSgspJ2msm6clMCkdW9', // Jessica - friendly female voice
+  general: 'EXAVITQu4vr4xnSDxMaL',
+  dermatologist: 'JBFqnCBsd6RMkjVDRZzb',
+  mental_health: 'FGY2WhTYpPnrIDTdsKH5',
+  cardiologist: 'onwK4e9ZLuTAKqWW03F9',
+  pediatrician: 'pFZP5JQG7iQjIQuC4Bku',
+  neurologist: 'TX3LPaxmHKxFdv7VOQHJ',
+  gynecologist: 'XrExE9yKIg1WjnnlVkGX',
+  nutritionist: 'cgSgspJ2msm6clMCkdW9',
 };
 
 // Persona configurations for different doctor types
@@ -47,7 +35,7 @@ Your approach:
 - Be empathetic, supportive, and professional
 
 Remember: Always clarify that you are an AI assistant and recommend consulting with a human doctor for serious concerns or prescriptions.`,
-    context: "Patients may describe symptoms, ask about medications, or seek general health advice. Provide thoughtful, accurate medical information while being supportive.",
+    context: "Patients may describe symptoms, ask about medications, or seek general health advice.",
   },
   dermatologist: {
     persona_name: "Dr. Michael - Dermatologist",
@@ -59,14 +47,8 @@ Your expertise includes:
 - Cosmetic concerns (aging, sun damage)
 - General skin care advice
 
-Your approach:
-- Ask about the appearance, location, and duration of skin issues
-- Inquire about any related symptoms (itching, pain, changes)
-- Provide skincare recommendations and lifestyle advice
-- Recommend when to see a dermatologist in person
-
 Remember: Always mention that visual examination by a qualified dermatologist is important for accurate diagnosis.`,
-    context: "Patients may describe skin conditions, ask about treatments, or seek skincare advice. Help them understand their condition and provide guidance.",
+    context: "Patients may describe skin conditions, ask about treatments, or seek skincare advice.",
   },
   mental_health: {
     persona_name: "Dr. Emma - Mental Health Counselor",
@@ -76,18 +58,10 @@ Your expertise includes:
 - Anxiety and stress management
 - Depression and mood disorders
 - Coping strategies and mindfulness
-- Crisis intervention basics
 - General emotional support
 
-Your approach:
-- Create a safe, non-judgmental space for conversation
-- Use active listening and empathetic responses
-- Help identify feelings and thought patterns
-- Suggest coping techniques (breathing exercises, grounding)
-- Recognize when professional human intervention is needed
-
-IMPORTANT: If someone expresses suicidal thoughts or intent to harm themselves or others, immediately provide crisis hotline numbers and strongly encourage seeking immediate help.`,
-    context: "Users may share emotional struggles, anxiety, or seek mental health support. Be supportive, empathetic, and provide helpful coping strategies.",
+IMPORTANT: If someone expresses suicidal thoughts, immediately provide crisis hotline numbers and strongly encourage seeking immediate help.`,
+    context: "Users may share emotional struggles, anxiety, or seek mental health support.",
   },
   cardiologist: {
     persona_name: "Dr. James - Cardiologist",
@@ -96,20 +70,10 @@ IMPORTANT: If someone expresses suicidal thoughts or intent to harm themselves o
 Your expertise includes:
 - Heart disease prevention and management
 - Blood pressure concerns
-- Cholesterol and lipid management
-- Chest pain assessment
-- Heart rhythm irregularities
 - Cardiovascular risk factors
 
-Your approach:
-- Ask about symptoms, their duration, and triggers
-- Inquire about family history and lifestyle factors
-- Provide heart-healthy lifestyle recommendations
-- Explain when emergency care is needed
-- Discuss preventive measures
-
 IMPORTANT: For chest pain, shortness of breath, or signs of heart attack, immediately advise calling emergency services.`,
-    context: "Patients may describe cardiac symptoms, ask about heart health, or seek advice on cardiovascular wellness.",
+    context: "Patients may describe cardiac symptoms or seek advice on cardiovascular wellness.",
   },
   pediatrician: {
     persona_name: "Dr. Lily - Pediatrician",
@@ -119,19 +83,10 @@ Your expertise includes:
 - Growth and development milestones
 - Common childhood illnesses
 - Vaccination guidance
-- Nutrition and feeding
-- Behavioral concerns
 - Infant and toddler care
 
-Your approach:
-- Use gentle, reassuring language
-- Ask about the child's age, symptoms, and duration
-- Provide age-appropriate health advice
-- Offer comfort to worried parents
-- Know when to recommend urgent care
-
 Remember: Always encourage parents to trust their instincts and seek in-person care when concerned.`,
-    context: "Parents may describe their child's symptoms, ask about development, or seek pediatric health advice.",
+    context: "Parents may describe their child's symptoms or ask about development.",
   },
   neurologist: {
     persona_name: "Dr. Nathan - Neurologist",
@@ -142,15 +97,6 @@ Your expertise includes:
 - Memory concerns
 - Sleep disorders
 - Dizziness and balance issues
-- Numbness and tingling
-- Cognitive health
-
-Your approach:
-- Ask detailed questions about symptom patterns
-- Inquire about triggers and relieving factors
-- Explain neurological concepts in simple terms
-- Provide lifestyle modifications for brain health
-- Recognize stroke warning signs
 
 IMPORTANT: For sudden severe headache, facial drooping, arm weakness, or speech difficulty (FAST signs), immediately advise calling emergency services.`,
     context: "Patients may describe neurological symptoms, headaches, or cognitive concerns.",
@@ -162,17 +108,7 @@ IMPORTANT: For sudden severe headache, facial drooping, arm weakness, or speech 
 Your expertise includes:
 - Menstrual health and irregularities
 - Reproductive health
-- Pregnancy-related questions
-- Menopause management
-- Contraception guidance
 - General women's health
-
-Your approach:
-- Create a comfortable, non-judgmental environment
-- Ask sensitive questions with care
-- Provide accurate reproductive health information
-- Discuss options and lifestyle factors
-- Encourage regular screenings
 
 Remember: Maintain sensitivity and professionalism while discussing intimate health concerns.`,
     context: "Patients may ask about menstrual issues, reproductive health, or women's wellness topics.",
@@ -185,60 +121,89 @@ Your expertise includes:
 - Weight management
 - Balanced nutrition plans
 - Food allergies and intolerances
-- Sports nutrition
-- Therapeutic diets
 - Healthy eating habits
-
-Your approach:
-- Assess dietary patterns and goals
-- Provide practical, sustainable advice
-- Consider cultural food preferences
-- Explain nutritional science simply
-- Support positive food relationships
 
 Remember: Encourage a balanced approach to eating without promoting restrictive behaviors.`,
     context: "Patients may seek dietary advice, weight management guidance, or nutritional information.",
   }
 };
 
+// Helper function to get available replicas
+async function getAvailableReplica(): Promise<string | null> {
+  try {
+    const response = await fetch(`${TAVUS_API_URL}/replicas`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': TAVUS_API_KEY!,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch replicas:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('Available replicas:', JSON.stringify(data));
+    
+    // Get the first available replica
+    if (data.data && data.data.length > 0) {
+      return data.data[0].replica_id;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching replicas:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     if (!TAVUS_API_KEY) {
-      throw new Error('TAVUS_API_KEY is not configured');
+      console.error('TAVUS_API_KEY is not configured');
+      return new Response(
+        JSON.stringify({ error: 'TAVUS_API_KEY is not configured. Please add your Tavus API key.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const { action, doctorType = 'general', personaId, conversationId } = await req.json();
     console.log(`Tavus API action: ${action}, doctorType: ${doctorType}`);
 
     if (action === 'create_persona') {
-      // Create a new persona for the specified doctor type
-      const doctorConfig = DOCTOR_PERSONAS[doctorType as keyof typeof DOCTOR_PERSONAS] || DOCTOR_PERSONAS.general;
-      const replicaId = STOCK_REPLICAS[doctorType as keyof typeof STOCK_REPLICAS] || STOCK_REPLICAS.general;
-      const voiceId = DOCTOR_VOICES[doctorType as keyof typeof DOCTOR_VOICES] || DOCTOR_VOICES.general;
+      // First, get an available replica from the user's account
+      const replicaId = await getAvailableReplica();
       
-      console.log(`Creating persona with replica: ${replicaId}, voice: ${voiceId}, elevenlabs key exists: ${!!ELEVENLABS_API_KEY}`);
+      if (!replicaId) {
+        console.error('No replicas available in your Tavus account');
+        return new Response(
+          JSON.stringify({ 
+            error: 'No replicas found in your Tavus account. Please create a replica in your Tavus dashboard first.',
+            help: 'Visit https://app.tavus.io to create a replica'
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Using replica: ${replicaId}`);
+
+      const doctorConfig = DOCTOR_PERSONAS[doctorType as keyof typeof DOCTOR_PERSONAS] || DOCTOR_PERSONAS.general;
+      const voiceId = DOCTOR_VOICES[doctorType as keyof typeof DOCTOR_VOICES] || DOCTOR_VOICES.general;
       
       const personaPayload: any = {
         persona_name: doctorConfig.persona_name,
-        pipeline_mode: "full",
         system_prompt: doctorConfig.system_prompt,
         context: doctorConfig.context,
         default_replica_id: replicaId,
         layers: {
           llm: {
-            model: "tavus-gpt-4o",
-            speculative_inference: true,
+            model: "tavus-llama",
           },
-          stt: {
-            participant_pause_sensitivity: "high",
-            participant_interrupt_sensitivity: "high",
-            smart_turn_detection: true
-          }
         }
       };
 
@@ -248,15 +213,11 @@ serve(async (req) => {
           tts_engine: "elevenlabs",
           elevenlabs_voice_id: voiceId,
           elevenlabs_api_key: ELEVENLABS_API_KEY,
-          tts_emotion_control: true
         };
-      } else {
-        // Fall back to default Tavus TTS
-        personaPayload.layers.tts = {
-          tts_engine: "cartesia",
-          tts_emotion_control: true
-        };
+        console.log('Using ElevenLabs TTS with voice:', voiceId);
       }
+
+      console.log('Creating persona with payload:', JSON.stringify(personaPayload));
       
       const response = await fetch(`${TAVUS_API_URL}/personas`, {
         method: 'POST',
@@ -267,14 +228,18 @@ serve(async (req) => {
         body: JSON.stringify(personaPayload),
       });
 
+      const responseText = await response.text();
+      console.log('Tavus create persona response:', response.status, responseText);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Tavus create persona error:', errorText);
-        throw new Error(`Failed to create persona: ${response.status} - ${errorText}`);
+        return new Response(
+          JSON.stringify({ error: `Failed to create persona: ${responseText}` }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      const personaData = await response.json();
-      console.log('Persona created:', personaData);
+      const personaData = JSON.parse(responseText);
+      console.log('Persona created successfully:', personaData.persona_id);
 
       return new Response(JSON.stringify(personaData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -282,12 +247,24 @@ serve(async (req) => {
     }
 
     if (action === 'create_conversation') {
-      // Create a conversation with the specified persona
       if (!personaId) {
-        throw new Error('personaId is required for creating a conversation');
+        return new Response(
+          JSON.stringify({ error: 'personaId is required for creating a conversation' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      const replicaId = STOCK_REPLICAS[doctorType as keyof typeof STOCK_REPLICAS] || STOCK_REPLICAS.general;
+      // Get a replica for the conversation
+      const replicaId = await getAvailableReplica();
+      
+      if (!replicaId) {
+        return new Response(
+          JSON.stringify({ error: 'No replicas available' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('Creating conversation with persona:', personaId, 'replica:', replicaId);
 
       const response = await fetch(`${TAVUS_API_URL}/conversations`, {
         method: 'POST',
@@ -301,14 +278,18 @@ serve(async (req) => {
         }),
       });
 
+      const responseText = await response.text();
+      console.log('Tavus create conversation response:', response.status, responseText);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Tavus create conversation error:', errorText);
-        throw new Error(`Failed to create conversation: ${response.status} - ${errorText}`);
+        return new Response(
+          JSON.stringify({ error: `Failed to create conversation: ${responseText}` }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      const conversationData = await response.json();
-      console.log('Conversation created:', conversationData);
+      const conversationData = JSON.parse(responseText);
+      console.log('Conversation created:', conversationData.conversation_id);
 
       return new Response(JSON.stringify(conversationData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -316,82 +297,55 @@ serve(async (req) => {
     }
 
     if (action === 'get_replicas') {
-      // List all available replicas
       const response = await fetch(`${TAVUS_API_URL}/replicas`, {
         method: 'GET',
-        headers: {
-          'x-api-key': TAVUS_API_KEY,
-        },
+        headers: { 'x-api-key': TAVUS_API_KEY },
       });
 
+      const responseText = await response.text();
+      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Tavus get replicas error:', errorText);
-        throw new Error(`Failed to get replicas: ${response.status}`);
+        return new Response(
+          JSON.stringify({ error: `Failed to get replicas: ${responseText}` }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      const replicasData = await response.json();
-      console.log('Available replicas:', replicasData);
-      return new Response(JSON.stringify(replicasData), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (action === 'get_personas') {
-      // List all available personas
-      const response = await fetch(`${TAVUS_API_URL}/personas`, {
-        method: 'GET',
-        headers: {
-          'x-api-key': TAVUS_API_KEY,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Tavus get personas error:', errorText);
-        throw new Error(`Failed to get personas: ${response.status}`);
-      }
-
-      const personasData = await response.json();
-      return new Response(JSON.stringify(personasData), {
+      return new Response(responseText, {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (action === 'end_conversation') {
-      // End an active conversation
       if (!conversationId) {
-        throw new Error('conversationId is required');
+        return new Response(
+          JSON.stringify({ error: 'conversationId is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       const response = await fetch(`${TAVUS_API_URL}/conversations/${conversationId}/end`, {
         method: 'POST',
-        headers: {
-          'x-api-key': TAVUS_API_KEY,
-        },
+        headers: { 'x-api-key': TAVUS_API_KEY },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Tavus end conversation error:', errorText);
-        // Don't throw error for end conversation - it may already be ended
-      }
+      console.log('End conversation response:', response.status);
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    throw new Error(`Unknown action: ${action}`);
+    return new Response(
+      JSON.stringify({ error: `Unknown action: ${action}` }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('Tavus conversation error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
