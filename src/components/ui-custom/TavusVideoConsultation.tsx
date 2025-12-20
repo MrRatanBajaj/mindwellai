@@ -20,12 +20,15 @@ import {
   Activity,
   Baby,
   Apple,
-  Sparkles
+  Sparkles,
+  Volume2,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { useConversation } from '@11labs/react';
 
 interface TavusVideoConsultationProps {
   doctorType?: 'general' | 'dermatologist' | 'mental_health' | 'cardiologist' | 'pediatrician' | 'neurologist' | 'gynecologist' | 'nutritionist';
@@ -40,6 +43,8 @@ interface DoctorInfo {
   bgColor: string;
   gradient: string;
   description: string;
+  voiceId: string;
+  systemPrompt: string;
 }
 
 const DOCTOR_INFO: Record<string, DoctorInfo> = {
@@ -51,6 +56,8 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     bgColor: 'bg-blue-100',
     gradient: 'from-blue-500 to-blue-600',
     description: 'Expert in general health consultations and preventive care',
+    voiceId: 'EXAVITQu4vr4xnSDxMaL',
+    systemPrompt: 'You are Dr. Sarah, a compassionate General Physician. Provide helpful medical guidance, ask about symptoms, and recommend when to see a doctor in person.',
   },
   dermatologist: {
     name: 'Dr. Michael',
@@ -60,6 +67,8 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     bgColor: 'bg-amber-100',
     gradient: 'from-amber-500 to-orange-600',
     description: 'Specialist in skin health, hair, and cosmetic concerns',
+    voiceId: 'JBFqnCBsd6RMkjVDRZzb',
+    systemPrompt: 'You are Dr. Michael, a skilled Dermatologist. Help patients with skin conditions, provide skincare advice, and guide them on when to seek in-person examination.',
   },
   mental_health: {
     name: 'Dr. Emma',
@@ -69,6 +78,8 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     bgColor: 'bg-purple-100',
     gradient: 'from-purple-500 to-purple-600',
     description: 'Compassionate support for anxiety, depression, and emotional wellness',
+    voiceId: 'FGY2WhTYpPnrIDTdsKH5',
+    systemPrompt: 'You are Dr. Emma, a compassionate Mental Health Counselor. Provide emotional support, coping strategies, and always prioritize crisis intervention if needed.',
   },
   cardiologist: {
     name: 'Dr. James',
@@ -78,6 +89,8 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     bgColor: 'bg-red-100',
     gradient: 'from-red-500 to-rose-600',
     description: 'Expert in heart health and cardiovascular wellness',
+    voiceId: 'onwK4e9ZLuTAKqWW03F9',
+    systemPrompt: 'You are Dr. James, an experienced Cardiologist. Help with heart health concerns and immediately advise emergency services for chest pain or heart attack symptoms.',
   },
   pediatrician: {
     name: 'Dr. Lily',
@@ -86,7 +99,9 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     color: 'text-pink-600',
     bgColor: 'bg-pink-100',
     gradient: 'from-pink-500 to-pink-600',
-    description: 'Caring specialist for children\'s health and development',
+    description: "Caring specialist for children's health and development",
+    voiceId: 'pFZP5JQG7iQjIQuC4Bku',
+    systemPrompt: 'You are Dr. Lily, a caring Pediatrician. Help parents with child health concerns, development questions, and provide reassurance.',
   },
   neurologist: {
     name: 'Dr. Nathan',
@@ -96,6 +111,8 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     bgColor: 'bg-indigo-100',
     gradient: 'from-indigo-500 to-indigo-600',
     description: 'Expert in brain and nervous system health',
+    voiceId: 'TX3LPaxmHKxFdv7VOQHJ',
+    systemPrompt: 'You are Dr. Nathan, a Neurologist. Help with neurological concerns and immediately advise emergency for stroke symptoms.',
   },
   gynecologist: {
     name: 'Dr. Maya',
@@ -104,7 +121,9 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     color: 'text-rose-600',
     bgColor: 'bg-rose-100',
     gradient: 'from-rose-500 to-pink-600',
-    description: 'Specialist in women\'s reproductive health and wellness',
+    description: "Specialist in women's reproductive health and wellness",
+    voiceId: 'XrExE9yKIg1WjnnlVkGX',
+    systemPrompt: "You are Dr. Maya, a compassionate Gynecologist. Provide sensitive, professional guidance on women's health topics.",
   },
   nutritionist: {
     name: 'Dr. Sophie',
@@ -114,8 +133,12 @@ const DOCTOR_INFO: Record<string, DoctorInfo> = {
     bgColor: 'bg-green-100',
     gradient: 'from-green-500 to-emerald-600',
     description: 'Expert in dietary health and nutrition planning',
+    voiceId: 'cgSgspJ2msm6clMCkdW9',
+    systemPrompt: 'You are Dr. Sophie, a Nutritionist. Provide balanced dietary advice without promoting restrictive eating behaviors.',
   },
 };
+
+type ConsultationMode = 'selection' | 'video' | 'voice';
 
 const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   doctorType = 'general',
@@ -126,13 +149,43 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [conversationUrl, setConversationUrl] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [personaId, setPersonaId] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(true);
+  const [mode, setMode] = useState<ConsultationMode>('selection');
+  const [voiceError, setVoiceError] = useState<string | null>(null);
 
   const doctorInfo = DOCTOR_INFO[doctorType] || DOCTOR_INFO.general;
   const DoctorIcon = doctorInfo.icon;
+
+  // ElevenLabs conversation hook
+  const elevenLabsConversation = useConversation({
+    onConnect: () => {
+      console.log('ElevenLabs voice connected');
+      setIsConnected(true);
+      toast({
+        title: "Voice Connected",
+        description: `You're speaking with ${doctorInfo.name}`,
+      });
+    },
+    onDisconnect: () => {
+      console.log('ElevenLabs voice disconnected');
+      setIsConnected(false);
+    },
+    onMessage: (message) => {
+      console.log('ElevenLabs message:', message);
+    },
+    onError: (error: any) => {
+      console.error('ElevenLabs error:', error);
+      const errorMsg = typeof error === 'string' ? error : error?.message || 'Voice connection failed';
+      setVoiceError(errorMsg);
+      toast({
+        title: "Voice Error",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Session timer
   useEffect(() => {
@@ -151,10 +204,12 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const startConsultation = useCallback(async () => {
+  // Start Tavus Video Consultation
+  const startVideoConsultation = useCallback(async () => {
     setIsLoading(true);
+    setMode('video');
     try {
-      // Step 1: Create or get persona
+      // Step 1: Create persona
       console.log('Creating persona for:', doctorType);
       const { data: personaData, error: personaError } = await supabase.functions.invoke(
         'tavus-conversation',
@@ -168,13 +223,16 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       }
 
       console.log('Persona response:', personaData);
+      
+      if (personaData?.error) {
+        throw new Error(personaData.error);
+      }
+      
       const createdPersonaId = personaData?.persona_id;
       
       if (!createdPersonaId) {
         throw new Error('No persona ID returned');
       }
-      
-      setPersonaId(createdPersonaId);
 
       // Step 2: Create conversation
       console.log('Creating conversation with persona:', createdPersonaId);
@@ -191,6 +249,10 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
 
       console.log('Conversation response:', conversationData);
 
+      if (conversationData?.error) {
+        throw new Error(conversationData.error);
+      }
+
       if (!conversationData?.conversation_url) {
         throw new Error('No conversation URL returned');
       }
@@ -200,23 +262,88 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       setIsConnected(true);
 
       toast({
-        title: "Consultation Ready",
+        title: "Video Consultation Ready",
         description: `You're connected with ${doctorInfo.name}`,
       });
 
     } catch (error) {
-      console.error('Error starting consultation:', error);
+      console.error('Error starting video consultation:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to start video consultation";
+      
       toast({
-        title: "Connection Failed",
-        description: error instanceof Error ? error.message : "Failed to start video consultation",
+        title: "Video Connection Failed",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Suggest voice fallback
+      toast({
+        title: "Try Voice Consultation",
+        description: "Video not available. Would you like to try voice consultation instead?",
+      });
+      
+      setMode('selection');
     } finally {
       setIsLoading(false);
     }
   }, [doctorType, doctorInfo.name, toast]);
 
-  const endConsultation = useCallback(async () => {
+  // Start ElevenLabs Voice Consultation
+  const startVoiceConsultation = useCallback(async () => {
+    setIsLoading(true);
+    setMode('voice');
+    setVoiceError(null);
+    
+    try {
+      // Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Get signed URL from edge function
+      const { data, error } = await supabase.functions.invoke('elevenlabs-voice-agent', {
+        body: { 
+          action: 'get_signed_url',
+          doctorType,
+          systemPrompt: doctorInfo.systemPrompt,
+        },
+      });
+
+      if (error) {
+        throw new Error(typeof error === 'string' ? error : (error as any)?.message || 'Failed to get voice session');
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (data?.signed_url) {
+        // Use signed URL for WebSocket connection
+        await elevenLabsConversation.startSession({
+          signedUrl: data.signed_url,
+        });
+      } else if (data?.agent_id) {
+        // Use agent ID directly (for public agents)
+        await elevenLabsConversation.startSession({
+          agentId: data.agent_id,
+        });
+      } else {
+        throw new Error('No session URL or agent ID returned');
+      }
+
+    } catch (error) {
+      console.error('Error starting voice consultation:', error);
+      setVoiceError(error instanceof Error ? error.message : 'Voice connection failed');
+      toast({
+        title: "Voice Connection Failed",
+        description: error instanceof Error ? error.message : "Failed to start voice consultation",
+        variant: "destructive",
+      });
+      setMode('selection');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation, toast]);
+
+  const endVideoConsultation = useCallback(async () => {
     try {
       if (conversationId) {
         await supabase.functions.invoke('tavus-conversation', {
@@ -239,11 +366,341 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     }
   }, [conversationId, sessionDuration, toast, onEndCall]);
 
+  const endVoiceConsultation = useCallback(async () => {
+    try {
+      await elevenLabsConversation.endSession();
+      
+      toast({
+        title: "Session Ended",
+        description: `Consultation duration: ${formatDuration(sessionDuration)}`,
+      });
+
+      setIsConnected(false);
+      onEndCall();
+    } catch (error) {
+      console.error('Error ending voice consultation:', error);
+      onEndCall();
+    }
+  }, [elevenLabsConversation, sessionDuration, toast, onEndCall]);
+
   const openInNewTab = () => {
     if (conversationUrl) {
       window.open(conversationUrl, '_blank', 'noopener,noreferrer');
     }
   };
+
+  // Selection screen
+  const renderSelectionScreen = () => (
+    <motion.div
+      key="selection"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="text-center max-w-xl w-full"
+    >
+      <Card className="p-8 bg-card/80 backdrop-blur-lg border-border overflow-hidden relative">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className={cn("absolute -top-24 -right-24 w-48 h-48 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)} />
+          <div className={cn("absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)} />
+        </div>
+        
+        <CardContent className="space-y-6 p-0 relative z-10">
+          {/* Doctor Avatar */}
+          <motion.div 
+            className={cn(
+              "w-36 h-36 rounded-3xl mx-auto flex items-center justify-center bg-gradient-to-br shadow-2xl",
+              doctorInfo.gradient
+            )}
+            animate={{ 
+              boxShadow: [
+                "0 0 20px rgba(0,0,0,0.1)",
+                "0 0 40px rgba(0,0,0,0.2)",
+                "0 0 20px rgba(0,0,0,0.1)"
+              ]
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <DoctorIcon className="h-16 w-16 text-white" />
+          </motion.div>
+
+          <div>
+            <h2 className="text-3xl font-bold text-foreground">{doctorInfo.name}</h2>
+            <p className="text-lg text-muted-foreground">{doctorInfo.specialty}</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+              {doctorInfo.description}
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {[
+              { icon: Shield, label: 'Secure & Private', color: 'text-green-500' },
+              { icon: Brain, label: 'AI-Powered', color: 'text-purple-500' },
+              { icon: Clock, label: 'Available 24/7', color: 'text-blue-500' },
+              { icon: Heart, label: 'Empathetic Care', color: 'text-red-500' },
+            ].map((feature, index) => (
+              <motion.div
+                key={feature.label}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center gap-2 text-muted-foreground bg-muted/50 rounded-lg p-2"
+              >
+                <feature.icon className={cn("h-4 w-4", feature.color)} />
+                <span>{feature.label}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Consultation Options */}
+          <div className="space-y-3">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={startVideoConsultation}
+                disabled={isLoading}
+                size="lg"
+                className={cn("w-full bg-gradient-to-r text-white shadow-lg h-14 text-lg", doctorInfo.gradient)}
+              >
+                {isLoading && mode === 'video' ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Connecting Video...
+                  </>
+                ) : (
+                  <>
+                    <Video className="h-5 w-5 mr-2" />
+                    Start Video Consultation
+                  </>
+                )}
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={startVoiceConsultation}
+                disabled={isLoading}
+                size="lg"
+                variant="outline"
+                className="w-full h-14 text-lg border-2"
+              >
+                {isLoading && mode === 'voice' ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Connecting Voice...
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="h-5 w-5 mr-2" />
+                    Start Voice Consultation
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Video requires Tavus setup. Voice uses ElevenLabs AI.
+          </p>
+
+          <Button
+            variant="ghost"
+            onClick={onEndCall}
+            className="w-full"
+          >
+            Cancel
+          </Button>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  // Video consultation screen
+  const renderVideoScreen = () => (
+    <motion.div
+      key="video"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full h-full flex flex-col"
+    >
+      {conversationUrl ? (
+        <div className="flex-1 flex flex-col gap-4">
+          <Card className="flex-1 overflow-hidden shadow-2xl">
+            <CardContent className="p-0 h-full min-h-[500px]">
+              <iframe
+                src={conversationUrl}
+                className="w-full h-full min-h-[500px]"
+                allow="camera; microphone; autoplay; fullscreen"
+                allowFullScreen
+              />
+            </CardContent>
+          </Card>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-center gap-4 bg-card/80 backdrop-blur-lg rounded-2xl p-4"
+          >
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant={isMuted ? "destructive" : "secondary"}
+                size="lg"
+                className="rounded-full h-14 w-14"
+                onClick={() => setIsMuted(!isMuted)}
+              >
+                {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant={!isVideoOn ? "destructive" : "secondary"}
+                size="lg"
+                className="rounded-full h-14 w-14"
+                onClick={() => setIsVideoOn(!isVideoOn)}
+              >
+                {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="destructive"
+                size="lg"
+                className="rounded-full px-8 h-14"
+                onClick={endVideoConsultation}
+              >
+                <PhoneOff className="h-5 w-5 mr-2" />
+                End Call
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-full h-14 w-14"
+                onClick={openInNewTab}
+              >
+                <ExternalLink className="h-5 w-5" />
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      ) : (
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+          <p className="mt-4 text-muted-foreground">Initializing video...</p>
+        </div>
+      )}
+    </motion.div>
+  );
+
+  // Voice consultation screen
+  const renderVoiceScreen = () => (
+    <motion.div
+      key="voice"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full max-w-md mx-auto"
+    >
+      <Card className="p-8 bg-card/80 backdrop-blur-lg">
+        <CardContent className="space-y-6 p-0 text-center">
+          {/* Animated Avatar */}
+          <motion.div 
+            className={cn(
+              "w-32 h-32 rounded-full mx-auto flex items-center justify-center bg-gradient-to-br shadow-2xl",
+              doctorInfo.gradient
+            )}
+            animate={elevenLabsConversation.isSpeaking ? { 
+              scale: [1, 1.1, 1],
+              boxShadow: [
+                "0 0 20px rgba(0,0,0,0.2)",
+                "0 0 60px rgba(0,0,0,0.4)",
+                "0 0 20px rgba(0,0,0,0.2)"
+              ]
+            } : {}}
+            transition={{ duration: 0.5, repeat: elevenLabsConversation.isSpeaking ? Infinity : 0 }}
+          >
+            <DoctorIcon className="h-14 w-14 text-white" />
+          </motion.div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">{doctorInfo.name}</h2>
+            <p className="text-muted-foreground">{doctorInfo.specialty}</p>
+          </div>
+
+          {/* Status */}
+          <div className="flex justify-center gap-2">
+            <Badge variant="default" className={cn(
+              "flex items-center gap-2",
+              isConnected ? "bg-green-500" : "bg-yellow-500"
+            )}>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              {elevenLabsConversation.isSpeaking ? 'Speaking...' : isConnected ? 'Listening...' : 'Connecting...'}
+            </Badge>
+            {isConnected && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {formatDuration(sessionDuration)}
+              </Badge>
+            )}
+          </div>
+
+          {/* Voice Visualizer */}
+          {isConnected && (
+            <div className="flex justify-center items-center gap-1 h-16">
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className={cn("w-2 rounded-full bg-gradient-to-t", doctorInfo.gradient)}
+                  animate={{
+                    height: elevenLabsConversation.isSpeaking 
+                      ? [16, 40 + Math.random() * 20, 16]
+                      : [16, 24, 16],
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    repeat: Infinity,
+                    delay: i * 0.1,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {voiceError && (
+            <div className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm">{voiceError}</span>
+            </div>
+          )}
+
+          <p className="text-sm text-muted-foreground">
+            {isConnected 
+              ? "Speak naturally - I'm listening and will respond." 
+              : "Preparing your voice consultation..."}
+          </p>
+
+          {/* Controls */}
+          <div className="flex justify-center gap-4">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="destructive"
+                size="lg"
+                className="rounded-full px-8 h-14"
+                onClick={endVoiceConsultation}
+              >
+                <PhoneOff className="h-5 w-5 mr-2" />
+                End Call
+              </Button>
+            </motion.div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col">
@@ -289,201 +746,24 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       {/* Main Content */}
       <div className="flex-1 p-6 flex items-center justify-center">
         <AnimatePresence mode="wait">
-          {!isConnected ? (
-            // Pre-connection Screen
-            <motion.div
-              key="pre-connection"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="text-center max-w-xl w-full"
-            >
-              <Card className="p-8 bg-card/80 backdrop-blur-lg border-border overflow-hidden relative">
-                {/* Animated background */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className={cn("absolute -top-24 -right-24 w-48 h-48 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)} />
-                  <div className={cn("absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)} />
-                </div>
-                
-                <CardContent className="space-y-6 p-0 relative z-10">
-                  {/* Doctor Avatar */}
-                  <motion.div 
-                    className={cn(
-                      "w-36 h-36 rounded-3xl mx-auto flex items-center justify-center bg-gradient-to-br shadow-2xl",
-                      doctorInfo.gradient
-                    )}
-                    animate={{ 
-                      boxShadow: [
-                        "0 0 20px rgba(0,0,0,0.1)",
-                        "0 0 40px rgba(0,0,0,0.2)",
-                        "0 0 20px rgba(0,0,0,0.1)"
-                      ]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <DoctorIcon className="h-16 w-16 text-white" />
-                  </motion.div>
-
-                  <div>
-                    <h2 className="text-3xl font-bold text-foreground">{doctorInfo.name}</h2>
-                    <p className="text-lg text-muted-foreground">{doctorInfo.specialty}</p>
-                    <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-                      {doctorInfo.description}
-                    </p>
-                  </div>
-
-                  {/* Features */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    {[
-                      { icon: Video, label: 'HD Video Call', color: 'text-blue-500' },
-                      { icon: Shield, label: 'Secure & Private', color: 'text-green-500' },
-                      { icon: Brain, label: 'AI-Powered', color: 'text-purple-500' },
-                      { icon: Heart, label: 'Empathetic Care', color: 'text-red-500' },
-                    ].map((feature, index) => (
-                      <motion.div
-                        key={feature.label}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex items-center gap-2 text-muted-foreground bg-muted/50 rounded-lg p-2"
-                      >
-                        <feature.icon className={cn("h-4 w-4", feature.color)} />
-                        <span>{feature.label}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Button
-                      onClick={startConsultation}
-                      disabled={isLoading}
-                      size="lg"
-                      className={cn("w-full bg-gradient-to-r text-white shadow-lg h-14 text-lg", doctorInfo.gradient)}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Connecting to {doctorInfo.name}...
-                        </>
-                      ) : (
-                        <>
-                          <Video className="h-5 w-5 mr-2" />
-                          Start Video Consultation
-                        </>
-                      )}
-                    </Button>
-                  </motion.div>
-
-                  <Button
-                    variant="ghost"
-                    onClick={onEndCall}
-                    className="w-full"
-                  >
-                    Cancel
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ) : (
-            // Connected Screen with iframe
-            <motion.div
-              key="connected"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full h-full flex flex-col"
-            >
-              {conversationUrl ? (
-                <div className="flex-1 flex flex-col gap-4">
-                  {/* Video Embed */}
-                  <Card className="flex-1 overflow-hidden shadow-2xl">
-                    <CardContent className="p-0 h-full min-h-[500px]">
-                      <iframe
-                        src={conversationUrl}
-                        className="w-full h-full min-h-[500px]"
-                        allow="camera; microphone; autoplay; fullscreen"
-                        allowFullScreen
-                      />
-                    </CardContent>
-                  </Card>
-
-                  {/* Controls */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-center gap-4 bg-card/80 backdrop-blur-lg rounded-2xl p-4"
-                  >
-                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                      <Button
-                        variant={isMuted ? "destructive" : "secondary"}
-                        size="lg"
-                        className="rounded-full h-14 w-14"
-                        onClick={() => setIsMuted(!isMuted)}
-                      >
-                        {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                      </Button>
-                    </motion.div>
-
-                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                      <Button
-                        variant={!isVideoOn ? "destructive" : "secondary"}
-                        size="lg"
-                        className="rounded-full h-14 w-14"
-                        onClick={() => setIsVideoOn(!isVideoOn)}
-                      >
-                        {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-                      </Button>
-                    </motion.div>
-
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button
-                        variant="destructive"
-                        size="lg"
-                        className="rounded-full px-8 h-14"
-                        onClick={endConsultation}
-                      >
-                        <PhoneOff className="h-5 w-5 mr-2" />
-                        End Call
-                      </Button>
-                    </motion.div>
-
-                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="rounded-full h-14 w-14"
-                        onClick={openInNewTab}
-                      >
-                        <ExternalLink className="h-5 w-5" />
-                      </Button>
-                    </motion.div>
-                  </motion.div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-                  <p className="mt-4 text-muted-foreground">Initializing video...</p>
-                </div>
-              )}
-            </motion.div>
-          )}
+          {mode === 'selection' && !isConnected && renderSelectionScreen()}
+          {mode === 'video' && isConnected && renderVideoScreen()}
+          {mode === 'voice' && renderVoiceScreen()}
         </AnimatePresence>
       </div>
 
-      {/* Footer Notice */}
+      {/* Footer */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="bg-muted/50 backdrop-blur-lg border-t border-border p-4"
       >
-        <p className="text-xs text-center text-muted-foreground max-w-2xl mx-auto">
-          <strong>Important:</strong> This is an AI-powered consultation for informational purposes only. 
-          It does not replace professional medical advice, diagnosis, or treatment. 
-          For emergencies, please call your local emergency services immediately.
-        </p>
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Shield className="h-4 w-4 text-green-500" />
+            <span>End-to-end encrypted • HIPAA compliant • Your data is protected</span>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
