@@ -22,13 +22,15 @@ import {
   Apple,
   Sparkles,
   Volume2,
-  AlertCircle
+  AlertCircle,
+  Waves
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversation } from '@11labs/react';
+import VoiceWaveformVisualizer from './VoiceWaveformVisualizer';
 
 interface TavusVideoConsultationProps {
   doctorType?: 'general' | 'dermatologist' | 'mental_health' | 'cardiologist' | 'pediatrician' | 'neurologist' | 'gynecologist' | 'nutritionist';
@@ -603,97 +605,159 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="w-full max-w-md mx-auto"
+      className="w-full max-w-2xl mx-auto"
     >
-      <Card className="p-8 bg-card/80 backdrop-blur-lg">
-        <CardContent className="space-y-6 p-0 text-center">
-          {/* Animated Avatar */}
-          <motion.div 
-            className={cn(
-              "w-32 h-32 rounded-full mx-auto flex items-center justify-center bg-gradient-to-br shadow-2xl",
-              doctorInfo.gradient
-            )}
-            animate={elevenLabsConversation.isSpeaking ? { 
-              scale: [1, 1.1, 1],
-              boxShadow: [
-                "0 0 20px rgba(0,0,0,0.2)",
-                "0 0 60px rgba(0,0,0,0.4)",
-                "0 0 20px rgba(0,0,0,0.2)"
-              ]
-            } : {}}
-            transition={{ duration: 0.5, repeat: elevenLabsConversation.isSpeaking ? Infinity : 0 }}
-          >
-            <DoctorIcon className="h-14 w-14 text-white" />
-          </motion.div>
+      <Card className="overflow-hidden bg-card/80 backdrop-blur-lg border-border">
+        {/* Animated Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className={cn("absolute -top-32 -right-32 w-64 h-64 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)}
+            animate={{
+              scale: elevenLabsConversation.isSpeaking ? [1, 1.3, 1] : [1, 1.1, 1],
+              opacity: elevenLabsConversation.isSpeaking ? [0.2, 0.4, 0.2] : [0.1, 0.2, 0.1],
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <motion.div
+            className={cn("absolute -bottom-32 -left-32 w-64 h-64 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)}
+            animate={{
+              scale: elevenLabsConversation.isSpeaking ? [1.3, 1, 1.3] : [1.1, 1, 1.1],
+              opacity: elevenLabsConversation.isSpeaking ? [0.3, 0.2, 0.3] : [0.15, 0.1, 0.15],
+            }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">{doctorInfo.name}</h2>
-            <p className="text-muted-foreground">{doctorInfo.specialty}</p>
-          </div>
-
-          {/* Status */}
-          <div className="flex justify-center gap-2">
-            <Badge variant="default" className={cn(
-              "flex items-center gap-2",
-              isConnected ? "bg-green-500" : "bg-yellow-500"
-            )}>
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              {elevenLabsConversation.isSpeaking ? 'Speaking...' : isConnected ? 'Listening...' : 'Connecting...'}
-            </Badge>
-            {isConnected && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatDuration(sessionDuration)}
-              </Badge>
-            )}
-          </div>
-
-          {/* Voice Visualizer */}
-          {isConnected && (
-            <div className="flex justify-center items-center gap-1 h-16">
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className={cn("w-2 rounded-full bg-gradient-to-t", doctorInfo.gradient)}
-                  animate={{
-                    height: elevenLabsConversation.isSpeaking 
-                      ? [16, 40 + Math.random() * 20, 16]
-                      : [16, 24, 16],
-                  }}
-                  transition={{
-                    duration: 0.4,
-                    repeat: Infinity,
-                    delay: i * 0.1,
-                  }}
-                />
-              ))}
+        <CardContent className="relative p-8 space-y-6">
+          {/* Header with Status */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div
+                className={cn("p-2 rounded-xl bg-gradient-to-br", doctorInfo.gradient)}
+                animate={elevenLabsConversation.isSpeaking ? { scale: [1, 1.1, 1] } : {}}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                <Waves className="h-5 w-5 text-white" />
+              </motion.div>
+              <div>
+                <h3 className="font-semibold text-foreground">{doctorInfo.name}</h3>
+                <p className="text-xs text-muted-foreground">{doctorInfo.specialty}</p>
+              </div>
             </div>
-          )}
+            
+            <div className="flex items-center gap-2">
+              <Badge variant="default" className={cn(
+                "flex items-center gap-2",
+                isConnected ? "bg-green-500" : "bg-yellow-500"
+              )}>
+                <motion.div 
+                  className="w-2 h-2 bg-white rounded-full"
+                  animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+                {elevenLabsConversation.isSpeaking ? 'Speaking' : isConnected ? 'Live' : 'Connecting'}
+              </Badge>
+              {isConnected && (
+                <Badge variant="outline" className="flex items-center gap-1 font-mono">
+                  <Clock className="h-3 w-3" />
+                  {formatDuration(sessionDuration)}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Main Visualizer */}
+          <div className="py-8">
+            <VoiceWaveformVisualizer
+              isActive={isConnected}
+              isSpeaking={elevenLabsConversation.isSpeaking}
+              isListening={isConnected && !elevenLabsConversation.isSpeaking}
+              gradient={doctorInfo.gradient}
+              mascotIcon={DoctorIcon}
+              doctorName={doctorInfo.name}
+            />
+          </div>
+
+          {/* Info Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { icon: Shield, label: 'Encrypted', value: 'End-to-end' },
+              { icon: Brain, label: 'AI Model', value: 'ElevenLabs' },
+              { icon: Volume2, label: 'Audio', value: 'HD Quality' },
+            ].map((item, index) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-muted/50 rounded-xl p-3 text-center"
+              >
+                <item.icon className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+                <p className="text-xs text-muted-foreground">{item.label}</p>
+                <p className="text-xs font-medium">{item.value}</p>
+              </motion.div>
+            ))}
+          </div>
 
           {voiceError && (
-            <div className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg"
+            >
               <AlertCircle className="h-5 w-5" />
               <span className="text-sm">{voiceError}</span>
-            </div>
+            </motion.div>
           )}
 
-          <p className="text-sm text-muted-foreground">
-            {isConnected 
-              ? "Speak naturally - I'm listening and will respond." 
-              : "Preparing your voice consultation..."}
-          </p>
+          {/* Conversation Tips */}
+          <motion.div
+            className="bg-primary/5 border border-primary/20 rounded-xl p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <p className="text-sm text-center text-muted-foreground">
+              {elevenLabsConversation.isSpeaking 
+                ? "🎧 Listening to your AI doctor's response..." 
+                : isConnected 
+                  ? "🎤 Speak naturally - I'm listening and will respond." 
+                  : "⏳ Preparing your voice consultation..."}
+            </p>
+          </motion.div>
 
           {/* Controls */}
-          <div className="flex justify-center gap-4">
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-full h-14 w-14"
+                onClick={() => setIsMuted(!isMuted)}
+              >
+                {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="destructive"
                 size="lg"
-                className="rounded-full px-8 h-14"
+                className="rounded-full px-10 h-14 shadow-lg"
                 onClick={endVoiceConsultation}
               >
                 <PhoneOff className="h-5 w-5 mr-2" />
                 End Call
+              </Button>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-full h-14 w-14"
+              >
+                <Volume2 className="h-5 w-5" />
               </Button>
             </motion.div>
           </div>
