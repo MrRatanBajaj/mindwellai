@@ -83,6 +83,15 @@ const Header = () => {
               <DropdownMenuContent align="start" className="w-56">
                 <DropdownMenuLabel className="text-xs text-muted-foreground">Talk with AI</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
+                  <NavLink to="/ai-audio-call" className="flex items-center gap-2 cursor-pointer">
+                    <Phone className="w-4 h-4 text-emerald-500" />
+                    <div>
+                      <div className="font-medium">Talk to Juli</div>
+                      <div className="text-xs text-muted-foreground">AI Audio Counselor</div>
+                    </div>
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <NavLink to="/ai-voice-therapy" className="flex items-center gap-2 cursor-pointer">
                     <Brain className="w-4 h-4 text-purple-500" />
                     <div>
@@ -269,6 +278,10 @@ const Header = () => {
           <div className="md:hidden mt-4 pb-4 border-t pt-4">
             <nav className="flex flex-col gap-2">
               <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">AI Services</div>
+              <NavLink to="/ai-audio-call" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
+                <Phone className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm">Talk to Juli</span>
+              </NavLink>
               <NavLink to="/ai-voice-therapy" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
                 <Brain className="w-4 h-4 text-purple-500" />
                 <span className="text-sm">Voice Therapy</span>

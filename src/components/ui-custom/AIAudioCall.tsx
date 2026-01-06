@@ -20,13 +20,17 @@ import {
   Waves,
   Send,
   User,
-  Bot
+  Bot,
+  Sparkles,
+  Star,
+  Zap
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import VoiceVisualizer from './VoiceVisualizer';
 import SessionSummary from './SessionSummary';
+import JuliMascot from './JuliMascot';
 
 interface AIAudioCallProps {
   onCallEnd?: () => void;
@@ -227,60 +231,64 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
   return (
     <>
       <div className="w-full max-w-5xl mx-auto space-y-6">
-        {/* Main Call Interface */}
-        <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-primary/20">
-          <CardContent className="p-6 md:p-8">
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Left Side - Avatar, Visualizers & Controls */}
-              <div className="flex flex-col items-center justify-center space-y-6">
-                {/* Juli Avatar with Visualizer */}
-                <motion.div 
-                  className="relative"
-                  animate={isConnected && conversation.isSpeaking ? { scale: [1, 1.02, 1] } : {}}
-                  transition={{ duration: 0.5, repeat: Infinity }}
-                >
-                  <div className={cn(
-                    "w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-2xl",
-                    isConnected && "ring-4 ring-primary/30 ring-offset-4 ring-offset-background"
-                  )}>
-                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-background to-muted flex items-center justify-center">
-                      <span className="text-4xl md:text-5xl">🧠</span>
-                    </div>
-                  </div>
-                  
-                  {/* Speaking Indicator */}
-                  <AnimatePresence>
-                    {isConnected && conversation.isSpeaking && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute -bottom-2 left-1/2 -translate-x-1/2"
-                      >
-                        <Badge className="bg-primary text-primary-foreground flex items-center gap-1">
-                          <Waves className="h-3 w-3 animate-pulse" />
-                          Speaking
-                        </Badge>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+        {/* Animated Background Elements */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-64 h-64 rounded-full"
+              style={{
+                background: `radial-gradient(circle, ${i % 2 === 0 ? 'hsl(var(--primary) / 0.1)' : 'hsl(142 76% 36% / 0.1)'} 0%, transparent 70%)`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                x: [0, 30, -30, 0],
+                y: [0, -30, 30, 0],
+                scale: [1, 1.1, 0.9, 1],
+              }}
+              transition={{
+                duration: 10 + i * 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </div>
 
-                  {/* Pulsing Ring Animation */}
-                  {isConnected && (
-                    <>
-                      <motion.div
-                        className="absolute inset-0 rounded-full border-2 border-primary/40"
-                        animate={{ scale: [1, 1.3, 1.3], opacity: [0.6, 0, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
-                      <motion.div
-                        className="absolute inset-0 rounded-full border-2 border-primary/40"
-                        animate={{ scale: [1, 1.5, 1.5], opacity: [0.4, 0, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                      />
-                    </>
-                  )}
-                </motion.div>
+        {/* Main Call Interface */}
+        <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 border-primary/20 backdrop-blur-sm">
+          <CardContent className="p-6 md:p-8">
+            {/* Quick Stats Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-wrap justify-center gap-3 mb-6"
+            >
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-sm">
+                <Shield className="h-3.5 w-3.5 text-primary" />
+                <span>End-to-End Encrypted</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-sm">
+                <Zap className="h-3.5 w-3.5 text-emerald-500" />
+                <span>AI Powered</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 text-sm">
+                <Star className="h-3.5 w-3.5 text-amber-500" />
+                <span>24/7 Available</span>
+              </div>
+            </motion.div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Left Side - Mascot, Visualizers & Controls */}
+              <div className="flex flex-col items-center justify-center space-y-6">
+                {/* Juli Mascot */}
+                <JuliMascot
+                  isActive={isConnected}
+                  isSpeaking={conversation.isSpeaking}
+                  isListening={isConnected && !conversation.isSpeaking}
+                  size="lg"
+                />
 
                 {/* Voice Visualizers */}
                 {isConnected && (
@@ -290,12 +298,20 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     className="w-full max-w-xs space-y-3"
                   >
                     {/* AI Voice Visualizer */}
-                    <div className="bg-muted/30 rounded-xl p-3">
+                    <div className="bg-gradient-to-r from-primary/10 to-emerald-500/10 rounded-xl p-3 border border-primary/20">
                       <div className="flex items-center gap-2 mb-2">
-                        <Bot className="h-4 w-4 text-primary" />
+                        <motion.div
+                          animate={conversation.isSpeaking ? { scale: [1, 1.2, 1] } : {}}
+                          transition={{ duration: 0.5, repeat: Infinity }}
+                        >
+                          <Bot className="h-4 w-4 text-primary" />
+                        </motion.div>
                         <span className="text-xs font-medium text-muted-foreground">Juli</span>
                         {conversation.isSpeaking && (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Speaking</Badge>
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary">
+                            <Sparkles className="h-2.5 w-2.5 mr-1" />
+                            Speaking
+                          </Badge>
                         )}
                       </div>
                       <VoiceVisualizer
@@ -307,12 +323,20 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     </div>
 
                     {/* User Voice Visualizer */}
-                    <div className="bg-muted/30 rounded-xl p-3">
+                    <div className="bg-gradient-to-r from-emerald-500/10 to-primary/10 rounded-xl p-3 border border-emerald-500/20">
                       <div className="flex items-center gap-2 mb-2">
-                        <User className="h-4 w-4 text-green-500" />
+                        <motion.div
+                          animate={!conversation.isSpeaking && isConnected ? { scale: [1, 1.1, 1] } : {}}
+                          transition={{ duration: 0.5, repeat: Infinity }}
+                        >
+                          <User className="h-4 w-4 text-emerald-500" />
+                        </motion.div>
                         <span className="text-xs font-medium text-muted-foreground">You</span>
                         {!conversation.isSpeaking && isConnected && (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-500/20">Listening</Badge>
+                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/20 text-emerald-600">
+                            <Mic className="h-2.5 w-2.5 mr-1" />
+                            Listening
+                          </Badge>
                         )}
                       </div>
                       <VoiceVisualizer
@@ -327,12 +351,52 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
 
                 {/* Name & Status */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-xl md:text-2xl font-bold text-foreground">Juli</h2>
-                  <p className="text-sm text-muted-foreground">AI Mental Health Counselor</p>
+                  <motion.h2 
+                    className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent"
+                    animate={isConnected ? { scale: [1, 1.02, 1] } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    Juli
+                  </motion.h2>
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                    <Heart className="h-4 w-4 text-rose-400" />
+                    AI Mental Health Counselor
+                    <Heart className="h-4 w-4 text-rose-400" />
+                  </p>
                   
-                  <Badge variant={isConnected ? "default" : "secondary"} className="mt-2">
-                    {isConnecting ? "Connecting..." : isConnected ? "In Session" : "Available"}
-                  </Badge>
+                  <motion.div
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    className="inline-block"
+                  >
+                    <Badge 
+                      variant={isConnected ? "default" : "secondary"} 
+                      className={cn(
+                        "mt-2 px-4 py-1",
+                        isConnected && "bg-gradient-to-r from-primary to-emerald-500"
+                      )}
+                    >
+                      {isConnecting ? (
+                        <span className="flex items-center gap-2">
+                          <motion.div
+                            className="w-2 h-2 bg-white rounded-full"
+                            animate={{ scale: [1, 0.5, 1] }}
+                            transition={{ duration: 0.5, repeat: Infinity }}
+                          />
+                          Connecting...
+                        </span>
+                      ) : isConnected ? (
+                        <span className="flex items-center gap-2">
+                          <motion.div
+                            className="w-2 h-2 bg-white rounded-full"
+                            animate={{ opacity: [1, 0.5, 1] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                          />
+                          In Session
+                        </span>
+                      ) : "Available 24/7"}
+                    </Badge>
+                  </motion.div>
                 </div>
 
                 {/* Session Timer */}
