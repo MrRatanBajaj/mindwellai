@@ -1,796 +1,553 @@
-
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import AIAudioCounselor from "@/components/ui-custom/AIAudioCounselor";
-import AIVideoConsultation from "@/components/ui-custom/AIVideoConsultation";
+import BluetoothPeerCard from "@/components/ui-custom/BluetoothPeerCard";
+import GroupTherapyRoom from "@/components/ui-custom/GroupTherapyRoom";
 import PeerCommunication from "@/components/ui-custom/PeerCommunication";
-import TherapyModelMatcher from "@/components/ui-custom/TherapyModelMatcher";
-import ResourceSharing from "@/components/ui-custom/ResourceSharing";
-import { usePeerPresence } from "@/hooks/usePeerPresence";
+import { useBluetoothPeer, BluetoothPeer } from "@/hooks/useBluetoothPeer";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/components/ui/use-toast";
 import { 
-  Users, 
-  MapPin, 
-  Mic, 
-  MicOff, 
-  Phone, 
-  PhoneOff, 
+  Bluetooth, 
+  BluetoothSearching,
+  BluetoothConnected,
+  Radio,
+  Waves,
+  Users,
   Circle,
   Heart,
-  MessageCircle,
-  UserCheck,
-  Volume2,
-  Bot,
+  Shield,
   Sparkles,
-  Headphones,
-  Video,
-  Navigation,
+  Zap,
+  Globe,
+  Phone,
+  MessageCircle,
   Brain,
-  BookOpen,
-  CheckCircle,
-  Check,
-  Clock,
-  Shield
+  Headphones
 } from "lucide-react";
-
-interface PeerUser {
-  id: string;
-  name: string;
-  avatar: string;
-  distance: string;
-  issue: string;
-  isActive: boolean;
-  isInCall: boolean;
-  supportGroup: string;
-  joinedDate: string;
-}
-
-const mockPeers: PeerUser[] = [
-  {
-    id: "1",
-    name: "Sarah M.",
-    avatar: "S",
-    distance: "0.5 km",
-    issue: "Anxiety Support",
-    isActive: true,
-    isInCall: false,
-    supportGroup: "Mindful Monday",
-    joinedDate: "2 weeks ago"
-  },
-  {
-    id: "2",
-    name: "John D.",
-    avatar: "J",
-    distance: "1.2 km",
-    issue: "Depression Recovery",
-    isActive: true,
-    isInCall: true,
-    supportGroup: "Hope Circle",
-    joinedDate: "1 month ago"
-  },
-  {
-    id: "3",
-    name: "Maya P.",
-    avatar: "M",
-    distance: "2.1 km",
-    issue: "Stress Management",
-    isActive: false,
-    isInCall: false,
-    supportGroup: "Calm Collective",
-    joinedDate: "3 days ago"
-  },
-  {
-    id: "4",
-    name: "Alex R.",
-    avatar: "A",
-    distance: "0.8 km",
-    issue: "Anxiety Support",
-    isActive: true,
-    isInCall: false,
-    supportGroup: "Mindful Monday",
-    joinedDate: "1 week ago"
-  }
-];
 
 const PeerConnect = () => {
   const { user } = useAuth();
-  const { onlineUsers, updateStatus, updateLocation, isConnected } = usePeerPresence('peer_connect');
-  const [peers, setPeers] = useState<PeerUser[]>(mockPeers);
-  const [isMicOn, setIsMicOn] = useState(false);
-  const [isInGroupCall, setIsInGroupCall] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<string>("");
-  const [searchRadius, setSearchRadius] = useState(5);
-  const [showAICounselor, setShowAICounselor] = useState(false);
-  const [selectedPeer, setSelectedPeer] = useState<PeerUser | null>(null);
-  const [showPeerCommunication, setShowPeerCommunication] = useState(false);
-  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [therapyMatches, setTherapyMatches] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState("groups");
-  const [isVideoConsultationOpen, setIsVideoConsultationOpen] = useState(false);
+  const { toast } = useToast();
+  const {
+    isBluetoothSupported,
+    isBluetoothEnabled,
+    isScanning,
+    nearbyPeers,
+    connectedPeers,
+    startScanning,
+    stopScanning,
+    connectToPeer,
+    requestBluetoothPermission,
+    broadcastPresence
+  } = useBluetoothPeer();
 
-  // Get user's location for distance calculations
+  const [showGroupRoom, setShowGroupRoom] = useState(false);
+  const [selectedPeer, setSelectedPeer] = useState<BluetoothPeer | null>(null);
+  const [showPeerCall, setShowPeerCall] = useState(false);
+  const [connectingPeerId, setConnectingPeerId] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState(false);
+
+  // Request Bluetooth permission on mount
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-          updateLocation(latitude, longitude);
-        },
-        (error) => {
-          console.log('Location access denied:', error);
-        }
-      );
+    if (isBluetoothEnabled) {
+      setHasPermission(true);
     }
-  }, [updateLocation]);
+  }, [isBluetoothEnabled]);
 
-  // Update peers with real online users
-  useEffect(() => {
-    if (onlineUsers.length > 0) {
-      // Merge real online users with mock data
-      const updatedPeers = mockPeers.map(mockPeer => {
-        const onlineUser = onlineUsers.find(u => u.user_id === mockPeer.id);
-        if (onlineUser) {
-          return {
-            ...mockPeer,
-            isActive: true,
-            isInCall: onlineUser.status === 'in_call'
-          };
-        }
-        return {
-          ...mockPeer,
-          isActive: false
-        };
-      });
-      
-      // Add real users not in mock data
-      onlineUsers.forEach(onlineUser => {
-        if (!mockPeers.find(p => p.id === onlineUser.user_id)) {
-          updatedPeers.push({
-            id: onlineUser.user_id,
-            name: onlineUser.name,
-            avatar: onlineUser.name.charAt(0).toUpperCase(),
-            distance: "Unknown",
-            issue: "General Support",
-            isActive: true,
-            isInCall: onlineUser.status === 'in_call',
-            supportGroup: "Community",
-            joinedDate: "Recently"
-          });
-        }
-      });
-      
-      setPeers(updatedPeers);
+  const handleEnableBluetooth = async () => {
+    const granted = await requestBluetoothPermission();
+    if (granted) {
+      setHasPermission(true);
+      await startScanning();
+      await broadcastPresence();
     }
-  }, [onlineUsers]);
-
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPeers(prevPeers => 
-        prevPeers.map(peer => ({
-          ...peer,
-          isActive: onlineUsers.some(u => u.user_id === peer.id) || Math.random() > 0.7
-        }))
-      );
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [onlineUsers]);
-
-  const joinGroupCall = async (groupName: string) => {
-    setSelectedGroup(groupName);
-    setIsInGroupCall(true);
-    await updateStatus('in_call');
   };
 
-  const leaveGroupCall = async () => {
-    setIsInGroupCall(false);
-    setSelectedGroup("");
-    setIsMicOn(false);
-    await updateStatus('available');
+  const handleConnect = async (peerId: string) => {
+    setConnectingPeerId(peerId);
+    const success = await connectToPeer(peerId);
+    setConnectingPeerId(null);
+    
+    if (success) {
+      toast({
+        title: "Connected!",
+        description: "You can now start a call or chat",
+      });
+    }
   };
 
-  const connectToPeer = (peer: PeerUser) => {
+  const handleStartCall = (peer: BluetoothPeer) => {
     setSelectedPeer(peer);
-    setShowPeerCommunication(true);
-    updateStatus('busy');
+    setShowPeerCall(true);
   };
 
-  const closePeerCommunication = () => {
-    setShowPeerCommunication(false);
-    setSelectedPeer(null);
-    updateStatus('available');
-  };
-
-  const handleTherapyMatches = (matches: any[]) => {
-    setTherapyMatches(matches);
-    setActiveTab("therapy-matches");
-  };
-
-  const toggleMic = () => {
-    setIsMicOn(!isMicOn);
-  };
-
-  const activePeers = peers.filter(peer => peer.isActive);
-  const groupedPeers = peers.reduce((acc, peer) => {
-    if (!acc[peer.supportGroup]) {
-      acc[peer.supportGroup] = [];
+  const handleJoinGroup = () => {
+    if (connectedPeers.length === 0) {
+      toast({
+        title: "No Connections",
+        description: "Connect with at least one peer first",
+        variant: "destructive"
+      });
+      return;
     }
-    acc[peer.supportGroup].push(peer);
-    return acc;
-  }, {} as Record<string, PeerUser[]>);
+    setShowGroupRoom(true);
+  };
+
+  const activePeers = nearbyPeers.filter(p => p.status === 'available');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-mindwell-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
       <Header />
       
-      <main className="pt-24 pb-16 px-6 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header Section */}
-          <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4">
-                Mental Health 
-                <span className="bg-gradient-to-r from-mindwell-600 to-blue-600 bg-clip-text text-transparent"> Therapy Connect</span>
-              </h1>
-              <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
-                Connect with peers based on therapy models, share resources, and engage with AI counseling.
-                Find your therapeutic community and access 24/7 mental health support.
-              </p>
-              
-              {/* Search Controls */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-mindwell-600" />
-                  <span className="text-slate-700">Search within:</span>
-                  <select 
-                    value={searchRadius} 
-                    onChange={(e) => setSearchRadius(Number(e.target.value))}
-                    className="px-3 py-1 rounded-lg border border-slate-300 focus:ring-2 focus:ring-mindwell-500 focus:border-transparent"
-                  >
-                    <option value={1}>1 km</option>
-                    <option value={5}>5 km</option>
-                    <option value={10}>10 km</option>
-                    <option value={25}>25 km</option>
-                  </select>
-                </div>
-                
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  <Circle className="w-3 h-3 mr-1 fill-green-500" />
-                  {activePeers.length} Active Now
-                </Badge>
-                
-                {isConnected && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    <Navigation className="w-3 h-3 mr-1" />
-                    Real-time Connected
-                  </Badge>
-                )}
-                
-                {userLocation && (
-                  <Badge variant="outline" className="text-xs">
-                    <MapPin className="w-3 h-3 mr-1" />
-                    Location Enabled
-                  </Badge>
-                )}
-              </div>
-            </motion.div>
-          </div>
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Bluetooth Radar Animation */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          {isScanning && (
+            <>
+              <motion.div
+                className="absolute w-[600px] h-[600px] rounded-full border border-blue-400/20"
+                animate={{
+                  scale: [1, 2, 1],
+                  opacity: [0.5, 0, 0.5]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeOut"
+                }}
+                style={{ left: '-300px', top: '-300px' }}
+              />
+              <motion.div
+                className="absolute w-[600px] h-[600px] rounded-full border border-purple-400/20"
+                animate={{
+                  scale: [1, 2.5, 1],
+                  opacity: [0.3, 0, 0.3]
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeOut",
+                  delay: 1
+                }}
+                style={{ left: '-300px', top: '-300px' }}
+              />
+            </>
+          )}
+        </div>
 
-          {/* AI Audio Counselor Feature - Enhanced */}
+        {/* Floating Particles */}
+        {[...Array(30)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-blue-400/30 rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -200, 0],
+              x: [0, Math.random() * 100 - 50, 0],
+              opacity: [0.2, 0.8, 0.2]
+            }}
+            transition={{
+              duration: 5 + Math.random() * 5,
+              repeat: Infinity,
+              delay: Math.random() * 3
+            }}
+          />
+        ))}
+      </div>
+
+      <main className="relative pt-24 pb-16 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Hero Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200 }}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              >
+                <Bluetooth className="w-5 h-5 text-blue-400" />
+              </motion.div>
+              <span className="text-white/80 font-medium">Bluetooth Peer Discovery</span>
+            </motion.div>
+
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              <span className="text-white">Peer </span>
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Therapy Connect
+              </span>
+            </h1>
+            
+            <p className="text-xl text-white/60 max-w-2xl mx-auto mb-8">
+              Connect with nearby peers using Bluetooth for secure, private group therapy sessions. 
+              Find support from those who truly understand.
+            </p>
+
+            {/* Stats Bar */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30 px-4 py-2">
+                <Circle className="w-2 h-2 fill-green-400 mr-2" />
+                {activePeers.length} Available Nearby
+              </Badge>
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 px-4 py-2">
+                <BluetoothConnected className="w-4 h-4 mr-2" />
+                {connectedPeers.length} Connected
+              </Badge>
+              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 px-4 py-2">
+                <Radio className="w-4 h-4 mr-2" />
+                {isScanning ? 'Scanning...' : 'Ready'}
+              </Badge>
+            </div>
+          </motion.div>
+
+          {/* Bluetooth Permission / Scanning Controls */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ delay: 0.2 }}
             className="mb-12"
           >
-            <Card className="bg-gradient-to-r from-mindwell-500 via-blue-500 to-purple-600 text-white overflow-hidden relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/90 via-blue-500/90 to-purple-600/90" />
-              
-              {/* Free Session Badge */}
-              <div className="absolute top-4 right-4 z-10">
-                <Badge className="bg-green-500 text-white font-bold px-3 py-1 text-sm animate-pulse">
-                  🆓 30 MIN FREE
-                </Badge>
-              </div>
-
-              <CardContent className="relative p-8">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-                  <div className="flex items-center gap-6 flex-1">
-                    <div className="relative">
-                      <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                        <Bot className="w-10 h-10 text-white" />
-                      </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full flex items-center justify-center animate-pulse">
-                        <Heart className="w-4 h-4 text-white" />
-                      </div>
-                      {/* AI Activity Indicator */}
-                      <div className="absolute -bottom-1 -left-1 flex gap-1">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
-                        AI Mental Health Counselor
-                        <Sparkles className="w-6 h-6 text-yellow-300" />
-                      </h2>
-                      <p className="text-white/95 mb-3 text-lg">
-                        Talk with Dr. Alex - Pre-trained AI therapist with advanced mental health expertise
-                      </p>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
-                          <MessageCircle className="w-3 h-3 mr-1" />
-                          Two-Way Voice
-                        </Badge>
-                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
-                          <Brain className="w-3 h-3 mr-1" />
-                          CBT/DBT Trained
-                        </Badge>
-                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
-                          <Shield className="w-3 h-3 mr-1" />
-                          HIPAA Compliant
-                        </Badge>
-                        <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
-                          <Clock className="w-3 h-3 mr-1" />
-                          24/7 Available
-                        </Badge>
-                      </div>
-                      
-                    <div className="space-y-4 text-sm text-white/90">
-                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
-                        <div className="w-8 h-8 bg-green-400/20 rounded-full flex items-center justify-center">
-                          <Check className="w-4 h-4 text-green-300" />
-                        </div>
-                        <span>Real-time voice conversation with empathetic AI</span>
-                      </div>
-                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
-                        <div className="w-8 h-8 bg-blue-400/20 rounded-full flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-blue-300" />
-                        </div>
-                        <span>Advanced GPT-5 model trained in CBT/DBT techniques</span>
-                      </div>
-                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
-                        <div className="w-8 h-8 bg-purple-400/20 rounded-full flex items-center justify-center">
-                          <Clock className="w-4 h-4 text-purple-300" />
-                        </div>
-                        <span>30-minute free session for new users</span>
-                      </div>
-                      <div className="flex items-center gap-2 transform hover:scale-105 transition-transform">
-                        <div className="w-8 h-8 bg-yellow-400/20 rounded-full flex items-center justify-center">
-                          <Shield className="w-4 h-4 text-yellow-300" />
-                        </div>
-                        <span>Crisis intervention and trauma-informed care</span>
-                      </div>
-                    </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          onClick={() => setShowAICounselor(true)}
-                          size="lg"
-                          className="bg-white text-mindwell-600 hover:bg-white/90 font-bold px-6 py-4 text-base shadow-lg relative overflow-hidden group w-full"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-mindwell-500/20 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <Mic className="w-5 h-5 mr-2 relative z-10" />
-                          <span className="relative z-10">Audio</span>
-                        </Button>
-                      </motion.div>
-                      
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button
-                          onClick={() => setIsVideoConsultationOpen(true)}
-                          size="lg"
-                          className="bg-gradient-to-r from-mindwell-500 to-blue-600 text-white hover:from-mindwell-600 hover:to-blue-700 font-bold px-6 py-4 text-base shadow-lg relative overflow-hidden group w-full"
-                        >
-                          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <Video className="w-5 h-5 mr-2 relative z-10" />
-                          <span className="relative z-10">Video</span>
-                        </Button>
-                      </motion.div>
-                    </div>
-                    <motion.p 
-                      animate={{ opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      className="text-xs text-white/80 text-center max-w-xs"
+            <Card className="bg-white/5 backdrop-blur-xl border-white/10 overflow-hidden">
+              <CardContent className="p-8">
+                {!hasPermission ? (
+                  <div className="text-center">
+                    <motion.div
+                      className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
+                      animate={{
+                        boxShadow: [
+                          '0 0 0 0 rgba(59, 130, 246, 0)',
+                          '0 0 40px 20px rgba(59, 130, 246, 0.3)',
+                          '0 0 0 0 rgba(59, 130, 246, 0)'
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
                     >
-                      No signup required • Completely confidential
-                    </motion.p>
+                      <Bluetooth className="w-12 h-12 text-white" />
+                    </motion.div>
+                    
+                    <h2 className="text-2xl font-bold text-white mb-3">Enable Bluetooth Discovery</h2>
+                    <p className="text-white/60 mb-6 max-w-md mx-auto">
+                      Turn on Bluetooth to discover and connect with peers nearby for secure, 
+                      private therapy sessions.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                      <Button
+                        onClick={handleEnableBluetooth}
+                        size="lg"
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8"
+                      >
+                        <Bluetooth className="w-5 h-5 mr-2" />
+                        Enable Bluetooth
+                      </Button>
+                    </div>
+                    
+                    {/* Features */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                      {[
+                        { icon: Shield, title: "Secure", desc: "End-to-end encrypted" },
+                        { icon: Radio, title: "Local", desc: "No internet required" },
+                        { icon: Users, title: "Private", desc: "Anonymous connections" }
+                      ].map((feature, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + i * 0.1 }}
+                          className="flex items-center gap-3 p-4 rounded-xl bg-white/5"
+                        >
+                          <feature.icon className="w-6 h-6 text-blue-400" />
+                          <div className="text-left">
+                            <p className="text-white font-medium">{feature.title}</p>
+                            <p className="text-white/50 text-sm">{feature.desc}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div>
+                    {/* Scanning Controls */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                      <div className="flex items-center gap-4">
+                        <motion.div
+                          className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                            isScanning 
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
+                              : 'bg-white/10'
+                          }`}
+                          animate={isScanning ? {
+                            rotate: 360
+                          } : {}}
+                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        >
+                          {isScanning ? (
+                            <BluetoothSearching className="w-8 h-8 text-white" />
+                          ) : (
+                            <Bluetooth className="w-8 h-8 text-white/60" />
+                          )}
+                        </motion.div>
+                        <div>
+                          <h3 className="text-xl font-bold text-white">
+                            {isScanning ? 'Scanning for Peers...' : 'Bluetooth Ready'}
+                          </h3>
+                          <p className="text-white/60">
+                            {nearbyPeers.length} peers discovered nearby
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        {isScanning ? (
+                          <Button
+                            onClick={stopScanning}
+                            variant="outline"
+                            className="border-white/20 text-white hover:bg-white/10"
+                          >
+                            Stop Scanning
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={startScanning}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                          >
+                            <BluetoothSearching className="w-4 h-4 mr-2" />
+                            Start Scanning
+                          </Button>
+                        )}
+                        
+                        <Button
+                          onClick={handleJoinGroup}
+                          disabled={connectedPeers.length === 0}
+                          className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700"
+                        >
+                          <Users className="w-4 h-4 mr-2" />
+                          Start Group Session
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Connected Peers Banner */}
+                    {connectedPeers.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mb-8 p-4 rounded-xl bg-green-500/10 border border-green-500/30"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <BluetoothConnected className="w-6 h-6 text-green-400" />
+                            <span className="text-green-400 font-medium">
+                              {connectedPeers.length} Peer{connectedPeers.length > 1 ? 's' : ''} Connected
+                            </span>
+                          </div>
+                          <div className="flex -space-x-3">
+                            {connectedPeers.slice(0, 5).map((peer, i) => (
+                              <motion.div
+                                key={peer.id}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold border-2 border-slate-900"
+                              >
+                                {peer.avatar}
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Nearby Peers Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <AnimatePresence mode="popLayout">
+                        {nearbyPeers.map((peer, index) => (
+                          <BluetoothPeerCard
+                            key={peer.id}
+                            peer={peer}
+                            onConnect={handleConnect}
+                            onCall={handleStartCall}
+                            isConnecting={connectingPeerId === peer.id}
+                            index={index}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+
+                    {nearbyPeers.length === 0 && isScanning && (
+                      <div className="text-center py-16">
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [0.5, 1, 0.5]
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          <Waves className="w-16 h-16 text-blue-400/50 mx-auto mb-4" />
+                        </motion.div>
+                        <p className="text-white/60">Searching for nearby peers...</p>
+                        <p className="text-white/40 text-sm mt-2">
+                          Make sure other peers have Bluetooth enabled
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Current Group Call Status */}
-          <AnimatePresence>
-            {isInGroupCall && (
+          {/* Features Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          >
+            {[
+              {
+                icon: Bluetooth,
+                title: "Bluetooth Discovery",
+                desc: "Find peers within 10m range",
+                color: "from-blue-500 to-cyan-500"
+              },
+              {
+                icon: Phone,
+                title: "Voice Calls",
+                desc: "Crystal clear P2P audio",
+                color: "from-green-500 to-emerald-500"
+              },
+              {
+                icon: Users,
+                title: "Group Therapy",
+                desc: "Up to 8 participants",
+                color: "from-purple-500 to-pink-500"
+              },
+              {
+                icon: Shield,
+                title: "100% Private",
+                desc: "No data leaves device",
+                color: "from-orange-500 to-red-500"
+              }
+            ].map((feature, i) => (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="mb-8"
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="relative group"
               >
-                <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${feature.color.split(' ')[0].replace('from-', '')} 0%, ${feature.color.split(' ')[1].replace('to-', '')} 100%)` 
+                  }}
+                />
+                <Card className="relative bg-white/5 backdrop-blur-sm border-white/10 overflow-hidden h-full">
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <Volume2 className="w-8 h-8" />
-                          <motion.div
-                            animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 2 }}
-                            className="absolute -inset-2 bg-white/20 rounded-full"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-semibold">Connected to {selectedGroup}</h3>
-                          <p className="text-green-100">Audio group session in progress</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <Button
-                          onClick={toggleMic}
-                          variant={isMicOn ? "secondary" : "outline"}
-                          size="sm"
-                          className={isMicOn ? "bg-white text-green-600" : "border-white text-white hover:bg-white hover:text-green-600"}
-                        >
-                          {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-                        </Button>
-                        <Button
-                          onClick={leaveGroupCall}
-                          variant="destructive"
-                          size="sm"
-                          className="bg-red-500 hover:bg-red-600"
-                        >
-                          <PhoneOff className="w-4 h-4 mr-2" />
-                          Leave
-                        </Button>
-                      </div>
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4`}>
+                      <feature.icon className="w-6 h-6 text-white" />
                     </div>
+                    <h3 className="text-white font-semibold mb-2">{feature.title}</h3>
+                    <p className="text-white/60 text-sm">{feature.desc}</p>
                   </CardContent>
                 </Card>
               </motion.div>
-            )}
-          </AnimatePresence>
+            ))}
+          </motion.div>
 
-          {/* Main Content Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="groups" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Support Groups
-              </TabsTrigger>
-              <TabsTrigger value="therapy-finder" className="flex items-center gap-2">
-                <Brain className="w-4 h-4" />
-                Therapy Finder
-              </TabsTrigger>
-              <TabsTrigger value="resources" className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                Resources
-              </TabsTrigger>
-              <TabsTrigger value="therapy-matches" className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Matches ({therapyMatches.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="groups" className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Users className="w-6 h-6 text-mindwell-600" />
-                  Active Support Groups
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {Object.entries(groupedPeers).map(([groupName, groupPeers]) => (
-                <motion.div
-                  key={groupName}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-mindwell-300">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="text-lg">{groupName}</span>
-                        <div className="flex items-center gap-1">
-                          {groupPeers.filter(p => p.isActive).map((peer, index) => (
-                            <motion.div
-                              key={peer.id}
-                              animate={{ scale: [1, 1.1, 1] }}
-                              transition={{ repeat: Infinity, duration: 2, delay: index * 0.2 }}
-                            >
-                              <Circle className="w-3 h-3 fill-green-500 text-green-500" />
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <Users className="w-4 h-4" />
-                          {groupPeers.length} members • {groupPeers.filter(p => p.isActive).length} active
-                        </div>
-                        
-                        <div className="flex -space-x-2">
-                          {groupPeers.slice(0, 4).map((peer) => (
-                            <div
-                              key={peer.id}
-                              className={`relative w-8 h-8 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center text-white text-sm font-medium border-2 border-white ${
-                                peer.isActive ? 'ring-2 ring-green-400' : ''
-                              }`}
-                            >
-                              {peer.avatar}
-                              {peer.isActive && (
-                                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                              )}
-                            </div>
-                          ))}
-                          {groupPeers.length > 4 && (
-                            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-xs font-medium border-2 border-white">
-                              +{groupPeers.length - 4}
-                            </div>
-                          )}
-                        </div>
-
-                        <Button
-                          onClick={() => joinGroupCall(groupName)}
-                          disabled={isInGroupCall}
-                          className="w-full bg-gradient-to-r from-mindwell-500 to-mindwell-600 hover:from-mindwell-600 hover:to-mindwell-700"
-                        >
-                          <Phone className="w-4 h-4 mr-2" />
-                          {isInGroupCall ? 'In Call' : 'Join Audio Group'}
-                        </Button>
+          {/* How It Works */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl font-bold text-white mb-8">How It Works</h2>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8">
+              {[
+                { step: "1", title: "Enable Bluetooth", icon: Bluetooth },
+                { step: "2", title: "Discover Peers", icon: BluetoothSearching },
+                { step: "3", title: "Connect", icon: BluetoothConnected },
+                { step: "4", title: "Start Therapy", icon: Heart }
+              ].map((step, i) => (
+                <React.Fragment key={i}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7 + i * 0.1 }}
+                    className="flex flex-col items-center"
+                  >
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center">
+                        <step.icon className="w-8 h-8 text-blue-400" />
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-                    ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="therapy-finder" className="space-y-6">
-              <TherapyModelMatcher onMatch={handleTherapyMatches} />
-            </TabsContent>
-
-            <TabsContent value="resources" className="space-y-6">
-              <ResourceSharing />
-            </TabsContent>
-
-            <TabsContent value="therapy-matches" className="space-y-6">
-              {therapyMatches.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <h2 className="text-2xl font-bold text-slate-800 mb-2">Your Therapy Matches</h2>
-                    <p className="text-slate-600">Connect with peers who share your therapeutic interests</p>
-                  </div>
-                  
-                  <div className="grid gap-4">
-                    {therapyMatches.map((match) => (
-                      <Card key={match.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center text-white font-bold text-lg">
-                                {match.avatar}
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="text-lg font-semibold text-slate-800">{match.name}</h3>
-                                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                    {match.matchScore}% match
-                                  </Badge>
-                                  {match.isOnline && (
-                                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                                      <Circle className="w-2 h-2 mr-1 fill-blue-600" />
-                                      Online
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-3 text-sm text-slate-600 mb-2">
-                                  <span>{match.distance}</span>
-                                  <span>•</span>
-                                  <span>{match.experience} level</span>
-                                  <span>•</span>
-                                  <span>{match.lastActive}</span>
-                                </div>
-                                <div className="flex gap-1 mb-2">
-                                  {match.models.map((model: string) => (
-                                    <Badge key={model} variant="outline" className="text-xs">
-                                      {model.toUpperCase()}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <div className="flex gap-1">
-                                  {match.issues.map((issue: string) => (
-                                    <Badge key={issue} variant="secondary" className="text-xs bg-slate-100">
-                                      {issue}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => connectToPeer({
-                                  id: match.id,
-                                  name: match.name,
-                                  avatar: match.avatar,
-                                  distance: match.distance,
-                                  issue: match.issues.join(', '),
-                                  isActive: match.isOnline,
-                                  isInCall: false,
-                                  supportGroup: 'Therapy Connect',
-                                  joinedDate: 'Recently'
-                                })}
-                              >
-                                <MessageCircle className="w-4 h-4 mr-1" />
-                                Connect
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Video className="w-4 h-4 mr-1" />
-                                Video
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-600 mb-2">No Matches Yet</h3>
-                  <p className="text-slate-500 mb-4">Use the Therapy Finder to discover compatible peers</p>
-                  <Button onClick={() => setActiveTab("therapy-finder")}>
-                    Find Therapy Matches
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-
-          {/* Nearby Peers */}
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <MapPin className="w-6 h-6 text-mindwell-600" />
-              Nearby Peers
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {peers.map((peer, index) => (
-                <motion.div
-                  key={peer.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.03 }}
-                >
-                  <Card className={`hover:shadow-lg transition-all duration-300 ${
-                    peer.isActive ? 'border-green-200 bg-green-50/30' : 'border-slate-200'
-                  }`}>
-                    <CardContent className="p-6">
-                      <div className="text-center space-y-4">
-                        <div className="relative mx-auto w-16 h-16">
-                          <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-mindwell-400 to-mindwell-600 flex items-center justify-center text-white text-xl font-bold ${
-                            peer.isActive ? 'ring-4 ring-green-200' : ''
-                          }`}>
-                            {peer.avatar}
-                          </div>
-                          
-                          {peer.isActive && (
-                            <motion.div
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ repeat: Infinity, duration: 2 }}
-                              className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center"
-                            >
-                              <Circle className="w-2 h-2 fill-white text-white" />
-                            </motion.div>
-                          )}
-                          
-                          {peer.isInCall && (
-                            <div className="absolute -top-1 -left-1 w-5 h-5 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center">
-                              <Phone className="w-2 h-2 text-white" />
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <h3 className="font-semibold text-slate-800">{peer.name}</h3>
-                          <p className="text-sm text-slate-600 mb-2">{peer.distance} away</p>
-                          
-                          <Badge variant="outline" className="text-xs mb-2">
-                            {peer.issue}
-                          </Badge>
-                          
-                          <p className="text-xs text-slate-500">
-                            {peer.supportGroup} • Joined {peer.joinedDate}
-                          </p>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 border-mindwell-300 text-mindwell-700 hover:bg-mindwell-50"
-                            onClick={() => connectToPeer(peer)}
-                          >
-                            <MessageCircle className="w-3 h-3 mr-1" />
-                            Chat
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                            disabled={!peer.isActive}
-                            onClick={() => connectToPeer(peer)}
-                          >
-                            <Video className="w-3 h-3 mr-1" />
-                            Call
-                          </Button>
-                        </div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                        {step.step}
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                    </div>
+                    <p className="text-white/80 mt-3 font-medium">{step.title}</p>
+                  </motion.div>
+                  {i < 3 && (
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: 0.8 + i * 0.1 }}
+                      className="hidden md:block w-16 h-0.5 bg-gradient-to-r from-blue-500/50 to-purple-500/50"
+                    />
+                  )}
+                </React.Fragment>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </main>
-      
+
       <Footer />
-      
-      {/* AI Audio Counselor Modal */}
-      <AIAudioCounselor 
-        isOpen={showAICounselor} 
-        onClose={() => setShowAICounselor(false)} 
+
+      {/* Group Therapy Room Modal */}
+      <GroupTherapyRoom
+        isOpen={showGroupRoom}
+        onClose={() => setShowGroupRoom(false)}
+        connectedPeers={connectedPeers}
+        groupName="Bluetooth Support Circle"
       />
-      
-      {/* AI Video Consultation Modal */}
-      {isVideoConsultationOpen && (
-        <AIVideoConsultation 
-          counselorName="Dr. Alex AI"
-          specialty="Mental Health Specialist - CBT/DBT Expert"
-          onEndCall={() => setIsVideoConsultationOpen(false)} 
-        />
-      )}
-      
+
       {/* Peer Communication Modal */}
       {selectedPeer && (
         <PeerCommunication
-          peer={selectedPeer}
-          isOpen={showPeerCommunication}
-          onClose={closePeerCommunication}
+          peer={{
+            id: selectedPeer.id,
+            name: selectedPeer.name,
+            avatar: selectedPeer.avatar,
+            distance: `${Math.round(selectedPeer.distance)}m`,
+            issue: selectedPeer.issue,
+            isActive: true,
+            isInCall: false,
+            supportGroup: selectedPeer.supportGroup,
+            joinedDate: "Recently"
+          }}
+          isOpen={showPeerCall}
+          onClose={() => {
+            setShowPeerCall(false);
+            setSelectedPeer(null);
+          }}
         />
       )}
     </div>
