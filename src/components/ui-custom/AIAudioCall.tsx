@@ -17,13 +17,17 @@ import {
   Heart,
   Shield,
   Clock,
-  Waves,
   Send,
   User,
   Bot,
   Sparkles,
   Star,
-  Zap
+  Zap,
+  Brain,
+  Activity,
+  Headphones,
+  Waves,
+  AudioWaveform
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +35,7 @@ import { cn } from '@/lib/utils';
 import VoiceVisualizer from './VoiceVisualizer';
 import SessionSummary from './SessionSummary';
 import JuliMascot from './JuliMascot';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIAudioCallProps {
   onCallEnd?: () => void;
@@ -43,6 +48,7 @@ interface Message {
   timestamp: Date;
 }
 
+// Public ElevenLabs Agent ID for Juli
 const JULI_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
 
 const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
@@ -58,8 +64,15 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
   const [showSummary, setShowSummary] = useState(false);
   const [inputLevel, setInputLevel] = useState(0);
   const [outputLevel, setOutputLevel] = useState(0);
+  const [userSpeaking, setUserSpeaking] = useState(false);
+  const [moodScore, setMoodScore] = useState<number | null>(null);
+  const [breathingMode, setBreathingMode] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -67,17 +80,28 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
       setIsConnected(true);
       setIsConnecting(false);
       toast({
-        title: "Connected to Juli",
-        description: "Your AI mental health counselor is ready",
+        title: "✨ Connected to Juli",
+        description: "Your AI mental health counselor is ready to listen",
       });
+      
+      // Add welcome message
+      const welcomeMessage: Message = {
+        id: 'welcome-' + Date.now(),
+        role: 'assistant',
+        content: "Hello! I'm Juli, your AI mental health counselor. I'm here to listen and support you. How are you feeling today?",
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
     },
     onDisconnect: () => {
       console.log('Disconnected from Juli');
       setIsConnected(false);
       setIsConnecting(false);
+      stopAudioAnalysis();
     },
     onMessage: (message: { message: string; source: string }) => {
       console.log('Message received:', message);
+      
       if (message.source === 'user' && message.message) {
         const newMessage: Message = {
           id: Date.now().toString() + '-user',
@@ -100,13 +124,61 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
       console.error('ElevenLabs error:', error);
       toast({
         title: "Connection Error",
-        description: "Failed to connect to Juli. Please try again.",
+        description: "Failed to connect to Juli. Please check your microphone permissions and try again.",
         variant: "destructive",
       });
       setIsConnecting(false);
       setIsConnected(false);
+      stopAudioAnalysis();
     },
   });
+
+  // Real-time audio analysis for visualization
+  const startAudioAnalysis = useCallback(async (stream: MediaStream) => {
+    try {
+      audioContextRef.current = new AudioContext();
+      analyserRef.current = audioContextRef.current.createAnalyser();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+      analyserRef.current.fftSize = 256;
+      
+      const bufferLength = analyserRef.current.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      const analyze = () => {
+        if (!analyserRef.current) return;
+        
+        analyserRef.current.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+        const normalizedLevel = average / 128;
+        
+        setInputLevel(normalizedLevel);
+        setUserSpeaking(normalizedLevel > 0.15);
+        
+        animationFrameRef.current = requestAnimationFrame(analyze);
+      };
+      
+      analyze();
+    } catch (error) {
+      console.error('Audio analysis error:', error);
+    }
+  }, []);
+
+  const stopAudioAnalysis = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach(track => track.stop());
+      micStreamRef.current = null;
+    }
+    setInputLevel(0);
+    setUserSpeaking(false);
+  }, []);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -124,16 +196,11 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     return () => clearInterval(interval);
   }, [isConnected]);
 
-  // Audio level simulation for visualization
+  // Output level based on AI speaking state
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
-        // Simulate input level based on whether user might be speaking
-        const baseInput = conversation.isSpeaking ? 0.1 : Math.random() * 0.6 + 0.2;
-        setInputLevel(baseInput);
-        
-        // Output level based on AI speaking state
         const baseOutput = conversation.isSpeaking ? Math.random() * 0.6 + 0.4 : 0.1;
         setOutputLevel(baseOutput);
       }, 100);
@@ -146,7 +213,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     if (isConnected) {
       conversation.setVolume({ volume: volume[0] });
     }
-  }, [volume, isConnected]);
+  }, [volume, isConnected, conversation]);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -159,39 +226,81 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     setMessages([]);
     setSessionDuration(0);
     setShowSummary(false);
+    setMoodScore(null);
     
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Request microphone permission with optimal settings
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 16000
+        } 
+      });
+      
+      micStreamRef.current = stream;
+      
+      // Start audio analysis for visualization
+      await startAudioAnalysis(stream);
+      
+      console.log('Starting ElevenLabs conversation with agent:', JULI_AGENT_ID);
+      
+      // Start the conversation session with the public agent ID
       await conversation.startSession({
         agentId: JULI_AGENT_ID,
       });
+      
     } catch (error) {
       console.error('Error starting call:', error);
+      
+      let errorMessage = "Failed to start audio call.";
+      if (error instanceof Error) {
+        if (error.message.includes('Permission denied') || error.message.includes('NotAllowedError')) {
+          errorMessage = "Microphone access denied. Please allow microphone access in your browser settings.";
+        } else if (error.message.includes('NotFoundError')) {
+          errorMessage = "No microphone found. Please connect a microphone and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Call Failed",
-        description: error instanceof Error ? error.message : "Failed to start audio call. Please check microphone permissions.",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsConnecting(false);
+      stopAudioAnalysis();
     }
-  }, [conversation, toast]);
+  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis]);
 
   const endCall = useCallback(async () => {
     try {
       await conversation.endSession();
       setIsConnected(false);
+      stopAudioAnalysis();
       setShowSummary(true);
       onCallEnd?.();
     } catch (error) {
       console.error('Error ending call:', error);
     }
-  }, [conversation, onCallEnd]);
+  }, [conversation, onCallEnd, stopAudioAnalysis]);
 
   const toggleMute = useCallback(() => {
-    setIsMuted(!isMuted);
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    
+    // Actually mute/unmute the microphone stream
+    if (micStreamRef.current) {
+      micStreamRef.current.getAudioTracks().forEach(track => {
+        track.enabled = !newMuted;
+      });
+    }
+    
     toast({
-      title: isMuted ? "Microphone Unmuted" : "Microphone Muted",
-      description: isMuted ? "Juli can hear you now" : "Juli cannot hear you",
+      title: newMuted ? "🔇 Microphone Muted" : "🎤 Microphone Unmuted",
+      description: newMuted ? "Juli cannot hear you" : "Juli can hear you now",
     });
   }, [isMuted, toast]);
 
@@ -219,42 +328,88 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     }
   };
 
+  const handleMoodSelect = (score: number) => {
+    setMoodScore(score);
+    toast({
+      title: "Mood recorded",
+      description: `You're feeling ${score <= 2 ? 'low' : score <= 4 ? 'okay' : 'good'} today. Juli is here to help.`,
+    });
+  };
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (isConnected) {
         conversation.endSession();
       }
+      stopAudioAnalysis();
     };
   }, []);
 
+  const moodEmojis = ['😢', '😔', '😐', '🙂', '😊'];
+
   return (
     <>
-      <div className="w-full max-w-5xl mx-auto space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* Animated Background Elements */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(10)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-64 h-64 rounded-full"
+              className="absolute rounded-full"
               style={{
-                background: `radial-gradient(circle, ${i % 2 === 0 ? 'hsl(var(--primary) / 0.1)' : 'hsl(142 76% 36% / 0.1)'} 0%, transparent 70%)`,
+                width: `${150 + i * 30}px`,
+                height: `${150 + i * 30}px`,
+                background: `radial-gradient(circle, ${i % 3 === 0 ? 'hsl(var(--primary) / 0.08)' : i % 3 === 1 ? 'hsl(142 76% 36% / 0.08)' : 'hsl(280 76% 50% / 0.05)'} 0%, transparent 70%)`,
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
               }}
               animate={{
-                x: [0, 30, -30, 0],
-                y: [0, -30, 30, 0],
-                scale: [1, 1.1, 0.9, 1],
+                x: [0, 40, -40, 0],
+                y: [0, -40, 40, 0],
+                scale: [1, 1.2, 0.9, 1],
               }}
               transition={{
-                duration: 10 + i * 2,
+                duration: 12 + i * 2,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
             />
           ))}
         </div>
+
+        {/* Mood Check Card - Before Call */}
+        {!isConnected && !isConnecting && moodScore === null && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-emerald-500/10 border-primary/20">
+              <CardContent className="p-6 text-center">
+                <h3 className="text-lg font-semibold mb-3 flex items-center justify-center gap-2">
+                  <Heart className="h-5 w-5 text-rose-500" />
+                  How are you feeling right now?
+                </h3>
+                <div className="flex items-center justify-center gap-3">
+                  {moodEmojis.map((emoji, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleMoodSelect(index + 1)}
+                      className="text-3xl p-2 hover:scale-125 transition-transform rounded-full hover:bg-primary/20"
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {emoji}
+                    </motion.button>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground mt-3">
+                  This helps Juli understand how to best support you
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Main Call Interface */}
         <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 border-primary/20 backdrop-blur-sm">
@@ -271,45 +426,80 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-sm">
                 <Zap className="h-3.5 w-3.5 text-emerald-500" />
-                <span>AI Powered</span>
+                <span>Real-time AI</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 text-sm">
                 <Star className="h-3.5 w-3.5 text-amber-500" />
                 <span>24/7 Available</span>
               </div>
+              {isConnected && (
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 text-sm"
+                >
+                  <Activity className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
+                  <span>Live Session</span>
+                </motion.div>
+              )}
             </motion.div>
 
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Left Side - Mascot, Visualizers & Controls */}
               <div className="flex flex-col items-center justify-center space-y-6">
-                {/* Juli Mascot */}
-                <JuliMascot
-                  isActive={isConnected}
-                  isSpeaking={conversation.isSpeaking}
-                  isListening={isConnected && !conversation.isSpeaking}
-                  size="lg"
-                />
+                {/* Juli Mascot with Enhanced Animations */}
+                <div className="relative">
+                  <JuliMascot
+                    isActive={isConnected}
+                    isSpeaking={conversation.isSpeaking}
+                    isListening={isConnected && !conversation.isSpeaking && !isMuted}
+                    size="xl"
+                  />
+                  
+                  {/* Floating Audio Waves */}
+                  {isConnected && (
+                    <div className="absolute -inset-8 pointer-events-none">
+                      {[...Array(3)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute inset-0 rounded-full border-2 border-primary/20"
+                          animate={{
+                            scale: [1, 1.5 + i * 0.3, 1.5 + i * 0.3],
+                            opacity: [0.3, 0, 0],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: i * 0.5,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Voice Visualizers */}
                 {isConnected && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-xs space-y-3"
+                    className="w-full max-w-sm space-y-3"
                   >
                     {/* AI Voice Visualizer */}
-                    <div className="bg-gradient-to-r from-primary/10 to-emerald-500/10 rounded-xl p-3 border border-primary/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <motion.div
-                          animate={conversation.isSpeaking ? { scale: [1, 1.2, 1] } : {}}
-                          transition={{ duration: 0.5, repeat: Infinity }}
-                        >
-                          <Bot className="h-4 w-4 text-primary" />
-                        </motion.div>
-                        <span className="text-xs font-medium text-muted-foreground">Juli</span>
+                    <div className="bg-gradient-to-r from-primary/10 to-emerald-500/10 rounded-xl p-4 border border-primary/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <motion.div
+                            animate={conversation.isSpeaking ? { scale: [1, 1.2, 1] } : {}}
+                            transition={{ duration: 0.5, repeat: Infinity }}
+                          >
+                            <Bot className="h-5 w-5 text-primary" />
+                          </motion.div>
+                          <span className="text-sm font-medium">Juli</span>
+                        </div>
                         {conversation.isSpeaking && (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/20 text-primary">
-                            <Sparkles className="h-2.5 w-2.5 mr-1" />
+                          <Badge className="text-[10px] px-2 py-0.5 bg-primary/20 text-primary animate-pulse">
+                            <AudioWaveform className="h-3 w-3 mr-1" />
                             Speaking
                           </Badge>
                         )}
@@ -323,27 +513,39 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     </div>
 
                     {/* User Voice Visualizer */}
-                    <div className="bg-gradient-to-r from-emerald-500/10 to-primary/10 rounded-xl p-3 border border-emerald-500/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <motion.div
-                          animate={!conversation.isSpeaking && isConnected ? { scale: [1, 1.1, 1] } : {}}
-                          transition={{ duration: 0.5, repeat: Infinity }}
-                        >
-                          <User className="h-4 w-4 text-emerald-500" />
-                        </motion.div>
-                        <span className="text-xs font-medium text-muted-foreground">You</span>
-                        {!conversation.isSpeaking && isConnected && (
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/20 text-emerald-600">
-                            <Mic className="h-2.5 w-2.5 mr-1" />
-                            Listening
+                    <div className="bg-gradient-to-r from-emerald-500/10 to-primary/10 rounded-xl p-4 border border-emerald-500/20">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <motion.div
+                            animate={userSpeaking && !isMuted ? { scale: [1, 1.15, 1] } : {}}
+                            transition={{ duration: 0.3, repeat: Infinity }}
+                          >
+                            <User className="h-5 w-5 text-emerald-500" />
+                          </motion.div>
+                          <span className="text-sm font-medium">You</span>
+                        </div>
+                        {isMuted ? (
+                          <Badge variant="destructive" className="text-[10px] px-2 py-0.5">
+                            <MicOff className="h-3 w-3 mr-1" />
+                            Muted
+                          </Badge>
+                        ) : userSpeaking ? (
+                          <Badge className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-600">
+                            <Mic className="h-3 w-3 mr-1 animate-pulse" />
+                            Speaking
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
+                            <Headphones className="h-3 w-3 mr-1" />
+                            Ready
                           </Badge>
                         )}
                       </div>
                       <VoiceVisualizer
                         isActive={isConnected && !isMuted}
-                        isSpeaking={!conversation.isSpeaking}
+                        isSpeaking={userSpeaking}
                         type="user"
-                        inputLevel={inputLevel}
+                        inputLevel={isMuted ? 0 : inputLevel}
                       />
                     </div>
                   </motion.div>
@@ -352,14 +554,14 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                 {/* Name & Status */}
                 <div className="text-center space-y-2">
                   <motion.h2 
-                    className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent"
+                    className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent"
                     animate={isConnected ? { scale: [1, 1.02, 1] } : {}}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    transition={{ duration: 3, repeat: Infinity }}
                   >
                     Juli
                   </motion.h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                    <Heart className="h-4 w-4 text-rose-400" />
+                    <Brain className="h-4 w-4 text-purple-400" />
                     AI Mental Health Counselor
                     <Heart className="h-4 w-4 text-rose-400" />
                   </p>
@@ -372,8 +574,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     <Badge 
                       variant={isConnected ? "default" : "secondary"} 
                       className={cn(
-                        "mt-2 px-4 py-1",
-                        isConnected && "bg-gradient-to-r from-primary to-emerald-500"
+                        "mt-2 px-4 py-1.5 text-sm",
+                        isConnected && "bg-gradient-to-r from-primary via-purple-500 to-emerald-500"
                       )}
                     >
                       {isConnecting ? (
@@ -383,7 +585,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                             animate={{ scale: [1, 0.5, 1] }}
                             transition={{ duration: 0.5, repeat: Infinity }}
                           />
-                          Connecting...
+                          Connecting to Juli...
                         </span>
                       ) : isConnected ? (
                         <span className="flex items-center gap-2">
@@ -392,66 +594,62 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                             animate={{ opacity: [1, 0.5, 1] }}
                             transition={{ duration: 1, repeat: Infinity }}
                           />
-                          In Session
+                          In Session • {formatDuration(sessionDuration)}
                         </span>
-                      ) : "Available 24/7"}
+                      ) : "Ready to Help 24/7"}
                     </Badge>
                   </motion.div>
                 </div>
 
-                {/* Session Timer */}
-                {isConnected && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 text-muted-foreground bg-muted/30 px-4 py-2 rounded-full"
-                  >
-                    <Clock className="h-4 w-4" />
-                    <span className="font-mono text-lg">{formatDuration(sessionDuration)}</span>
-                  </motion.div>
-                )}
-
                 {/* Call Controls */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   {!isConnected ? (
-                    <Button
-                      onClick={startCall}
-                      disabled={isConnecting}
-                      size="lg"
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-5 rounded-full shadow-lg"
-                    >
-                      <Phone className="h-5 w-5 mr-2" />
-                      {isConnecting ? 'Connecting...' : 'Start Session'}
-                    </Button>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button
+                        onClick={startCall}
+                        disabled={isConnecting}
+                        size="lg"
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-6 rounded-full shadow-lg shadow-green-500/30 text-lg"
+                      >
+                        <Phone className="h-6 w-6 mr-2" />
+                        {isConnecting ? 'Connecting...' : 'Talk to Juli'}
+                      </Button>
+                    </motion.div>
                   ) : (
                     <>
-                      <Button
-                        onClick={toggleMute}
-                        variant={isMuted ? "destructive" : "secondary"}
-                        size="lg"
-                        className="rounded-full h-12 w-12"
-                      >
-                        {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                      </Button>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button
+                          onClick={toggleMute}
+                          variant={isMuted ? "destructive" : "secondary"}
+                          size="lg"
+                          className="rounded-full h-14 w-14 shadow-lg"
+                        >
+                          {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+                        </Button>
+                      </motion.div>
                       
-                      <Button
-                        onClick={endCall}
-                        variant="destructive"
-                        size="lg"
-                        className="px-6 py-5 rounded-full shadow-lg"
-                      >
-                        <PhoneOff className="h-5 w-5 mr-2" />
-                        End
-                      </Button>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          onClick={endCall}
+                          variant="destructive"
+                          size="lg"
+                          className="px-8 py-6 rounded-full shadow-lg shadow-red-500/30"
+                        >
+                          <PhoneOff className="h-6 w-6 mr-2" />
+                          End Session
+                        </Button>
+                      </motion.div>
 
-                      <Button
-                        onClick={() => setShowChat(!showChat)}
-                        variant={showChat ? "default" : "secondary"}
-                        size="lg"
-                        className="rounded-full h-12 w-12"
-                      >
-                        <MessageSquare className="h-5 w-5" />
-                      </Button>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button
+                          onClick={() => setShowChat(!showChat)}
+                          variant={showChat ? "default" : "secondary"}
+                          size="lg"
+                          className="rounded-full h-14 w-14 shadow-lg"
+                        >
+                          <MessageSquare className="h-6 w-6" />
+                        </Button>
+                      </motion.div>
                     </>
                   )}
                 </div>
@@ -461,7 +659,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-xs flex items-center gap-3"
+                    className="w-full max-w-xs flex items-center gap-3 bg-muted/30 rounded-full px-4 py-2"
                   >
                     <VolumeX className="h-4 w-4 text-muted-foreground" />
                     <Slider
@@ -474,6 +672,65 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     <Volume2 className="h-4 w-4 text-muted-foreground" />
                   </motion.div>
                 )}
+
+                {/* Breathing Exercise Button */}
+                {isConnected && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBreathingMode(!breathingMode)}
+                      className="rounded-full"
+                    >
+                      <Waves className="h-4 w-4 mr-2" />
+                      {breathingMode ? 'Stop Breathing Exercise' : 'Start Breathing Exercise'}
+                    </Button>
+                  </motion.div>
+                )}
+
+                {/* Breathing Animation */}
+                <AnimatePresence>
+                  {breathingMode && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="text-center"
+                    >
+                      <motion.div
+                        className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 mx-auto mb-2 flex items-center justify-center"
+                        animate={{
+                          scale: [1, 1.5, 1.5, 1],
+                        }}
+                        transition={{
+                          duration: 8,
+                          repeat: Infinity,
+                          times: [0, 0.25, 0.75, 1],
+                        }}
+                      >
+                        <motion.span
+                          className="text-white font-medium"
+                          animate={{
+                            opacity: [1, 1, 1, 1],
+                          }}
+                          transition={{
+                            duration: 8,
+                            repeat: Infinity,
+                          }}
+                        >
+                          Breathe
+                        </motion.span>
+                      </motion.div>
+                      <p className="text-sm text-muted-foreground">
+                        Inhale... Hold... Exhale...
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Right Side - Chat */}
@@ -485,8 +742,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     exit={{ opacity: 0, x: 20 }}
                     className="flex flex-col"
                   >
-                    <Card className="flex-1 flex flex-col bg-muted/20 border-border/50 min-h-[400px] lg:min-h-[500px]">
-                      <div className="p-4 border-b border-border/50">
+                    <Card className="flex-1 flex flex-col bg-muted/20 border-border/50 min-h-[400px] lg:min-h-[550px]">
+                      <div className="p-4 border-b border-border/50 flex items-center justify-between">
                         <h3 className="font-semibold flex items-center gap-2">
                           <MessageSquare className="h-4 w-4" />
                           Conversation
@@ -494,15 +751,28 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                             <Badge variant="secondary" className="text-xs">{messages.length}</Badge>
                           )}
                         </h3>
+                        {isConnected && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-xs text-muted-foreground">Live</span>
+                          </div>
+                        )}
                       </div>
                       
                       <ScrollArea className="flex-1 p-4">
                         <div className="space-y-4">
                           {messages.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-center p-4 min-h-[200px]">
-                              <Heart className="h-12 w-12 mb-4 opacity-30" />
-                              <p>Start a session to begin your conversation with Juli.</p>
-                              <p className="text-sm mt-2">You can speak or type your messages.</p>
+                              <motion.div
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                              >
+                                <Heart className="h-16 w-16 mb-4 text-rose-300" />
+                              </motion.div>
+                              <p className="text-lg font-medium">Start a session with Juli</p>
+                              <p className="text-sm mt-2 max-w-xs">
+                                Just speak naturally or type your messages. Juli is here to listen and support you.
+                              </p>
                             </div>
                           ) : (
                             messages.map((msg) => (
@@ -516,24 +786,27 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                                 )}
                               >
                                 {msg.role === 'assistant' && (
-                                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                    <Bot className="h-4 w-4 text-primary" />
+                                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                    <Sparkles className="h-4 w-4 text-white" />
                                   </div>
                                 )}
                                 <div className={cn(
-                                  "max-w-[80%] rounded-2xl px-4 py-2",
+                                  "max-w-[80%] rounded-2xl px-4 py-3 shadow-sm",
                                   msg.role === 'user' 
-                                    ? 'bg-primary text-primary-foreground rounded-br-sm' 
+                                    ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-br-sm' 
                                     : 'bg-muted text-foreground rounded-bl-sm'
                                 )}>
-                                  <p className="text-sm">{msg.content}</p>
-                                  <span className="text-[10px] opacity-70 mt-1 block">
+                                  <p className="text-sm leading-relaxed">{msg.content}</p>
+                                  <span className={cn(
+                                    "text-[10px] mt-1 block",
+                                    msg.role === 'user' ? 'text-white/70' : 'text-muted-foreground'
+                                  )}>
                                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                 </div>
                                 {msg.role === 'user' && (
-                                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                                    <User className="h-4 w-4 text-green-600" />
+                                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                    <User className="h-4 w-4 text-white" />
                                   </div>
                                 )}
                               </motion.div>
@@ -559,12 +832,14 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                               onClick={sendTextMessage}
                               disabled={!chatInput.trim()}
                               size="icon"
+                              className="bg-primary"
                             >
                               <Send className="h-4 w-4" />
                             </Button>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2 text-center">
-                            Press Enter to send or just speak naturally
+                          <p className="text-xs text-muted-foreground mt-2 text-center flex items-center justify-center gap-1">
+                            <Mic className="h-3 w-3" />
+                            Just speak naturally or press Enter to send
                           </p>
                         </div>
                       )}
@@ -577,39 +852,51 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
         </Card>
 
         {/* Features & Info */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card className="p-4 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20">
+        <div className="grid md:grid-cols-4 gap-4">
+          <Card className="p-4 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-colors">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-green-500/20">
                 <Shield className="h-5 w-5 text-green-600" />
               </div>
               <div>
                 <h4 className="font-semibold text-foreground">100% Private</h4>
-                <p className="text-sm text-muted-foreground">Conversations are confidential and secure</p>
+                <p className="text-sm text-muted-foreground">Confidential & secure</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20">
+          <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20 hover:border-purple-500/40 transition-colors">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/20">
+                <Brain className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground">AI Powered</h4>
+                <p className="text-sm text-muted-foreground">Advanced understanding</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-colors">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-blue-500/20">
                 <Heart className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h4 className="font-semibold text-foreground">Empathetic AI</h4>
-                <p className="text-sm text-muted-foreground">Trained in mental health support</p>
+                <h4 className="font-semibold text-foreground">Empathetic</h4>
+                <p className="text-sm text-muted-foreground">Compassionate support</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20">
+          <Card className="p-4 bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20 hover:border-amber-500/40 transition-colors">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/20">
-                <Clock className="h-5 w-5 text-purple-600" />
+              <div className="p-2 rounded-lg bg-amber-500/20">
+                <Clock className="h-5 w-5 text-amber-600" />
               </div>
               <div>
                 <h4 className="font-semibold text-foreground">24/7 Available</h4>
-                <p className="text-sm text-muted-foreground">Support whenever you need it</p>
+                <p className="text-sm text-muted-foreground">Anytime support</p>
               </div>
             </div>
           </Card>
@@ -618,7 +905,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
         {/* Crisis Notice */}
         <Card className="p-4 bg-destructive/10 border-destructive/20">
           <p className="text-sm text-center text-destructive">
-            <strong>Crisis Support:</strong> If you're experiencing thoughts of self-harm or suicide, 
+            <strong>🆘 Crisis Support:</strong> If you're experiencing thoughts of self-harm or suicide, 
             please contact emergency services immediately or call a crisis helpline.
           </p>
         </Card>
@@ -633,6 +920,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
             onClose={() => setShowSummary(false)}
             onNewSession={() => {
               setShowSummary(false);
+              setMoodScore(null);
               startCall();
             }}
           />
