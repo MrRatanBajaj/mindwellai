@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Gift, Sparkles, Star, PartyPopper, ArrowRight, Check, Music } from 'lucide-react';
+import { X, Flame, Gift, Sparkles, Star, PartyPopper, ArrowRight, Check, Wind } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const LohriOfferPopup = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasShown, setHasShown] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if popup has been shown before
-    const shown = localStorage.getItem('lohriPopupShown');
+    const shown = localStorage.getItem('lohriPopupShown2025');
     if (!shown) {
       // Show popup after 2 seconds for first-time visitors
       const timer = setTimeout(() => {
         setIsOpen(true);
-        setHasShown(true);
-        localStorage.setItem('lohriPopupShown', 'true');
+        localStorage.setItem('lohriPopupShown2025', 'true');
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -25,6 +24,52 @@ const LohriOfferPopup = () => {
   const handleClose = () => {
     setIsOpen(false);
   };
+
+  const handleClaimOffer = () => {
+    setIsOpen(false);
+    navigate('/ai-audio-call');
+  };
+
+  // Kite component
+  const Kite = ({ color, x, y, size = 1, delay = 0 }: { color: string; x: string; y: string; size?: number; delay?: number }) => (
+    <motion.div
+      className="absolute"
+      style={{ left: x, top: y, transform: `scale(${size})` }}
+      animate={{
+        y: [0, -15, 5, -10, 0],
+        x: [0, 10, -5, 15, 0],
+        rotate: [-5, 10, -8, 5, -5],
+      }}
+      transition={{
+        duration: 4,
+        delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      <div 
+        className={`w-6 h-8 ${color} rotate-45 rounded-sm shadow-lg`}
+        style={{
+          clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+        }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-px h-full bg-white/50 rotate-45" />
+          <div className="absolute w-full h-px bg-white/50" />
+        </div>
+      </div>
+      {/* Tail */}
+      <motion.div
+        className="absolute top-6 left-1/2 -translate-x-1/2"
+        animate={{ x: [-2, 2, -2] }}
+        transition={{ duration: 0.3, repeat: Infinity }}
+      >
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className={`w-1.5 h-1.5 rounded-full my-0.5 ${i % 2 === 0 ? 'bg-yellow-300' : 'bg-pink-300'}`} />
+        ))}
+      </motion.div>
+    </motion.div>
+  );
 
   // Spark animation component
   const FloatingSpark = ({ delay, x, y }: { delay: number; x: string; y: string }) => (
@@ -49,10 +94,10 @@ const LohriOfferPopup = () => {
 
   // Bonfire component
   const Bonfire = () => (
-    <div className="relative w-24 h-20 mx-auto mb-4">
+    <div className="relative w-28 h-24 mx-auto mb-4">
       {/* Glow effect */}
       <motion.div
-        className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-16 bg-orange-500/30 rounded-full blur-xl"
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-36 h-20 bg-orange-500/30 rounded-full blur-xl"
         animate={{
           scale: [1, 1.2, 1],
           opacity: [0.3, 0.5, 0.3],
@@ -62,27 +107,26 @@ const LohriOfferPopup = () => {
       
       {/* Main fire */}
       <motion.div
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-16 h-20 bg-gradient-to-t from-red-600 via-orange-500 to-yellow-400 rounded-full blur-sm"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 w-18 h-22 bg-gradient-to-t from-red-600 via-orange-500 to-yellow-400 rounded-full blur-sm"
+        style={{ width: '72px', height: '88px' }}
         animate={{
           scale: [1, 1.1, 1, 1.05, 1],
-          height: ['80px', '88px', '80px'],
         }}
         transition={{ duration: 0.5, repeat: Infinity }}
       />
       
       {/* Inner flame */}
       <motion.div
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-10 h-14 bg-gradient-to-t from-orange-400 via-yellow-300 to-white rounded-full"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 w-12 h-16 bg-gradient-to-t from-orange-400 via-yellow-300 to-white rounded-full"
         animate={{
           scale: [1, 1.15, 1],
-          height: ['56px', '64px', '56px'],
         }}
         transition={{ duration: 0.4, repeat: Infinity }}
       />
       
       {/* Core flame */}
       <motion.div
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-4 h-8 bg-gradient-to-t from-yellow-200 to-white rounded-full"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 w-5 h-10 bg-gradient-to-t from-yellow-200 to-white rounded-full"
         animate={{
           scale: [1, 1.2, 1],
         }}
@@ -90,23 +134,23 @@ const LohriOfferPopup = () => {
       />
 
       {/* Floating sparks */}
-      {[...Array(8)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <motion.div
           key={i}
           className="absolute"
           initial={{
-            x: 48,
-            y: 60,
+            x: 56,
+            y: 70,
             opacity: 0,
           }}
           animate={{
-            x: 48 + (Math.random() * 40 - 20),
-            y: [60, 20, -10],
+            x: 56 + (Math.random() * 50 - 25),
+            y: [70, 30, -10],
             opacity: [0, 1, 0],
           }}
           transition={{
             duration: 1.5,
-            delay: i * 0.2,
+            delay: i * 0.15,
             repeat: Infinity,
           }}
         >
@@ -115,9 +159,34 @@ const LohriOfferPopup = () => {
       ))}
 
       {/* Wood logs */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex">
-        <div className="w-14 h-3 bg-gradient-to-r from-amber-800 to-amber-900 rounded-full transform -rotate-15 -mr-3" />
-        <div className="w-14 h-3 bg-gradient-to-r from-amber-900 to-amber-800 rounded-full transform rotate-15 -ml-3" />
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex">
+        <div className="w-16 h-3 bg-gradient-to-r from-amber-800 to-amber-900 rounded-full transform -rotate-15 -mr-4" />
+        <div className="w-16 h-3 bg-gradient-to-r from-amber-900 to-amber-800 rounded-full transform rotate-15 -ml-4" />
+      </div>
+
+      {/* People dancing around fire */}
+      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex justify-center" style={{ width: '140px' }}>
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="flex flex-col items-center mx-1"
+            style={{
+              transform: `translateX(${(i - 2) * 20}px) rotate(${(i - 2) * 10}deg)`,
+            }}
+            animate={{
+              y: [0, -6, 0],
+              rotate: [0, i % 2 === 0 ? 10 : -10, 0],
+            }}
+            transition={{
+              duration: 0.5,
+              delay: i * 0.1,
+              repeat: Infinity,
+            }}
+          >
+            <div className="w-2 h-2 bg-orange-200 rounded-full" />
+            <div className={`w-2.5 h-3 ${i % 2 === 0 ? 'bg-pink-400' : 'bg-cyan-400'} rounded-full -mt-0.5`} />
+          </motion.div>
+        ))}
       </div>
     </div>
   );
@@ -148,6 +217,9 @@ const LohriOfferPopup = () => {
             exit={{ scale: 0.5, opacity: 0, rotateY: 30 }}
             transition={{ type: "spring", damping: 20 }}
           >
+            {/* Sky gradient at top */}
+            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-sky-800/40 via-sky-600/20 to-transparent" />
+
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0" style={{
@@ -156,19 +228,24 @@ const LohriOfferPopup = () => {
               }} />
             </div>
 
+            {/* Flying Kites */}
+            <Kite color="bg-gradient-to-br from-cyan-400 to-blue-500" x="10%" y="5%" size={0.8} delay={0} />
+            <Kite color="bg-gradient-to-br from-pink-400 to-rose-500" x="80%" y="8%" size={0.9} delay={0.5} />
+            <Kite color="bg-gradient-to-br from-yellow-400 to-orange-500" x="50%" y="2%" size={0.7} delay={1} />
+            <Kite color="bg-gradient-to-br from-green-400 to-emerald-500" x="25%" y="12%" size={0.6} delay={1.5} />
+
             {/* Floating Sparks */}
-            <FloatingSpark delay={0} x="10%" y="20%" />
-            <FloatingSpark delay={0.5} x="85%" y="30%" />
-            <FloatingSpark delay={1} x="15%" y="60%" />
-            <FloatingSpark delay={1.5} x="90%" y="70%" />
-            <FloatingSpark delay={0.8} x="50%" y="10%" />
+            <FloatingSpark delay={0} x="10%" y="40%" />
+            <FloatingSpark delay={0.5} x="85%" y="50%" />
+            <FloatingSpark delay={1} x="15%" y="70%" />
+            <FloatingSpark delay={1.5} x="90%" y="75%" />
 
             {/* Content */}
             <div className="relative p-6 text-center text-white">
               {/* Close Button */}
               <motion.button
                 onClick={handleClose}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -176,13 +253,13 @@ const LohriOfferPopup = () => {
               </motion.button>
 
               {/* Festival Icons */}
-              <div className="flex justify-center gap-4 mb-2">
+              <div className="flex justify-center gap-4 mb-2 mt-2">
                 <motion.span
                   className="text-3xl"
                   animate={{ rotate: [-10, 10, -10] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 >
-                  🎉
+                  🪁
                 </motion.span>
                 <motion.span
                   className="text-3xl"
@@ -196,7 +273,7 @@ const LohriOfferPopup = () => {
                   animate={{ rotate: [10, -10, 10] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 >
-                  🎊
+                  🪁
                 </motion.span>
               </div>
 
@@ -219,7 +296,7 @@ const LohriOfferPopup = () => {
               </motion.h2>
               
               <p className="text-orange-200 mb-4">
-                Celebrate the harvest festival with us
+                Celebrate the harvest festival with Juli AI Counselor
               </p>
 
               {/* Offer Box */}
@@ -236,22 +313,22 @@ const LohriOfferPopup = () => {
               >
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Gift className="w-6 h-6 text-yellow-400" />
-                  <span className="text-xl font-bold text-yellow-300">FESTIVE OFFER</span>
+                  <span className="text-xl font-bold text-yellow-300">LOHRI SPECIAL</span>
                   <PartyPopper className="w-6 h-6 text-yellow-400" />
                 </div>
                 
                 <div className="text-4xl font-extrabold text-white mb-2">
-                  FREE Sessions
+                  FREE Voice Sessions
                 </div>
                 <p className="text-orange-200 text-sm mb-3">
-                  For first 100 users this Lohri!
+                  Talk to Juli AI - First 100 users this Lohri!
                 </p>
 
                 {/* Features */}
                 <div className="grid grid-cols-2 gap-2 text-left text-sm">
                   {[
                     '30 min AI Counseling',
-                    'Voice & Video Call',
+                    'Voice & Text Chat',
                     'No Credit Card',
                     'HIPAA Compliant',
                   ].map((feature, i) => (
@@ -271,16 +348,15 @@ const LohriOfferPopup = () => {
 
               {/* CTA Buttons */}
               <div className="space-y-3">
-                <NavLink to="/ai-voice-therapy" onClick={handleClose}>
-                  <Button
-                    className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 text-white font-bold py-6 text-lg shadow-lg"
-                    size="lg"
-                  >
-                    <Flame className="w-5 h-5 mr-2" />
-                    Claim Free Session
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </NavLink>
+                <Button
+                  onClick={handleClaimOffer}
+                  className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-400 hover:via-orange-400 hover:to-red-400 text-white font-bold py-6 text-lg shadow-lg"
+                  size="lg"
+                >
+                  <Flame className="w-5 h-5 mr-2" />
+                  Talk to Juli Now
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
                 
                 <Button
                   variant="ghost"
@@ -298,30 +374,9 @@ const LohriOfferPopup = () => {
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Limited time festive offer • Ends soon!</span>
+                <span>Limited festive offer • Fly high with kites & warmth!</span>
                 <Sparkles className="w-4 h-4" />
               </motion.div>
-
-              {/* Dancing figures at bottom */}
-              <div className="flex justify-center gap-2 mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="flex flex-col items-center"
-                    animate={{
-                      y: [0, -8, 0],
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      delay: i * 0.1,
-                      repeat: Infinity,
-                    }}
-                  >
-                    <div className="w-3 h-3 bg-orange-300 rounded-full" />
-                    <div className="w-4 h-6 bg-gradient-to-b from-orange-400 to-red-500 rounded-full -mt-1" />
-                  </motion.div>
-                ))}
-              </div>
             </div>
 
             {/* Bottom Glow */}

@@ -99,20 +99,41 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
       setIsConnecting(false);
       stopAudioAnalysis();
     },
-    onMessage: (message: { message: string; source: string }) => {
+    onMessage: (message: any) => {
       console.log('Message received:', message);
       
-      if (message.source === 'user' && message.message) {
+      // Handle different message types from ElevenLabs
+      if (message.type === 'user_transcript' && message.user_transcription_event?.user_transcript) {
+        const transcript = message.user_transcription_event.user_transcript;
         const newMessage: Message = {
           id: Date.now().toString() + '-user',
+          role: 'user',
+          content: transcript,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, newMessage]);
+      } else if (message.type === 'agent_response' && message.agent_response_event?.agent_response) {
+        const response = message.agent_response_event.agent_response;
+        const newMessage: Message = {
+          id: Date.now().toString() + '-assistant',
+          role: 'assistant',
+          content: response,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, newMessage]);
+      } else if (message.source === 'user' && message.message) {
+        // Fallback for older message format
+        const newMessage: Message = {
+          id: Date.now().toString() + '-user-legacy',
           role: 'user',
           content: message.message,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, newMessage]);
       } else if (message.source === 'ai' && message.message) {
+        // Fallback for older message format
         const newMessage: Message = {
-          id: Date.now().toString() + '-assistant',
+          id: Date.now().toString() + '-assistant-legacy',
           role: 'assistant',
           content: message.message,
           timestamp: new Date()
@@ -133,27 +154,52 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     },
   });
 
-  // Real-time audio analysis for visualization
+  // Real-time audio analysis for visualization and voice activity detection
   const startAudioAnalysis = useCallback(async (stream: MediaStream) => {
     try {
       audioContextRef.current = new AudioContext();
       analyserRef.current = audioContextRef.current.createAnalyser();
       const source = audioContextRef.current.createMediaStreamSource(stream);
       source.connect(analyserRef.current);
-      analyserRef.current.fftSize = 256;
+      analyserRef.current.fftSize = 512;
+      analyserRef.current.smoothingTimeConstant = 0.4;
       
       const bufferLength = analyserRef.current.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
+      
+      let silenceFrames = 0;
+      const silenceThreshold = 0.08;
+      const speakingThreshold = 0.12;
       
       const analyze = () => {
         if (!analyserRef.current) return;
         
         analyserRef.current.getByteFrequencyData(dataArray);
-        const average = dataArray.reduce((a, b) => a + b) / bufferLength;
-        const normalizedLevel = average / 128;
+        
+        // Focus on voice frequency range (300Hz - 3400Hz for human voice)
+        const voiceStart = Math.floor(300 / (audioContextRef.current!.sampleRate / analyserRef.current.fftSize));
+        const voiceEnd = Math.floor(3400 / (audioContextRef.current!.sampleRate / analyserRef.current.fftSize));
+        
+        let voiceSum = 0;
+        for (let i = voiceStart; i < voiceEnd && i < bufferLength; i++) {
+          voiceSum += dataArray[i];
+        }
+        const voiceAverage = voiceSum / (voiceEnd - voiceStart);
+        const normalizedLevel = voiceAverage / 128;
         
         setInputLevel(normalizedLevel);
-        setUserSpeaking(normalizedLevel > 0.15);
+        
+        // Better voice activity detection with debouncing
+        if (normalizedLevel > speakingThreshold) {
+          silenceFrames = 0;
+          setUserSpeaking(true);
+        } else if (normalizedLevel < silenceThreshold) {
+          silenceFrames++;
+          // Only mark as not speaking after consistent silence (about 300ms)
+          if (silenceFrames > 10) {
+            setUserSpeaking(false);
+          }
+        }
         
         animationFrameRef.current = requestAnimationFrame(analyze);
       };
@@ -229,13 +275,14 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     setMoodScore(null);
     
     try {
-      // Request microphone permission with optimal settings
+      // Request microphone permission with optimal settings for voice
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 16000
+          sampleRate: 16000,
+          channelCount: 1,
         } 
       });
       
@@ -246,9 +293,14 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
       
       console.log('Starting ElevenLabs conversation with agent:', JULI_AGENT_ID);
       
-      // Start the conversation session with the public agent ID
+      // Start the conversation session with the public agent ID using WebRTC
       await conversation.startSession({
         agentId: JULI_AGENT_ID,
+      });
+      
+      toast({
+        title: "🎤 Microphone Active",
+        description: "Speak naturally - Juli is listening to you",
       });
       
     } catch (error) {
