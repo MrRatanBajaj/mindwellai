@@ -5,6 +5,8 @@ import CallCommunicationHub from "@/components/ui-custom/CallCommunicationHub";
 import TherapyMethodsSection from "@/components/ui-custom/TherapyMethodsSection";
 import { RealtimeAnalytics } from "@/components/ui-custom/RealtimeAnalytics";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
+import LohriFestivalBanner from "@/components/ui-custom/LohriFestivalBanner";
+import LohriOfferPopup from "@/components/ui-custom/LohriOfferPopup";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -65,6 +67,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* Lohri Festival Banner */}
+      <LohriFestivalBanner />
+      
+      {/* First-time Visitor Popup */}
+      <LohriOfferPopup />
+      
       <Header />
       
       {/* Psychology-Driven Hero */}
