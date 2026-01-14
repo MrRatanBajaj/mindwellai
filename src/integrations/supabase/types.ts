@@ -268,6 +268,75 @@ export type Database = {
         }
         Relationships: []
       }
+      job_applications: {
+        Row: {
+          availability: string | null
+          cover_letter: string | null
+          created_at: string
+          current_company: string | null
+          email: string
+          experience_years: number | null
+          full_name: string
+          id: string
+          linkedin_url: string | null
+          location: string
+          phone: string
+          portfolio_url: string | null
+          position: string
+          referral_source: string | null
+          resume_url: string | null
+          salary_expectation: string | null
+          skills: string[] | null
+          status: string | null
+          updated_at: string
+          why_join: string | null
+        }
+        Insert: {
+          availability?: string | null
+          cover_letter?: string | null
+          created_at?: string
+          current_company?: string | null
+          email: string
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          linkedin_url?: string | null
+          location: string
+          phone: string
+          portfolio_url?: string | null
+          position: string
+          referral_source?: string | null
+          resume_url?: string | null
+          salary_expectation?: string | null
+          skills?: string[] | null
+          status?: string | null
+          updated_at?: string
+          why_join?: string | null
+        }
+        Update: {
+          availability?: string | null
+          cover_letter?: string | null
+          created_at?: string
+          current_company?: string | null
+          email?: string
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          linkedin_url?: string | null
+          location?: string
+          phone?: string
+          portfolio_url?: string | null
+          position?: string
+          referral_source?: string | null
+          resume_url?: string | null
+          salary_expectation?: string | null
+          skills?: string[] | null
+          status?: string | null
+          updated_at?: string
+          why_join?: string | null
+        }
+        Relationships: []
+      }
       medication_orders: {
         Row: {
           created_at: string

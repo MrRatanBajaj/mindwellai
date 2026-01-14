@@ -1,13 +1,39 @@
-
 import { NavLink } from "react-router-dom";
+import { Briefcase, MapPin, Sparkles } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   return (
     <footer className="bg-slate-50 border-t border-slate-200">
+      {/* Hiring Banner */}
+      <div className="bg-gradient-to-r from-mindwell-600 via-purple-600 to-pink-600 py-4">
+        <div className="max-w-7xl mx-auto px-6">
+          <NavLink to="/careers" className="flex flex-col md:flex-row items-center justify-center gap-3 text-white hover:opacity-90 transition-opacity">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+              <span className="font-bold text-lg">We're Hiring!</span>
+              <Sparkles className="w-5 h-5 animate-pulse" />
+            </div>
+            <div className="flex items-center gap-4 text-sm md:text-base">
+              <span className="flex items-center gap-1">
+                <Briefcase className="w-4 h-4" />
+                Co-Founder • AI/ML Engineer • Software Engineer
+              </span>
+              <span className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                Delhi, India
+              </span>
+            </div>
+            <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+              Equity-based → Apply Now
+            </span>
+          </NavLink>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center mb-6">
               <div className="bg-white p-2 rounded-lg shadow-sm">
@@ -82,6 +108,39 @@ const Footer = () => {
                 <a href="#" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors">
                   FAQ
                 </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Careers Section */}
+          <div className="col-span-1">
+            <h3 className="font-medium text-sm text-slate-900 mb-4 flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-mindwell-600" />
+              Careers
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <NavLink to="/careers" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Co-Founder
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/careers" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  AI/ML Engineer
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/careers" className="text-slate-600 hover:text-mindwell-600 text-sm transition-colors flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Software Engineer
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/careers" className="text-mindwell-600 hover:text-mindwell-700 text-sm font-medium transition-colors">
+                  View All Positions →
+                </NavLink>
               </li>
             </ul>
           </div>
