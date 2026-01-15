@@ -6,6 +6,7 @@ import TherapyMethodsSection from "@/components/ui-custom/TherapyMethodsSection"
 import { RealtimeAnalytics } from "@/components/ui-custom/RealtimeAnalytics";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import SmartNotification from "@/components/ui-custom/SmartNotification";
+import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -294,6 +295,9 @@ const Index = () => {
       </section>
 
       <Footer />
+      
+      {/* Push Notification Banner */}
+      <PushNotificationBanner />
     </div>
   );
 };

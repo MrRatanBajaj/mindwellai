@@ -670,6 +670,39 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string
+          device_info: string | null
+          endpoint: string
+          id: string
+          p256dh_key: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string
+          device_info?: string | null
+          endpoint: string
+          id?: string
+          p256dh_key: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string
+          device_info?: string | null
+          endpoint?: string
+          id?: string
+          p256dh_key?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string

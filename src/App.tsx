@@ -26,6 +26,7 @@ import Sessions from "./pages/Sessions";
 import MedicineStore from "./pages/MedicineStore";
 import AuditLogs from "./pages/AuditLogs";
 import Careers from "./pages/Careers";
+import NotificationAdminPage from "./pages/NotificationAdmin";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/emergency" element={<Emergency />} />
             <Route path="/policy" element={<Policy />} />
             <Route path="/careers" element={<Careers />} />
+            <Route path="/notification-admin" element={<NotificationAdminPage />} />
             {/* Protected routes requiring authentication */}
             <Route path="/consultation" element={<ProtectedRoute><Consultation /></ProtectedRoute>} />
             <Route path="/plans" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
