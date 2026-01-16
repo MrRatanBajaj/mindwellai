@@ -7,6 +7,7 @@ import { RealtimeAnalytics } from "@/components/ui-custom/RealtimeAnalytics";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import SmartNotification from "@/components/ui-custom/SmartNotification";
 import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
+import { LeadCapturePopup } from "@/components/ui-custom/LeadCapturePopup";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,9 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       {/* Smart Zomato-style Notification */}
       <SmartNotification />
+      
+      {/* Lead Capture Popup - Auto collects visitor info */}
+      <LeadCapturePopup />
       
       <Header />
       
