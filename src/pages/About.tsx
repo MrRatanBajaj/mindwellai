@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import JuliMascot from "@/components/ui-custom/JuliMascot";
 
 const About = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -169,37 +170,42 @@ const About = () => {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="relative"
             >
-              <div className="relative">
-                {/* Main card */}
+              <div className="relative flex items-center justify-center">
+                {/* Mascot Container */}
                 <motion.div
-                  className="relative z-10 rounded-3xl overflow-hidden shadow-2xl"
+                  className="relative z-10"
                   style={{ y: y1 }}
                 >
-                  <img 
-                    src="https://images.unsplash.com/photo-1552308995-2baac1ad5490?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80" 
-                    alt="AI Mental Health Platform" 
-                    className="w-full aspect-[4/5] object-cover"
+                  {/* Background glow for mascot */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-mindwell-500/30 via-purple-500/20 to-pink-500/30 rounded-full blur-3xl scale-150" />
+                  
+                  {/* Juli Mascot */}
+                  <JuliMascot 
+                    isActive={true}
+                    isSpeaking={true}
+                    isListening={false}
+                    size="lg"
+                    className="relative z-10"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-mindwell-900/90 via-mindwell-900/40 to-transparent" />
                   
                   {/* Floating info card */}
                   <motion.div
-                    className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20"
+                    className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-72 p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8 }}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-mindwell-400 to-purple-500 flex items-center justify-center">
-                        <Brain className="w-7 h-7 text-white" />
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-mindwell-400 to-purple-500 flex items-center justify-center">
+                        <Brain className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-semibold text-lg">Dr. Emma AI</p>
-                        <p className="text-white/70 text-sm">Your Personal AI Therapist</p>
+                        <p className="text-white font-semibold">Juli AI</p>
+                        <p className="text-white/70 text-sm">Your AI Companion</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
-                        <span className="text-white/70 text-sm">Online</span>
+                        <span className="text-white/70 text-xs">Online</span>
                       </div>
                     </div>
                   </motion.div>
@@ -214,6 +220,27 @@ const About = () => {
                   className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 blur-2xl"
                   style={{ y: y1 }}
                 />
+                
+                {/* Extra floating particles */}
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-2 h-2 rounded-full bg-mindwell-400/60"
+                    style={{
+                      left: `${20 + i * 15}%`,
+                      top: `${10 + i * 18}%`,
+                    }}
+                    animate={{
+                      y: [0, -15, 0],
+                      opacity: [0.4, 1, 0.4],
+                    }}
+                    transition={{
+                      duration: 2 + i * 0.5,
+                      repeat: Infinity,
+                      delay: i * 0.3,
+                    }}
+                  />
+                ))}
               </div>
             </motion.div>
           </div>
