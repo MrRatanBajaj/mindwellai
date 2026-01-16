@@ -337,6 +337,72 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          created_at: string
+          device_info: string | null
+          email: string | null
+          id: string
+          ip_address: unknown
+          landing_page: string | null
+          location_city: string | null
+          location_country: string | null
+          location_region: string | null
+          name: string | null
+          notes: string | null
+          phone: string | null
+          referrer: string | null
+          source: string | null
+          status: string | null
+          updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_info?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: unknown
+          landing_page?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          name?: string | null
+          notes?: string | null
+          phone?: string | null
+          referrer?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_info?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: unknown
+          landing_page?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_region?: string | null
+          name?: string | null
+          notes?: string | null
+          phone?: string | null
+          referrer?: string | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       medication_orders: {
         Row: {
           created_at: string
