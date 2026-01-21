@@ -434,7 +434,7 @@ const About = () => {
 
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Mr. Ratan Bajaj founded MindwellAI with a profound vision to democratize access 
+                  Mr. Ratan Bajaj founded WellMindAI with a profound vision to democratize access 
                   to mental health support worldwide. With over a decade of experience in technology 
                   innovation and a deep understanding of psychological wellness, he recognized the 
                   transformative potential of AI in addressing the global mental health crisis.

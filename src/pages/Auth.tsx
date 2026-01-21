@@ -115,7 +115,7 @@ const Auth = () => {
       <section className="py-32 px-6 flex-grow flex items-center justify-center">
         <div className="max-w-md w-full mx-auto">
           <div className="text-center mb-8 animate-fade-in">
-            <h1 className="text-3xl font-bold mb-2">Welcome to MindwellAI</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome to WellMindAI</h1>
             <p className="text-slate-600">Your journey to better mental well-being starts here</p>
           </div>
           

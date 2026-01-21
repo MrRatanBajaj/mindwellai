@@ -46,7 +46,7 @@ const Plans = () => {
             {[
               {
                 question: "What's included in the free trial?",
-                answer: "The free trial includes 3 full counseling sessions with our AI therapist, a basic mental health assessment, and access to our meditation resources. It's a great way to experience the benefits of MindwellAI before committing to a paid plan."
+                answer: "The free trial includes 3 full counseling sessions with our AI therapist, a basic mental health assessment, and access to our meditation resources. It's a great way to experience the benefits of WellMindAI before committing to a paid plan."
               },
               {
                 question: "Can I cancel my subscription at any time?",

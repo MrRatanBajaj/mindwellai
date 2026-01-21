@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Policy = () => {
   useEffect(() => {
-    document.title = "Privacy Policy & Terms - MindwellAI";
+    document.title = "Privacy Policy & Terms - WellMindAI";
   }, []);
 
   return (
@@ -85,7 +85,7 @@ const Policy = () => {
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Service Description</h3>
                 <p className="text-slate-600">
-                  MindwellAI provides AI-powered mental health support and counseling services. Our platform 
+                  WellMindAI provides AI-powered mental health support and counseling services. Our platform 
                   is designed to supplement, not replace, traditional therapy and professional mental health care.
                 </p>
               </div>

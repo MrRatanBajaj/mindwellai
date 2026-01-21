@@ -165,8 +165,8 @@ const Payment = () => {
           </h1>
           <p className="text-slate-600 text-lg mb-6 max-w-2xl mx-auto text-balance animate-fade-in">
             {selectedPlan.isFree 
-              ? "Get started with your free trial and experience the benefits of MindwellAI counseling." 
-              : "You're one step away from beginning your mental wellness journey with MindwellAI."}
+              ? "Get started with your free trial and experience the benefits of WellMindAI counseling." 
+              : "You're one step away from beginning your mental wellness journey with WellMindAI."}
           </p>
         </div>
       </section>
