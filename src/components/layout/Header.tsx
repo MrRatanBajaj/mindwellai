@@ -29,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import wellmindLogo from "@/assets/wellmind-logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -54,19 +55,12 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo Section */}
-          <NavLink to="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-lg">
-                <Brain className="w-5 h-5 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm"></div>
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                MindWelAI
-              </h1>
-              <p className="text-[10px] text-muted-foreground -mt-0.5">Mental Health Companion</p>
-            </div>
+          <NavLink to="/" className="flex items-center gap-1 group flex-shrink-0">
+            <img 
+              src={wellmindLogo} 
+              alt="WellMind AI" 
+              className="h-12 w-auto group-hover:scale-105 transition-transform duration-200"
+            />
           </NavLink>
 
           {/* Desktop Navigation */}
