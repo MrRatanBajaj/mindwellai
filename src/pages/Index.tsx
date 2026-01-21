@@ -1,9 +1,5 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import PsychologyHero from "@/components/ui-custom/PsychologyHero";
-import CallCommunicationHub from "@/components/ui-custom/CallCommunicationHub";
-import TherapyMethodsSection from "@/components/ui-custom/TherapyMethodsSection";
-import { RealtimeAnalytics } from "@/components/ui-custom/RealtimeAnalytics";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import SmartNotification from "@/components/ui-custom/SmartNotification";
 import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
@@ -11,296 +7,277 @@ import { LeadCapturePopup } from "@/components/ui-custom/LeadCapturePopup";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Brain, Shield, Clock, Heart, Users, 
-  MessageSquare, ArrowRight, CheckCircle, 
-  Sparkles, Star, Quote
+  Brain, Shield, Clock, Heart, 
+  ArrowRight, CheckCircle, Play,
+  Video, Phone, MessageCircle, Sparkles
 } from "lucide-react";
 
 const Index = () => {
-  const testimonials = [
-    {
-      name: "Dr. Sarah Chen",
-      role: "Clinical Psychologist",
-      image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop",
-      quote: "The AI counselor uses evidence-based techniques that align with established therapeutic practices. Impressive technology.",
-      rating: 5,
-    },
-    {
-      name: "Michael Thompson",
-      role: "Anxiety & Depression",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
-      quote: "After struggling for years, this platform gave me tools I actually use daily. The 24/7 availability changed everything.",
-      rating: 5,
-    },
-    {
-      name: "Priya Sharma",
-      role: "Work Stress",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop",
-      quote: "I was skeptical about AI therapy, but the conversations feel genuinely supportive. It's like having a therapist in my pocket.",
-      rating: 5,
-    },
-  ];
-
-  const whyChooseUs = [
+  const features = [
     {
       icon: Shield,
-      title: "Complete Privacy",
-      description: "Your conversations are encrypted and never shared. We're fully HIPAA compliant.",
+      title: "HIPAA Compliant",
+      description: "Bank-level encryption for your privacy",
     },
     {
       icon: Clock,
-      title: "Always Available",
-      description: "Mental health doesn't follow a schedule. Get support any time, day or night.",
+      title: "24/7 Available",
+      description: "Support whenever you need it",
     },
     {
       icon: Brain,
-      title: "Evidence-Based",
-      description: "Our AI is trained on proven therapeutic techniques used by licensed professionals.",
+      title: "AI-Powered",
+      description: "Evidence-based therapeutic techniques",
     },
     {
       icon: Heart,
       title: "Judgment-Free",
-      description: "Share anything without fear. Our AI provides unconditional positive regard.",
+      description: "Safe space for your thoughts",
+    },
+  ];
+
+  const services = [
+    {
+      icon: Video,
+      title: "Video Therapy",
+      description: "Face-to-face AI counseling",
+      path: "/consultation",
+      color: "bg-violet-500",
+    },
+    {
+      icon: Phone,
+      title: "Voice Calls",
+      description: "Natural voice conversations",
+      path: "/ai-voice-therapy",
+      color: "bg-blue-500",
+    },
+    {
+      icon: MessageCircle,
+      title: "Text Chat",
+      description: "Type at your own pace",
+      path: "/ai-therapist",
+      color: "bg-emerald-500",
     },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Smart Zomato-style Notification */}
+    <div className="min-h-screen flex flex-col bg-white">
       <SmartNotification />
-      
-      {/* Lead Capture Popup - Auto collects visitor info */}
       <LeadCapturePopup />
-      
       <Header />
       
-      {/* Psychology-Driven Hero */}
-      <PsychologyHero />
+      {/* Hero Section - Clean & Professional */}
+      <section className="relative pt-20 pb-24 overflow-hidden">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-violet-50/30" />
+        
+        <div className="relative max-w-6xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-6">
+                <Sparkles className="w-4 h-4" />
+                AI-Powered Mental Wellness
+              </div>
+              
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight mb-6">
+                Your Personal
+                <span className="block text-violet-600">AI Therapist</span>
+              </h1>
+              
+              <p className="text-lg text-slate-600 mb-8 max-w-md">
+                Professional mental health support, available 24/7. Evidence-based therapy techniques delivered through advanced AI.
+              </p>
 
-      {/* Call Communication Hub */}
-      <CallCommunicationHub />
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <NavLink to="/ai-voice-therapy">
+                  <Button size="lg" className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 text-base font-semibold shadow-lg shadow-violet-200">
+                    Start Free Session
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </NavLink>
+                <Button size="lg" variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 px-6 py-6">
+                  <Play className="w-4 h-4 mr-2" />
+                  Watch Demo
+                </Button>
+              </div>
 
-      {/* Therapy Methods Section */}
-      <TherapyMethodsSection />
+              <div className="flex items-center gap-6 text-sm text-slate-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  <span>Free to start</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  <span>No credit card</span>
+                </div>
+              </div>
+            </motion.div>
 
-      {/* Why Choose Us - Psychology: Address objections */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <Badge className="mb-4 bg-blue-100 text-blue-700 border-0 px-4 py-1.5">
-              <Shield className="w-3 h-3 mr-1" />
-              Why People Trust Us
-            </Badge>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-              Built for
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Your Peace of Mind</span>
-            </h2>
-          </motion.div>
+            {/* Right - Service Cards */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="space-y-4"
+            >
+              {services.map((service, index) => (
+                <NavLink key={service.title} to={service.path}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + index * 0.1 }}
+                    whileHover={{ x: 8, scale: 1.02 }}
+                    className="flex items-center gap-5 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-violet-200 transition-all cursor-pointer"
+                  >
+                    <div className={`w-14 h-14 ${service.color} rounded-xl flex items-center justify-center shrink-0`}>
+                      <service.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-900 text-lg">{service.title}</h3>
+                      <p className="text-slate-500 text-sm">{service.description}</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-slate-400" />
+                  </motion.div>
+                </NavLink>
+              ))}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {whyChooseUs.map((item, index) => (
+              {/* Stats Card */}
               <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-r from-violet-600 to-blue-600 rounded-2xl text-white mt-6"
+              >
+                <div className="text-center">
+                  <div className="text-2xl font-bold">2M+</div>
+                  <div className="text-white/70 text-xs">Sessions</div>
+                </div>
+                <div className="text-center border-x border-white/20">
+                  <div className="text-2xl font-bold">4.9</div>
+                  <div className="text-white/70 text-xs">Rating</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">24/7</div>
+                  <div className="text-white/70 text-xs">Available</div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Minimal */}
+      <section className="py-20 bg-white border-y border-slate-100">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center group"
+                className="text-center"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1, y: -5 }}
-                  className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow"
-                >
-                  <item.icon className="w-8 h-8 text-white" />
-                </motion.div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-slate-600 text-sm">{item.description}</p>
+                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 flex items-center justify-center">
+                  <feature.icon className="w-6 h-6 text-slate-700" />
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-1">{feature.title}</h3>
+                <p className="text-slate-500 text-sm">{feature.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Real-time Analytics Section */}
-      <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* CTA Section */}
+      <section className="py-20 bg-slate-900">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Start Your Wellness Journey
+            </h2>
+            <p className="text-slate-400 mb-8 max-w-xl mx-auto">
+              Join thousands who have found support through our AI-powered platform. 
+              Your first session is completely free.
+            </p>
+            <NavLink to="/ai-voice-therapy">
+              <Button size="lg" className="bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 text-base font-semibold">
+                Get Started Free
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </NavLink>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Enhanced Feedback Form Section */}
+      <section className="py-20 bg-gradient-to-b from-violet-50/50 to-white relative overflow-hidden">
+        {/* Animated background elements */}
+        <motion.div
+          className="absolute top-20 left-10 w-72 h-72 bg-violet-200/30 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+        />
+        
+        <div className="relative max-w-2xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-10"
           >
-            <Badge className="mb-4 bg-purple-100 text-purple-700 border-0 px-4 py-1.5">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Live Platform Activity
-            </Badge>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
-              Join Our Growing Community
+            <motion.div
+              initial={{ scale: 0 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ type: "spring", bounce: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Beta Feedback
+            </motion.div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">
+              Help Us Improve
             </h2>
             <p className="text-slate-600">
-              See how our community is actively engaging with mental health support
+              Your feedback shapes the future of mental wellness technology
             </p>
           </motion.div>
-          <RealtimeAnalytics />
-        </div>
-      </section>
-
-      {/* Testimonials - Psychology: Social proof with emotional connection */}
-      <section className="py-24 bg-gradient-to-br from-purple-50/50 via-white to-blue-50/50">
-        <div className="max-w-7xl mx-auto px-6">
+          
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            transition={{ delay: 0.2 }}
           >
-            <Badge className="mb-4 bg-amber-100 text-amber-700 border-0 px-4 py-1.5">
-              <Heart className="w-3 h-3 mr-1" />
-              Real Stories
-            </Badge>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-              Transforming Lives
-              <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent"> Every Day</span>
-            </h2>
+            <FeedbackForm />
           </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-                whileHover={{ y: -5 }}
-                className="relative"
-              >
-                <div className="h-full p-8 rounded-3xl bg-white border border-slate-100 shadow-lg hover:shadow-xl transition-all">
-                  {/* Quote Icon */}
-                  <Quote className="w-10 h-10 text-purple-200 mb-4" />
-                  
-                  {/* Quote Text */}
-                  <p className="text-slate-700 text-lg leading-relaxed mb-6">
-                    "{testimonial.quote}"
-                  </p>
-
-                  {/* Rating */}
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-
-                  {/* Author */}
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-purple-100"
-                    />
-                    <div>
-                      <h4 className="font-bold text-slate-900">{testimonial.name}</h4>
-                      <p className="text-sm text-slate-500">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA - Psychology: Clear action, urgency, value */}
-      <section className="py-24 bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '30px 30px'
-          }} />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              Your Journey to Wellness
-              <br />
-              <span className="text-white/80">Starts Now</span>
-            </h2>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Take the first step today. Our AI counselors are ready to support you 
-              with compassion, understanding, and proven techniques.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <NavLink to="/ai-voice-therapy">
-                <Button 
-                  size="lg" 
-                  className="w-full sm:w-auto bg-white text-purple-700 hover:bg-white/90 shadow-xl px-8 py-6 text-lg font-semibold"
-                >
-                  Start Free Session
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </NavLink>
-              <NavLink to="/plans">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="w-full sm:w-auto border-2 border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg"
-                >
-                  View Plans
-                </Button>
-              </NavLink>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 text-white/70 text-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                <span>No credit card required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                <span>Cancel anytime</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                <span>100% confidential</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Feedback Form */}
-      <section className="py-16 bg-slate-50">
-        <div className="max-w-2xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-8"
-          >
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Share Your Feedback</h2>
-            <p className="text-slate-600">Help us improve your experience</p>
-          </motion.div>
-          <FeedbackForm />
         </div>
       </section>
 
       <Footer />
-      
-      {/* Push Notification Banner */}
       <PushNotificationBanner />
     </div>
   );
