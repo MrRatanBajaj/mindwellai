@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 // Pre-defined Zomato-style notifications
 const PRESET_NOTIFICATIONS = [
   {
-    title: "MindWell AI 🧠",
+    title: "WellMind AI 🧠",
     body: "Aaj ka din kaat lo… par khud ko mat kaato 😌 thoda sa check-in kar lo 🪁",
     category: "re-engagement"
   },
@@ -43,7 +43,7 @@ const PRESET_NOTIFICATIONS = [
 ];
 
 export function NotificationAdmin() {
-  const [title, setTitle] = useState('MindWell AI 🧠');
+  const [title, setTitle] = useState('WellMind AI 🧠');
   const [body, setBody] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null);

@@ -51,7 +51,7 @@ export const FeedbackForm = () => {
       
       toast({
         title: "Feedback Submitted!",
-        description: "Thank you for helping us improve MindWelAI.",
+        description: "Thank you for helping us improve WellMindAI.",
       });
       
       // Reset form

@@ -3,11 +3,11 @@ self.addEventListener('push', function(event) {
   console.log('[Service Worker] Push Received.');
   
   let data = {
-    title: 'MindWell AI',
+    title: 'WellMind AI',
     body: 'Aaj ka din kaat lo… thoda sa check-in kar lo 🧠',
     icon: '/favicon.ico',
     badge: '/favicon.ico',
-    tag: 'mindwell-notification',
+    tag: 'wellmind-notification',
     data: {
       url: '/'
     }

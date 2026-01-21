@@ -55,11 +55,11 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo Section */}
-          <NavLink to="/" className="flex items-center gap-1 group flex-shrink-0">
+          <NavLink to="/" className="flex items-center group flex-shrink-0">
             <img 
               src={wellmindLogo} 
               alt="WellMind AI" 
-              className="h-12 w-auto group-hover:scale-105 transition-transform duration-200"
+              className="h-14 w-auto group-hover:scale-105 transition-transform duration-200 drop-shadow-md"
             />
           </NavLink>
 
