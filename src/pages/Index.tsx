@@ -3,7 +3,6 @@ import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import SmartNotification from "@/components/ui-custom/SmartNotification";
 import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
-import { LeadCapturePopup } from "@/components/ui-custom/LeadCapturePopup";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,6 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <SmartNotification />
-      <LeadCapturePopup />
       <Header />
       
       {/* Hero Section - Clean & Professional */}
