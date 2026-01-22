@@ -3,16 +3,35 @@ import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import SmartNotification from "@/components/ui-custom/SmartNotification";
 import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { 
   Brain, Shield, Clock, Heart, 
   ArrowRight, CheckCircle, Play,
-  Video, Phone, MessageCircle, Sparkles
+  Video, Phone, MessageCircle, Sparkles, Flag
 } from "lucide-react";
 
 const Index = () => {
+  const [isRepublicDay, setIsRepublicDay] = useState(false);
+
+  useEffect(() => {
+    const checkRepublicDay = () => {
+      const now = new Date();
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const istNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + istOffset);
+      
+      // Check if it's 26th January
+      const isJan26 = istNow.getMonth() === 0 && istNow.getDate() === 26;
+      setIsRepublicDay(isJan26);
+    };
+
+    checkRepublicDay();
+    const interval = setInterval(checkRepublicDay, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const features = [
     {
       icon: Shield,
@@ -68,7 +87,7 @@ const Index = () => {
       {/* Hero Section - Clean & Professional */}
       <section className="relative pt-20 pb-24 overflow-hidden">
         {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-violet-50/30" />
+        <div className={`absolute inset-0 ${isRepublicDay ? 'bg-gradient-to-br from-orange-50 via-white to-green-50' : 'bg-gradient-to-br from-slate-50 via-white to-violet-50/30'}`} />
         
         <div className="relative max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -78,7 +97,68 @@ const Index = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-6">
+              {/* Republic Day Special Banner */}
+              <AnimatePresence>
+                {isRepublicDay && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                    transition={{ type: "spring", bounce: 0.4 }}
+                    className="mb-6"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF9933] via-white to-[#138808] p-[2px]">
+                      <div className="bg-slate-900 rounded-2xl px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <motion.div
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            <span className="text-3xl">🇮🇳</span>
+                          </motion.div>
+                          <div className="flex-1">
+                            <h3 className="text-white font-bold text-lg">
+                              Happy 76th Republic Day!
+                            </h3>
+                            <p className="text-slate-300 text-sm">
+                              Celebrating the spirit of our Constitution • Jai Hind! 🪷
+                            </p>
+                          </div>
+                          <motion.div
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            <Flag className="w-8 h-8 text-[#FF9933]" />
+                          </motion.div>
+                        </div>
+                        
+                        {/* Animated Ashoka Chakra */}
+                        <div className="flex justify-center mt-4">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                            className="w-12 h-12 rounded-full border-4 border-[#000080] flex items-center justify-center"
+                          >
+                            <div className="relative w-full h-full">
+                              {[...Array(24)].map((_, i) => (
+                                <div
+                                  key={i}
+                                  className="absolute w-0.5 h-2 bg-[#000080] left-1/2 top-1/2 origin-bottom"
+                                  style={{ 
+                                    transform: `translateX(-50%) translateY(-100%) rotate(${i * 15}deg)` 
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${isRepublicDay ? 'bg-gradient-to-r from-orange-100 via-white to-green-100 text-slate-700 border border-slate-200' : 'bg-violet-100 text-violet-700'} text-sm font-medium mb-6`}>
                 <Sparkles className="w-4 h-4" />
                 AI-Powered Mental Wellness
               </div>
