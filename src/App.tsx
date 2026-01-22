@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import RepublicDayCelebration from "@/components/ui-custom/RepublicDayCelebration";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Consultation from "./pages/Consultation";
@@ -28,6 +29,7 @@ import AuditLogs from "./pages/AuditLogs";
 import Careers from "./pages/Careers";
 import NotificationAdminPage from "./pages/NotificationAdmin";
 import LeadsAdmin from "./pages/LeadsAdmin";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -35,6 +37,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <RepublicDayCelebration />
       <AuthProvider>
         <BrowserRouter>
           <Routes>
