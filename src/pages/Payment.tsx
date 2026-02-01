@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { pricingPlans } from "@/components/ui-custom/Pricing";
@@ -8,8 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, Lock, Smartphone, Wallet } from "lucide-react";
+import { Check, CreditCard, Calendar, Lock, Smartphone, Wallet, History, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import PaymentHistory from "@/components/ui-custom/PaymentHistory";
+import SubscriptionStatus from "@/components/ui-custom/SubscriptionStatus";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
@@ -154,27 +157,52 @@ const Payment = () => {
     }
   };
 
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
       <section className="pt-32 pb-10 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance animate-fade-in">
-            Complete Your {selectedPlan.isFree ? "Free Trial" : "Purchase"}
-          </h1>
-          <p className="text-slate-600 text-lg mb-6 max-w-2xl mx-auto text-balance animate-fade-in">
-            {selectedPlan.isFree 
-              ? "Get started with your free trial and experience the benefits of WellMindAI counseling." 
-              : "You're one step away from beginning your mental wellness journey with WellMindAI."}
-          </p>
-        </div>
-      </section>
-      
-      <section className="py-10 px-6 mb-20 flex-grow">
-        <div className="max-w-4xl mx-auto">
-          <div className="glass-panel rounded-xl p-6 md:p-10 shadow-lg animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-5xl mx-auto">
+          <Tabs defaultValue={planId ? "checkout" : "subscription"} className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+              <TabsTrigger value="subscription" className="flex items-center gap-2">
+                <Crown className="w-4 h-4" />
+                Subscription
+              </TabsTrigger>
+              <TabsTrigger value="checkout" className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Checkout
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-2">
+                <History className="w-4 h-4" />
+                History
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="subscription">
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl font-bold text-center mb-8">Your Subscription</h2>
+                <SubscriptionStatus />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="checkout">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance animate-fade-in">
+                  Complete Your {selectedPlan.isFree ? "Free Trial" : "Purchase"}
+                </h1>
+                <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto text-balance animate-fade-in">
+                  {selectedPlan.isFree 
+                    ? "Get started with your free trial and experience the benefits of WellMindAI counseling." 
+                    : "You're one step away from beginning your mental wellness journey with WellMindAI."}
+                </p>
+              </div>
+              
+              <div className="max-w-4xl mx-auto">
+                <div className="glass-panel rounded-xl p-6 md:p-10 shadow-lg animate-fade-in">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Order Summary */}
               <div className="col-span-1 p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
@@ -410,7 +438,17 @@ const Payment = () => {
             </div>
           </div>
         </div>
-      </section>
+      </TabsContent>
+
+      <TabsContent value="history">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Payment History</h2>
+          <PaymentHistory />
+        </div>
+      </TabsContent>
+    </Tabs>
+  </div>
+</section>
       
       <Footer />
     </div>

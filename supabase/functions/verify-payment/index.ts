@@ -42,38 +42,98 @@ serve(async (req) => {
       throw new Error('Invalid payment signature')
     }
 
-    // Update consultation record
+    // Get auth header to extract user
+    const authHeader = req.headers.get('authorization')
+    let userId = null
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user } } = await supabase.auth.getUser(token)
+      userId = user?.id
+    }
+
+    // Update or create payment record
+    const { data: existingPayment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('order_id', razorpayOrderId)
+      .single()
+
+    if (existingPayment) {
+      await supabase
+        .from('payments')
+        .update({
+          payment_id: razorpayPaymentId,
+          status: 'completed'
+        })
+        .eq('order_id', razorpayOrderId)
+    }
+
+    // Update consultation record if exists
     const { data: consultations, error: fetchError } = await supabase
       .from('consultations')
       .select('*')
       .contains('notes', { razorpayOrderId: razorpayOrderId })
       .limit(1)
 
-    if (fetchError || !consultations?.length) {
-      throw new Error('Consultation record not found')
-    }
+    if (!fetchError && consultations?.length) {
+      const consultation = consultations[0]
+      const notes = typeof consultation.notes === 'string' 
+        ? JSON.parse(consultation.notes) 
+        : consultation.notes
 
-    const consultation = consultations[0]
-    const notes = typeof consultation.notes === 'string' 
-      ? JSON.parse(consultation.notes) 
-      : consultation.notes
-
-    // Update consultation status
-    const { error: updateError } = await supabase
-      .from('consultations')
-      .update({
-        status: 'confirmed',
-        notes: JSON.stringify({
-          ...notes,
-          razorpayPaymentId: razorpayPaymentId,
-          paymentStatus: 'completed',
-          paidAt: new Date().toISOString()
+      // Update consultation status
+      await supabase
+        .from('consultations')
+        .update({
+          status: 'confirmed',
+          notes: JSON.stringify({
+            ...notes,
+            razorpayPaymentId: razorpayPaymentId,
+            paymentStatus: 'completed',
+            paidAt: new Date().toISOString()
+          })
         })
-      })
-      .eq('id', consultation.id)
+        .eq('id', consultation.id)
 
-    if (updateError) {
-      throw new Error('Failed to update consultation status')
+      // Create or update subscription
+      if (userId && notes.planId) {
+        const sessionsMap: Record<string, number> = {
+          'free-trial': 3,
+          'basic': 8,
+          'premium': 999
+        }
+        
+        const { data: existingSub } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+
+        if (existingSub) {
+          await supabase
+            .from('subscriptions')
+            .update({
+              plan_id: notes.planId,
+              status: 'active',
+              sessions_remaining: sessionsMap[notes.planId] || 0,
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            })
+            .eq('user_id', userId)
+        } else {
+          await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: userId,
+              plan_id: notes.planId,
+              status: 'active',
+              sessions_remaining: sessionsMap[notes.planId] || 0,
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            })
+        }
+      }
     }
 
     // Log successful payment
@@ -83,11 +143,7 @@ serve(async (req) => {
         event_type: 'payment_success',
         event_data: {
           orderId: razorpayOrderId,
-          paymentId: razorpayPaymentId,
-          amount: notes.amount,
-          currency: notes.currency,
-          planId: notes.planId,
-          paymentMethod: notes.paymentMethod
+          paymentId: razorpayPaymentId
         }
       })
 

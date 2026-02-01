@@ -65,26 +65,57 @@ serve(async (req) => {
 
     const razorpayOrder = await razorpayResponse.json()
 
-    // Store payment record in database
-    const { data: paymentRecord, error: dbError } = await supabase
-      .from('consultations')
-      .insert({
-        name: name,
-        email: email,
-        phone: phone,
-        concerns: `Payment for ${planId || 'consultation'} plan`,
-        status: 'payment_pending',
-        session_type: 'consultation',
-        scheduled_date: new Date().toISOString().split('T')[0],
-        scheduled_time: '09:00:00',
-        notes: JSON.stringify({
-          razorpayOrderId: razorpayOrder.id,
+    // Get auth header to extract user id
+    const authHeader = req.headers.get('authorization')
+    let userId = null
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user } } = await supabase.auth.getUser(token)
+      userId = user?.id
+    }
+
+    // Store payment record in payments table
+    if (userId) {
+      await supabase
+        .from('payments')
+        .insert({
+          user_id: userId,
+          order_id: razorpayOrder.id,
           amount: amount,
           currency: currency,
-          paymentMethod: paymentMethod,
-          planId: planId
+          status: 'pending',
+          plan_id: planId || 'consultation',
+          payment_method: paymentMethod || 'upi'
         })
+    }
+
+    // Store consultation record for tracking
+    const consultationData: Record<string, unknown> = {
+      name: name,
+      email: email,
+      phone: phone,
+      concerns: `Payment for ${planId || 'consultation'} plan`,
+      status: 'payment_pending',
+      session_type: 'consultation',
+      scheduled_date: new Date().toISOString().split('T')[0],
+      scheduled_time: '09:00:00',
+      notes: JSON.stringify({
+        razorpayOrderId: razorpayOrder.id,
+        amount: amount,
+        currency: currency,
+        paymentMethod: paymentMethod,
+        planId: planId
       })
+    }
+    
+    if (userId) {
+      consultationData.user_id = userId
+    }
+
+    const { error: dbError } = await supabase
+      .from('consultations')
+      .insert(consultationData)
 
     if (dbError) {
       console.error('Database error:', dbError)
