@@ -5,6 +5,7 @@ import SmartNotification from "@/components/ui-custom/SmartNotification";
 import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
 import HowItWorks from "@/components/ui-custom/HowItWorks";
 import MentalHealthStats from "@/components/ui-custom/MentalHealthStats";
+import MindAnimation from "@/components/ui-custom/MindAnimation";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,16 @@ const Index = () => {
       <section className="relative pt-20 pb-24 overflow-hidden">
         {/* Subtle gradient background */}
         <div className={`absolute inset-0 ${isRepublicDay ? 'bg-gradient-to-br from-orange-50 via-white to-green-50' : 'bg-gradient-to-br from-slate-50 via-white to-violet-50/30'}`} />
+        
+        {/* Mind Animation - Top Right */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="absolute top-8 right-4 md:right-8 lg:right-16 hidden md:block z-10"
+        >
+          <MindAnimation />
+        </motion.div>
         
         <div className="relative max-w-6xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
