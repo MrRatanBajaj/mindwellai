@@ -90,36 +90,36 @@ serve(async (req) => {
         })
     }
 
-    // Store consultation record for tracking
-    const consultationData: Record<string, unknown> = {
-      name: name,
-      email: email,
-      phone: phone,
-      concerns: `Payment for ${planId || 'consultation'} plan`,
-      status: 'payment_pending',
-      session_type: 'consultation',
-      scheduled_date: new Date().toISOString().split('T')[0],
-      scheduled_time: '09:00:00',
-      notes: JSON.stringify({
-        razorpayOrderId: razorpayOrder.id,
-        amount: amount,
-        currency: currency,
-        paymentMethod: paymentMethod,
-        planId: planId
-      })
-    }
-    
+    // Store consultation record for tracking (only if user is logged in)
     if (userId) {
-      consultationData.user_id = userId
-    }
+      const consultationData = {
+        user_id: userId,
+        name: name,
+        email: email,
+        phone: phone,
+        concerns: `Payment for ${planId || 'consultation'} plan`,
+        status: 'payment_pending',
+        session_type: 'ai_counselor', // Valid session type
+        scheduled_date: new Date().toISOString().split('T')[0],
+        scheduled_time: '09:00:00',
+        notes: JSON.stringify({
+          razorpayOrderId: razorpayOrder.id,
+          amount: amount,
+          currency: currency,
+          paymentMethod: paymentMethod,
+          planId: planId
+        })
+      }
 
-    const { error: dbError } = await supabase
-      .from('consultations')
-      .insert(consultationData)
+      const { error: dbError } = await supabase
+        .from('consultations')
+        .insert(consultationData)
 
-    if (dbError) {
-      console.error('Database error:', dbError)
-      throw new Error('Failed to create payment record')
+      if (dbError) {
+        console.error('Database error:', dbError)
+        // Don't throw error here, payment can still proceed
+        console.log('Consultation record creation failed, but payment will continue')
+      }
     }
 
     // Return order details for frontend

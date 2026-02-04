@@ -6,6 +6,7 @@ import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationB
 import HowItWorks from "@/components/ui-custom/HowItWorks";
 import MentalHealthStats from "@/components/ui-custom/MentalHealthStats";
 import MindAnimation from "@/components/ui-custom/MindAnimation";
+import mindAnimationGif from "@/assets/mind-animation.gif";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -92,14 +93,29 @@ const Index = () => {
         {/* Subtle gradient background */}
         <div className={`absolute inset-0 ${isRepublicDay ? 'bg-gradient-to-br from-orange-50 via-white to-green-50' : 'bg-gradient-to-br from-slate-50 via-white to-violet-50/30'}`} />
         
-        {/* Mind Animation - Top Right */}
+        {/* Mind Animation GIF - Top Right */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="absolute top-8 right-4 md:right-8 lg:right-16 hidden md:block z-10"
+          initial={{ opacity: 0, scale: 0.8, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4, type: "spring" }}
+          className="absolute top-4 right-4 md:right-8 lg:right-16 hidden md:block z-10"
         >
-          <MindAnimation />
+          <div className="relative">
+            {/* Glow effect behind GIF */}
+            <motion.div
+              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-violet-400/30 via-amber-300/20 to-cyan-400/30 blur-2xl"
+              animate={{
+                opacity: [0.5, 0.8, 0.5],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{ duration: 4, repeat: Infinity }}
+            />
+            <img 
+              src={mindAnimationGif}
+              alt="Mental wellness illustration"
+              className="w-48 md:w-64 lg:w-80 h-auto relative z-10 drop-shadow-xl"
+            />
+          </div>
         </motion.div>
         
         <div className="relative max-w-6xl mx-auto px-6">
