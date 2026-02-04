@@ -93,28 +93,108 @@ const Index = () => {
         {/* Subtle gradient background */}
         <div className={`absolute inset-0 ${isRepublicDay ? 'bg-gradient-to-br from-orange-50 via-white to-green-50' : 'bg-gradient-to-br from-slate-50 via-white to-violet-50/30'}`} />
         
-        {/* Mind Animation GIF - Top Right */}
+        {/* Mind Animation GIF - Top Right - Professional Design */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, type: "spring" }}
-          className="absolute top-4 right-4 md:right-8 lg:right-16 hidden md:block z-10"
+          initial={{ opacity: 0, x: 50, y: -30 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 100 }}
+          className="absolute top-20 right-0 md:right-4 lg:right-12 xl:right-20 hidden lg:block z-10"
         >
           <div className="relative">
-            {/* Glow effect behind GIF */}
+            {/* Outer glowing ring */}
             <motion.div
-              className="absolute inset-0 rounded-3xl bg-gradient-to-r from-violet-400/30 via-amber-300/20 to-cyan-400/30 blur-2xl"
+              className="absolute -inset-8 rounded-full"
+              style={{
+                background: "radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 50%, transparent 70%)",
+              }}
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.6, 1, 0.6],
+              }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            />
+            
+            {/* Floating particles around the GIF */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 rounded-full"
+                style={{
+                  background: i % 2 === 0 ? "#8B5CF6" : "#06B6D4",
+                  top: `${15 + Math.sin(i * 45 * Math.PI / 180) * 45}%`,
+                  left: `${50 + Math.cos(i * 45 * Math.PI / 180) * 55}%`,
+                }}
+                animate={{
+                  y: [0, -8, 0],
+                  x: [0, i % 2 === 0 ? 4 : -4, 0],
+                  opacity: [0.4, 1, 0.4],
+                  scale: [1, 1.3, 1],
+                }}
+                transition={{
+                  duration: 2.5 + i * 0.3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.2,
+                }}
+              />
+            ))}
+            
+            {/* Subtle rotating border */}
+            <motion.div
+              className="absolute -inset-4 rounded-3xl border-2 border-dashed"
+              style={{ borderColor: "rgba(139, 92, 246, 0.2)" }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+            />
+            
+            {/* Inner glow effect */}
+            <motion.div
+              className="absolute inset-0 rounded-2xl"
+              style={{
+                background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(6, 182, 212, 0.2) 100%)",
+                filter: "blur(20px)",
+              }}
               animate={{
                 opacity: [0.5, 0.8, 0.5],
-                scale: [1, 1.1, 1],
               }}
-              transition={{ duration: 4, repeat: Infinity }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
-            <img 
+            
+            {/* The GIF itself with professional styling */}
+            <motion.img 
               src={mindAnimationGif}
-              alt="Mental wellness illustration"
-              className="w-48 md:w-64 lg:w-80 h-auto relative z-10 drop-shadow-xl"
+              alt="Mental wellness illustration - Understanding your mind"
+              className="w-56 md:w-64 lg:w-72 xl:w-80 h-auto relative z-10 rounded-2xl"
+              style={{
+                filter: "drop-shadow(0 20px 40px rgba(139, 92, 246, 0.3))",
+              }}
+              animate={{
+                y: [0, -8, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
             />
+            
+            {/* Psychology-themed caption */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.6 }}
+              className="absolute -bottom-12 left-1/2 -translate-x-1/2 whitespace-nowrap"
+            >
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-violet-100">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Brain className="w-4 h-4 text-violet-600" />
+                </motion.div>
+                <span className="text-sm font-medium text-slate-700">Understanding Your Mind</span>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
         
