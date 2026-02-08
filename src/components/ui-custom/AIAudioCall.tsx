@@ -84,11 +84,11 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
         description: "Your AI mental health counselor is ready to listen",
       });
       
-      // Add welcome message
+      // Add welcome message with enhanced content
       const welcomeMessage: Message = {
         id: 'welcome-' + Date.now(),
         role: 'assistant',
-        content: "Hello! I'm Juli, your AI mental health counselor. I'm here to listen and support you. How are you feeling today?",
+        content: "Hi there! I'm Juli, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. Everything we discuss stays completely private. How are you feeling today?",
         timestamp: new Date()
       };
       setMessages([welcomeMessage]);
@@ -226,10 +226,12 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     setUserSpeaking(false);
   }, []);
 
-  // Auto-scroll chat
+  // Enhanced auto-scroll chat with smooth animation
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [messages, messages.length]);
 
   // Session timer
   useEffect(() => {
@@ -464,8 +466,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
         )}
 
         {/* Main Call Interface */}
-        <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 border-primary/20 backdrop-blur-sm">
-          <CardContent className="p-6 md:p-8">
+        <Card className="overflow-hidden bg-gradient-to-br from-card via-primary/3 to-purple-500/5 border-primary/20 backdrop-blur-sm shadow-2xl shadow-primary/5">
+          <CardContent className="p-6 md:p-8 lg:p-10">
             {/* Quick Stats Bar */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -604,19 +606,20 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                 )}
 
                 {/* Name & Status */}
-                <div className="text-center space-y-2">
+                <div className="text-center space-y-3">
                   <motion.h2 
-                    className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent"
+                    className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm"
                     animate={isConnected ? { scale: [1, 1.02, 1] } : {}}
                     transition={{ duration: 3, repeat: Infinity }}
                   >
                     Juli
                   </motion.h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                    <Brain className="h-4 w-4 text-purple-400" />
-                    AI Mental Health Counselor
-                    <Heart className="h-4 w-4 text-rose-400" />
+                    <Brain className="h-4 w-4 text-purple-500" />
+                    <span className="font-medium">AI Mental Health Counselor</span>
+                    <Heart className="h-4 w-4 text-rose-500" />
                   </p>
+                  <p className="text-xs text-muted-foreground max-w-xs mx-auto">Trained in CBT, DBT, and Mindfulness-Based Therapy</p>
                   
                   <motion.div
                     initial={{ scale: 0.9 }}
@@ -794,19 +797,25 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     exit={{ opacity: 0, x: 20 }}
                     className="flex flex-col"
                   >
-                    <Card className="flex-1 flex flex-col bg-muted/20 border-border/50 min-h-[400px] lg:min-h-[550px]">
-                      <div className="p-4 border-b border-border/50 flex items-center justify-between">
+                    <Card className="flex-1 flex flex-col bg-gradient-to-b from-card/90 to-muted/30 border-primary/10 backdrop-blur-sm min-h-[400px] lg:min-h-[550px] shadow-xl">
+                      <div className="p-4 border-b border-border/30 flex items-center justify-between bg-gradient-to-r from-primary/5 to-purple-500/5">
                         <h3 className="font-semibold flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4" />
-                          Conversation
+                          <div className="p-1.5 rounded-lg bg-primary/10">
+                            <MessageSquare className="h-4 w-4 text-primary" />
+                          </div>
+                          <span>Conversation</span>
                           {messages.length > 0 && (
-                            <Badge variant="secondary" className="text-xs">{messages.length}</Badge>
+                            <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">{messages.length}</Badge>
                           )}
                         </h3>
                         {isConnected && (
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-xs text-muted-foreground">Live</span>
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10">
+                            <motion.div 
+                              className="w-2 h-2 rounded-full bg-emerald-500"
+                              animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            />
+                            <span className="text-xs text-emerald-600 font-medium">Live Session</span>
                           </div>
                         )}
                       </div>
@@ -827,39 +836,49 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                               </p>
                             </div>
                           ) : (
-                            messages.map((msg) => (
+                            messages.map((msg, index) => (
                               <motion.div
                                 key={msg.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ duration: 0.3, delay: index * 0.05 }}
                                 className={cn(
-                                  "flex gap-2",
+                                  "flex gap-3",
                                   msg.role === 'user' ? 'justify-end' : 'justify-start'
                                 )}
                               >
                                 {msg.role === 'assistant' && (
-                                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                                    <Sparkles className="h-4 w-4 text-white" />
-                                  </div>
+                                  <motion.div 
+                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-primary via-purple-500 to-primary flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-primary/20"
+                                    whileHover={{ scale: 1.1 }}
+                                  >
+                                    <Sparkles className="h-5 w-5 text-white" />
+                                  </motion.div>
                                 )}
-                                <div className={cn(
-                                  "max-w-[80%] rounded-2xl px-4 py-3 shadow-sm",
-                                  msg.role === 'user' 
-                                    ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-br-sm' 
-                                    : 'bg-muted text-foreground rounded-bl-sm'
-                                )}>
+                                <motion.div 
+                                  className={cn(
+                                    "max-w-[75%] rounded-2xl px-4 py-3 shadow-md",
+                                    msg.role === 'user' 
+                                      ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-br-md' 
+                                      : 'bg-gradient-to-br from-muted to-muted/80 text-foreground rounded-bl-md border border-border/50'
+                                  )}
+                                  whileHover={{ scale: 1.01 }}
+                                >
                                   <p className="text-sm leading-relaxed">{msg.content}</p>
                                   <span className={cn(
-                                    "text-[10px] mt-1 block",
-                                    msg.role === 'user' ? 'text-white/70' : 'text-muted-foreground'
+                                    "text-[10px] mt-2 block opacity-70",
+                                    msg.role === 'user' ? 'text-primary-foreground' : 'text-muted-foreground'
                                   )}>
                                     {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
-                                </div>
+                                </motion.div>
                                 {msg.role === 'user' && (
-                                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                                    <User className="h-4 w-4 text-white" />
-                                  </div>
+                                  <motion.div 
+                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-emerald-500/20"
+                                    whileHover={{ scale: 1.1 }}
+                                  >
+                                    <User className="h-5 w-5 text-white" />
+                                  </motion.div>
                                 )}
                               </motion.div>
                             ))
@@ -868,30 +887,30 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                         </div>
                       </ScrollArea>
 
-                      {/* Chat Input */}
+                      {/* Chat Input - Enhanced */}
                       {isConnected && (
-                        <div className="p-4 border-t border-border/50">
-                          <div className="flex gap-2">
+                        <div className="p-4 border-t border-border/30 bg-gradient-to-r from-muted/20 to-transparent">
+                          <div className="flex gap-3">
                             <Input
                               ref={inputRef}
                               value={chatInput}
                               onChange={(e) => setChatInput(e.target.value)}
                               onKeyPress={handleKeyPress}
                               placeholder="Type a message to Juli..."
-                              className="flex-1"
+                              className="flex-1 bg-background/80 border-border/50 focus:border-primary/50 rounded-xl"
                             />
                             <Button
                               onClick={sendTextMessage}
                               disabled={!chatInput.trim()}
                               size="icon"
-                              className="bg-primary"
+                              className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 rounded-xl shadow-lg"
                             >
                               <Send className="h-4 w-4" />
                             </Button>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2 text-center flex items-center justify-center gap-1">
-                            <Mic className="h-3 w-3" />
-                            Just speak naturally or press Enter to send
+                          <p className="text-xs text-muted-foreground mt-3 text-center flex items-center justify-center gap-2">
+                            <Mic className="h-3 w-3 text-primary" />
+                            <span>Speak naturally or press Enter to send</span>
                           </p>
                         </div>
                       )}
