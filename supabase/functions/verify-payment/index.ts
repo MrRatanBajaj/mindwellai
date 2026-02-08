@@ -151,7 +151,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Payment verified successfully',
-        consultationId: consultation.id
+        consultationId: consultations?.[0]?.id || null
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -161,7 +161,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Payment verification error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

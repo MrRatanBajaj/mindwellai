@@ -51,15 +51,15 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 glass-panel border-b">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
+    <header className="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl mt-3 rounded-2xl bg-white/40 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-lg">
+      <div className="px-4 md:px-6 py-2">
         <div className="flex items-center justify-between gap-4">
           {/* Logo Section */}
           <NavLink to="/" className="flex items-center group flex-shrink-0">
             <img 
               src={wellmindLogo} 
               alt="WellMind AI" 
-              className="h-14 w-auto group-hover:scale-105 transition-transform duration-200 drop-shadow-md"
+              className="h-10 md:h-12 w-auto transition-all duration-300 group-hover:scale-110 group-hover:rotate-2 group-hover:drop-shadow-[0_0_12px_rgba(139,92,246,0.5)] drop-shadow-md"
             />
           </NavLink>
 
