@@ -1,0 +1,169 @@
+:root {
+  /* Color tokens */
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-secondary: #e2e8f0;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-border: #cbd5e1;
+  --color-success: #166534;
+  --color-success-bg: #dcfce7;
+  --color-error: #b91c1c;
+  --color-error-bg: #fee2e2;
+
+  /* Spacing scale */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+
+  /* Typography scale */
+  --font-size-heading: 1.5rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.875rem;
+  --font-weight-heading: 700;
+  --font-weight-body: 400;
+  --font-weight-caption: 500;
+
+  /* Radius + shadows */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 8px 20px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 16px 32px rgba(15, 23, 42, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #60a5fa;
+    --color-primary-hover: #93c5fd;
+    --color-secondary: #1e293b;
+    --color-surface: #0f172a;
+    --color-surface-muted: #111827;
+    --color-text: #f8fafc;
+    --color-text-muted: #cbd5e1;
+    --color-border: #334155;
+    --color-success: #86efac;
+    --color-success-bg: #14532d;
+    --color-error: #fca5a5;
+    --color-error-bg: #7f1d1d;
+
+    --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.5);
+    --shadow-md: 0 8px 20px rgba(2, 6, 23, 0.6);
+    --shadow-lg: 0 16px 32px rgba(2, 6, 23, 0.7);
+  }
+}
+
+html.dark {
+  --color-primary: #60a5fa;
+  --color-primary-hover: #93c5fd;
+  --color-secondary: #1e293b;
+  --color-surface: #0f172a;
+  --color-surface-muted: #111827;
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5e1;
+  --color-border: #334155;
+  --color-success: #86efac;
+  --color-success-bg: #14532d;
+  --color-error: #fca5a5;
+  --color-error-bg: #7f1d1d;
+
+  --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.5);
+  --shadow-md: 0 8px 20px rgba(2, 6, 23, 0.6);
+  --shadow-lg: 0 16px 32px rgba(2, 6, 23, 0.7);
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+}
+
+.card {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-24);
+}
+
+.button {
+  background: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-12) var(--space-16);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-caption);
+  cursor: pointer;
+}
+
+.button:hover,
+.button:focus-visible {
+  background: var(--color-primary-hover);
+}
+
+.input {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-12);
+  font-size: var(--font-size-body);
+}
+
+.message {
+  max-width: 70ch;
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-16);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-body);
+}
+
+.message.success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.message.error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}
+
+.auth-form,
+.memory-upload-form,
+.chat-box {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-24);
+}
+
+.auth-form h1,
+.memory-upload-form h1,
+.chat-box h1 {
+  margin: 0 0 var(--space-16);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-heading);
+}
+
+.auth-form small,
+.memory-upload-form small,
+.chat-box small {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-caption);
+  color: var(--color-text-muted);
+}
