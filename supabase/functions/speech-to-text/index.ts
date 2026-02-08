@@ -77,7 +77,7 @@ serve(async (req) => {
     
     // Prepare form data for OpenAI Whisper API
     const formData = new FormData();
-    const audioBlob = new Blob([audioData], { type: 'audio/webm' });
+    const audioBlob = new Blob([audioData.buffer], { type: 'audio/webm' });
     formData.append('file', audioBlob, 'audio.webm');
     formData.append('model', 'whisper-1');
     formData.append('language', 'en');
@@ -116,7 +116,7 @@ serve(async (req) => {
     console.error('Speech-to-text error:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         success: false 
       }),
       {

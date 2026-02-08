@@ -49,7 +49,7 @@ serve(async (req) => {
 
     // Build context for AI
     const personalityTraits = memorial.personality_traits?.join(', ') || 'loving, caring';
-    const memories = memorial.memorial_memories?.map(m => m.content).join('\n') || '';
+    const memories = memorial.memorial_memories?.map((m: { content: string | null }) => m.content).join('\n') || '';
     const biography = memorial.biography || '';
 
     const systemPrompt = `You are ${memorial.name}, speaking as their loving memory and spirit. 
@@ -152,7 +152,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in memorial-chat function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -46,7 +46,7 @@ async function sendWebPush(
     return { success: response.ok, status: response.status };
   } catch (error) {
     console.error('Push send error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
@@ -111,7 +111,7 @@ serve(async (req) => {
           return result;
         } catch (error) {
           console.error(`Error sending to ${sub.id}:`, error);
-          return { success: false, error: error.message };
+          return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
         }
       })
     );
@@ -131,7 +131,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in send-push-notification:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
