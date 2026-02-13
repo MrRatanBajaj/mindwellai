@@ -45,7 +45,7 @@ export function usePushNotifications() {
       
       try {
         const registration = await navigator.serviceWorker.ready;
-        const existingSubscription = await registration.pushManager.getSubscription();
+        const existingSubscription = await (registration as any).pushManager.getSubscription();
         setSubscription(existingSubscription);
       } catch (error) {
         console.error('Error getting existing subscription:', error);
@@ -76,7 +76,7 @@ export function usePushNotifications() {
       await navigator.serviceWorker.ready;
       
       // Subscribe to push
-      const pushSubscription = await registration.pushManager.subscribe({
+      const pushSubscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
