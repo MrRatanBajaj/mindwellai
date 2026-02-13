@@ -226,10 +226,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     setUserSpeaking(false);
   }, []);
 
-  // Enhanced auto-scroll chat with smooth animation
+  // Auto-scroll chat messages only (not the whole page)
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      const scrollArea = chatEndRef.current.closest('[data-radix-scroll-area-viewport]');
+      if (scrollArea) {
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
     }
   }, [messages, messages.length]);
 
@@ -255,6 +258,22 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     }
     return () => clearInterval(interval);
   }, [isConnected, conversation.isSpeaking]);
+
+  // Keep-alive ping to prevent session timeout during long talks
+  useEffect(() => {
+    let keepAliveInterval: NodeJS.Timeout;
+    if (isConnected) {
+      keepAliveInterval = setInterval(() => {
+        // Send activity signal to keep connection alive
+        try {
+          conversation.sendUserActivity();
+        } catch (e) {
+          console.log('Keep-alive ping sent');
+        }
+      }, 30000); // Every 30 seconds
+    }
+    return () => clearInterval(keepAliveInterval);
+  }, [isConnected, conversation]);
 
   // Volume control
   useEffect(() => {
@@ -409,32 +428,6 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
   return (
     <>
       <div className="w-full max-w-6xl mx-auto space-y-6">
-        {/* Animated Background Elements */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-          {[...Array(10)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: `${150 + i * 30}px`,
-                height: `${150 + i * 30}px`,
-                background: `radial-gradient(circle, ${i % 3 === 0 ? 'hsl(var(--primary) / 0.08)' : i % 3 === 1 ? 'hsl(142 76% 36% / 0.08)' : 'hsl(280 76% 50% / 0.05)'} 0%, transparent 70%)`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                x: [0, 40, -40, 0],
-                y: [0, -40, 40, 0],
-                scale: [1, 1.2, 0.9, 1],
-              }}
-              transition={{
-                duration: 12 + i * 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
 
         {/* Mood Check Card - Before Call */}
         {!isConnected && !isConnecting && moodScore === null && (
@@ -505,23 +498,36 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Left Side - Mascot, Visualizers & Controls */}
               <div className="flex flex-col items-center justify-center space-y-6">
-                {/* Juli Counselor Avatar */}
+                {/* Juli Counselor Avatar - Enhanced */}
                 <div className="relative">
+                  {/* Outer ambient glow */}
+                  <motion.div
+                    className="absolute -inset-6 rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle, hsl(var(--primary) / 0.15), transparent 70%)',
+                    }}
+                    animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  />
+
                   {/* Pulsing rings when active */}
                   {isConnected && (
                     <>
-                      {[0, 1, 2].map((i) => (
+                      {[0, 1, 2, 3].map((i) => (
                         <motion.div
                           key={i}
-                          className="absolute inset-0 rounded-full border-2 border-primary/30"
+                          className="absolute inset-0 rounded-full"
+                          style={{
+                            border: `2px solid hsl(var(--primary) / ${0.4 - i * 0.08})`,
+                          }}
                           animate={{
-                            scale: [1, 1.6 + i * 0.2],
-                            opacity: [0.4, 0],
+                            scale: [1, 1.8 + i * 0.25],
+                            opacity: [0.5, 0],
                           }}
                           transition={{
-                            duration: 2,
+                            duration: 2.5,
                             repeat: Infinity,
-                            delay: i * 0.4,
+                            delay: i * 0.35,
                             ease: "easeOut",
                           }}
                         />
@@ -529,69 +535,164 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
                     </>
                   )}
 
-                  {/* Speaking glow */}
+                  {/* Speaking glow - enhanced */}
                   {conversation.isSpeaking && (
                     <motion.div
-                      className="absolute -inset-3 rounded-full"
+                      className="absolute -inset-5 rounded-full"
                       style={{
-                        background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)',
+                        background: 'radial-gradient(circle, hsl(var(--primary) / 0.4), hsl(280 76% 50% / 0.15), transparent 70%)',
                       }}
-                      animate={{ opacity: [0.5, 1, 0.5], scale: [0.95, 1.05, 0.95] }}
-                      transition={{ duration: 1, repeat: Infinity }}
+                      animate={{ opacity: [0.4, 1, 0.4], scale: [0.92, 1.08, 0.92] }}
+                      transition={{ duration: 0.8, repeat: Infinity }}
                     />
                   )}
 
-                  {/* Counselor Image */}
+                  {/* Listening glow */}
+                  {isConnected && !conversation.isSpeaking && !isMuted && (
+                    <motion.div
+                      className="absolute -inset-4 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle, hsl(142 76% 36% / 0.2), transparent 70%)',
+                      }}
+                      animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.98, 1.04, 0.98] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
+                  )}
+
+                  {/* Counselor Image - Bigger with realistic motion */}
                   <motion.div
-                    className="relative w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden ring-4 ring-primary/20 ring-offset-4 ring-offset-background shadow-2xl"
-                    initial={{ scale: 0.8, opacity: 0 }}
+                    className="relative w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full overflow-hidden shadow-2xl"
+                    style={{
+                      boxShadow: isConnected 
+                        ? '0 0 60px hsl(var(--primary) / 0.3), 0 25px 50px -12px hsl(var(--primary) / 0.25)' 
+                        : '0 25px 50px -12px hsl(var(--primary) / 0.15)',
+                      border: '4px solid hsl(var(--primary) / 0.2)',
+                    }}
+                    initial={{ scale: 0.7, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 150, damping: 15, delay: 0.2 }}
+                    whileHover={{ scale: 1.06 }}
                   >
+                    {/* Image with zoom & subtle motion for lifelike feel */}
                     <motion.img
                       src={juliCounselorImg}
                       alt="Juli - AI Mental Health Counselor"
                       className="w-full h-full object-cover object-top"
                       animate={conversation.isSpeaking ? {
-                        scale: [1, 1.03, 1],
+                        scale: [1.05, 1.1, 1.05],
+                        y: [0, -2, 0],
                       } : isConnected ? {
-                        scale: [1, 1.01, 1],
-                      } : {}}
+                        scale: [1.03, 1.06, 1.03],
+                        y: [0, -1, 0],
+                      } : {
+                        scale: [1, 1.03, 1],
+                      }}
                       transition={{
-                        duration: conversation.isSpeaking ? 0.8 : 3,
+                        duration: conversation.isSpeaking ? 0.6 : isConnected ? 4 : 6,
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
                     />
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" />
+                    {/* Subtle gradient overlay for depth */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-transparent" />
+                    
+                    {/* Shimmer effect on hover */}
+                    <motion.div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(135deg, transparent 40%, hsl(var(--primary) / 0.08) 50%, transparent 60%)',
+                      }}
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                    />
                   </motion.div>
 
-                  {/* Status badge */}
+                  {/* Sound wave arcs when speaking */}
+                  {conversation.isSpeaking && (
+                    <div className="absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={`wave-${i}`}
+                          className="rounded-full bg-primary"
+                          style={{ width: `${10 + i * 4}px`, height: '3px' }}
+                          animate={{
+                            scaleX: [1, 1.8, 1],
+                            opacity: [0.3, 1, 0.3],
+                          }}
+                          transition={{
+                            duration: 0.4,
+                            repeat: Infinity,
+                            delay: i * 0.1,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Status badge - enhanced */}
                   {isConnected && (
                     <motion.div
-                      className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold shadow-lg"
+                      className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-5 py-2 rounded-full text-white text-xs font-bold shadow-xl backdrop-blur-sm"
                       style={{
                         background: conversation.isSpeaking
                           ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(280 76% 50%))'
                           : 'linear-gradient(135deg, hsl(142 76% 36%), hsl(var(--primary)))',
                       }}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200 }}
                     >
                       {conversation.isSpeaking ? (
-                        <span className="flex items-center gap-1.5">
-                          <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }}>💬</motion.span>
+                        <span className="flex items-center gap-2">
+                          <motion.div className="flex gap-0.5">
+                            {[0, 1, 2].map((i) => (
+                              <motion.div
+                                key={i}
+                                className="w-1 bg-white rounded-full"
+                                animate={{ height: [4, 12, 4] }}
+                                transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.1 }}
+                              />
+                            ))}
+                          </motion.div>
                           Speaking...
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5">
-                          <motion.span animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 1, repeat: Infinity }}>👂</motion.span>
+                        <span className="flex items-center gap-2">
+                          <motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>🎧</motion.span>
                           Listening...
                         </span>
                       )}
                     </motion.div>
+                  )}
+
+                  {/* Floating particles when active */}
+                  {isConnected && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      {[
+                        { emoji: '✨', x: '-20%', y: '10%', delay: 0 },
+                        { emoji: '💜', x: '110%', y: '20%', delay: 0.8 },
+                        { emoji: '🌿', x: '-15%', y: '70%', delay: 1.6 },
+                        { emoji: '💫', x: '105%', y: '75%', delay: 2.4 },
+                      ].map((p, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute text-sm"
+                          style={{ left: p.x, top: p.y }}
+                          animate={{
+                            y: [0, -15, 0],
+                            opacity: [0.4, 1, 0.4],
+                            scale: [0.8, 1.1, 0.8],
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            delay: p.delay,
+                          }}
+                        >
+                          {p.emoji}
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
                 </div>
 
