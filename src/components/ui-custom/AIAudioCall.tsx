@@ -34,7 +34,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import VoiceVisualizer from './VoiceVisualizer';
 import SessionSummary from './SessionSummary';
-import JuliMascot from './JuliMascot';
+import juliCounselorImg from '@/assets/juli-counselor.png';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AIAudioCallProps {
@@ -264,8 +264,12 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
   }, [volume, isConnected, conversation]);
 
   const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -501,34 +505,93 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Left Side - Mascot, Visualizers & Controls */}
               <div className="flex flex-col items-center justify-center space-y-6">
-                {/* Juli Mascot with Enhanced Animations */}
+                {/* Juli Counselor Avatar */}
                 <div className="relative">
-                  <JuliMascot
-                    isActive={isConnected}
-                    isSpeaking={conversation.isSpeaking}
-                    isListening={isConnected && !conversation.isSpeaking && !isMuted}
-                    size="xl"
-                  />
-                  
-                  {/* Floating Audio Waves */}
+                  {/* Pulsing rings when active */}
                   {isConnected && (
-                    <div className="absolute -inset-8 pointer-events-none">
-                      {[...Array(3)].map((_, i) => (
+                    <>
+                      {[0, 1, 2].map((i) => (
                         <motion.div
                           key={i}
-                          className="absolute inset-0 rounded-full border-2 border-primary/20"
+                          className="absolute inset-0 rounded-full border-2 border-primary/30"
                           animate={{
-                            scale: [1, 1.5 + i * 0.3, 1.5 + i * 0.3],
-                            opacity: [0.3, 0, 0],
+                            scale: [1, 1.6 + i * 0.2],
+                            opacity: [0.4, 0],
                           }}
                           transition={{
                             duration: 2,
                             repeat: Infinity,
-                            delay: i * 0.5,
+                            delay: i * 0.4,
+                            ease: "easeOut",
                           }}
                         />
                       ))}
-                    </div>
+                    </>
+                  )}
+
+                  {/* Speaking glow */}
+                  {conversation.isSpeaking && (
+                    <motion.div
+                      className="absolute -inset-3 rounded-full"
+                      style={{
+                        background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)',
+                      }}
+                      animate={{ opacity: [0.5, 1, 0.5], scale: [0.95, 1.05, 0.95] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    />
+                  )}
+
+                  {/* Counselor Image */}
+                  <motion.div
+                    className="relative w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden ring-4 ring-primary/20 ring-offset-4 ring-offset-background shadow-2xl"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <motion.img
+                      src={juliCounselorImg}
+                      alt="Juli - AI Mental Health Counselor"
+                      className="w-full h-full object-cover object-top"
+                      animate={conversation.isSpeaking ? {
+                        scale: [1, 1.03, 1],
+                      } : isConnected ? {
+                        scale: [1, 1.01, 1],
+                      } : {}}
+                      transition={{
+                        duration: conversation.isSpeaking ? 0.8 : 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" />
+                  </motion.div>
+
+                  {/* Status badge */}
+                  {isConnected && (
+                    <motion.div
+                      className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-semibold shadow-lg"
+                      style={{
+                        background: conversation.isSpeaking
+                          ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(280 76% 50%))'
+                          : 'linear-gradient(135deg, hsl(142 76% 36%), hsl(var(--primary)))',
+                      }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {conversation.isSpeaking ? (
+                        <span className="flex items-center gap-1.5">
+                          <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.5, repeat: Infinity }}>💬</motion.span>
+                          Speaking...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5">
+                          <motion.span animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 1, repeat: Infinity }}>👂</motion.span>
+                          Listening...
+                        </span>
+                      )}
+                    </motion.div>
                   )}
                 </div>
 
