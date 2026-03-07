@@ -759,6 +759,8 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
+          free_trial_duration_seconds: number | null
+          free_trial_used: boolean
           id: string
           updated_at: string
           user_id: string
@@ -767,6 +769,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          free_trial_duration_seconds?: number | null
+          free_trial_used?: boolean
           id?: string
           updated_at?: string
           user_id: string
@@ -775,6 +779,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          free_trial_duration_seconds?: number | null
+          free_trial_used?: boolean
           id?: string
           updated_at?: string
           user_id?: string
