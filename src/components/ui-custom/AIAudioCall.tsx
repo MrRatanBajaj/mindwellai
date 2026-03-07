@@ -39,6 +39,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface AIAudioCallProps {
   onCallEnd?: () => void;
+  maxDurationSeconds?: number;
+  onTimeUp?: () => void;
+  isFreeTrial?: boolean;
+  trialRemainingSeconds?: number;
 }
 
 interface Message {
@@ -51,7 +55,7 @@ interface Message {
 // Public ElevenLabs Agent ID for Juli
 const JULI_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
 
-const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
+const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds, onTimeUp, isFreeTrial, trialRemainingSeconds }) => {
   const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -236,16 +240,39 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd }) => {
     }
   }, [messages, messages.length]);
 
-  // Session timer
+  // Session timer with auto-end for free trial
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
-        setSessionDuration(prev => prev + 1);
+        setSessionDuration(prev => {
+          const next = prev + 1;
+          // Auto-end if free trial and time is up
+          if (maxDurationSeconds && next >= maxDurationSeconds) {
+            toast({
+              title: "⏰ Free Trial Time Up",
+              description: "Your 15-minute free counseling session has ended. Upgrade to continue!",
+            });
+            conversation.endSession();
+            setIsConnected(false);
+            stopAudioAnalysis();
+            setShowSummary(true);
+            onTimeUp?.();
+            clearInterval(interval);
+          }
+          // Warning at 2 minutes remaining
+          if (maxDurationSeconds && next === maxDurationSeconds - 120) {
+            toast({
+              title: "⚠️ 2 Minutes Remaining",
+              description: "Your free session will end in 2 minutes.",
+            });
+          }
+          return next;
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isConnected]);
+  }, [isConnected, maxDurationSeconds, onTimeUp, conversation, stopAudioAnalysis, toast]);
 
   // Output level based on AI speaking state
   useEffect(() => {
