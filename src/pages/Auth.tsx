@@ -24,7 +24,7 @@ const Auth = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        navigate("/dashboard");
       }
     };
     checkAuth();
@@ -58,7 +58,7 @@ const Auth = () => {
 
       logLoginAttempt(true, loginData.email);
       toast.success("Login successful! Redirecting...");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       logLoginAttempt(false, loginData.email);
       toast.error("An unexpected error occurred");
