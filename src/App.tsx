@@ -29,6 +29,7 @@ import AuditLogs from "./pages/AuditLogs";
 import Careers from "./pages/Careers";
 import NotificationAdminPage from "./pages/NotificationAdmin";
 import LeadsAdmin from "./pages/LeadsAdmin";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/notification-admin" element={<NotificationAdminPage />} />
             <Route path="/leads-admin" element={<LeadsAdmin />} />
             {/* Protected routes requiring authentication */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/consultation" element={<ProtectedRoute><Consultation /></ProtectedRoute>} />
             <Route path="/plans" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
@@ -72,3 +74,4 @@ const App = () => (
 );
 
 export default App;
+
