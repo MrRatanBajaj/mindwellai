@@ -48,23 +48,49 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [mode, setMode] = useState<ConsultationMode>('selection');
   const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
-  const doctorInfo = DOCTOR_INFO[doctorType] || DOCTOR_INFO.general;
+  const shouldReconnectRef = useRef(false);
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectFnRef = useRef<(reason: ReconnectReason) => void>(() => {});
+  const modeRef = useRef<ConsultationMode>('selection');
+  const sessionDurationRef = useRef(0);
+
+  const doctorInfo = DOCTOR_PROFILES[doctorType] || DOCTOR_PROFILES.general;
   const DoctorIcon = doctorInfo.icon;
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  useEffect(() => {
+    sessionDurationRef.current = sessionDuration;
+  }, [sessionDuration]);
 
   // ElevenLabs conversation hook
   const elevenLabsConversation = useConversation({
     onConnect: () => {
       console.log('ElevenLabs voice connected');
       setIsConnected(true);
+      setIsLoading(false);
+      setIsReconnecting(false);
+      reconnectAttemptsRef.current = 0;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       toast({
-        title: "Voice Connected",
+        title: 'Voice Connected',
         description: `You're speaking with ${doctorInfo.name}`,
       });
     },
     onDisconnect: () => {
       console.log('ElevenLabs voice disconnected');
       setIsConnected(false);
+      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+        reconnectFnRef.current('disconnect');
+      }
     },
     onMessage: (message) => {
       console.log('ElevenLabs message:', message);
@@ -73,10 +99,16 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       console.error('ElevenLabs error:', error);
       const errorMsg = typeof error === 'string' ? error : error?.message || 'Voice connection failed';
       setVoiceError(errorMsg);
+      setIsConnected(false);
+      setIsLoading(false);
+      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+        reconnectFnRef.current('error');
+        return;
+      }
       toast({
-        title: "Voice Error",
+        title: 'Voice Error',
         description: errorMsg,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -86,7 +118,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
-        setSessionDuration(prev => prev + 1);
+        setSessionDuration((prev) => prev + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -117,13 +149,13 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       }
 
       console.log('Persona response:', personaData);
-      
+
       if (personaData?.error) {
         throw new Error(personaData.error);
       }
-      
+
       const createdPersonaId = personaData?.persona_id;
-      
+
       if (!createdPersonaId) {
         throw new Error('No persona ID returned');
       }
@@ -156,86 +188,137 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       setIsConnected(true);
 
       toast({
-        title: "Video Consultation Ready",
+        title: 'Video Consultation Ready',
         description: `You're connected with ${doctorInfo.name}`,
       });
-
     } catch (error) {
       console.error('Error starting video consultation:', error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to start video consultation";
-      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start video consultation';
+
       toast({
-        title: "Video Connection Failed",
+        title: 'Video Connection Failed',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      
-      // Suggest voice fallback
+
       toast({
-        title: "Try Voice Consultation",
-        description: "Video not available. Would you like to try voice consultation instead?",
+        title: 'Try Voice Consultation',
+        description: 'Video not available. Would you like to try voice consultation instead?',
       });
-      
+
       setMode('selection');
     } finally {
       setIsLoading(false);
     }
   }, [doctorType, doctorInfo.name, toast]);
 
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startVoiceSession = useCallback(async () => {
+    const { data, error } = await supabase.functions.invoke('elevenlabs-voice-agent', {
+      body: {
+        action: 'get_signed_url',
+        doctorType,
+        systemPrompt: doctorInfo.systemPrompt,
+      },
+    });
+
+    if (error) {
+      throw new Error(typeof error === 'string' ? error : (error as any)?.message || 'Failed to get voice session');
+    }
+
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+
+    if (data?.signed_url) {
+      await elevenLabsConversation.startSession({ signedUrl: data.signed_url });
+      return;
+    }
+
+    if (data?.agent_id) {
+      await elevenLabsConversation.startSession({ agentId: data.agent_id });
+      return;
+    }
+
+    throw new Error('No session URL or agent ID returned');
+  }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation]);
+
+  const attemptReconnect = useCallback((reason: ReconnectReason) => {
+    if (!shouldReconnectRef.current || modeRef.current !== 'voice' || reconnectTimeoutRef.current) {
+      return;
+    }
+
+    reconnectAttemptsRef.current += 1;
+    const attempts = reconnectAttemptsRef.current;
+
+    if (attempts > 24) {
+      shouldReconnectRef.current = false;
+      setIsReconnecting(false);
+      setIsLoading(false);
+      setVoiceError('Connection kept dropping. Please start voice consultation again.');
+      toast({
+        title: 'Voice Session Ended',
+        description: 'Network remained unstable during long call. Please reconnect.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsReconnecting(true);
+    const delay = Math.min(15000, 1200 * Math.pow(1.4, attempts - 1));
+
+    reconnectTimeoutRef.current = setTimeout(async () => {
+      reconnectTimeoutRef.current = null;
+      if (!shouldReconnectRef.current || modeRef.current !== 'voice') return;
+
+      try {
+        await startVoiceSession();
+      } catch (error) {
+        console.error(`Reconnect attempt ${attempts} failed after ${reason}:`, error);
+        attemptReconnect('error');
+      }
+    }, delay);
+  }, [startVoiceSession, toast]);
+
+  useEffect(() => {
+    reconnectFnRef.current = attemptReconnect;
+  }, [attemptReconnect]);
+
   // Start ElevenLabs Voice Consultation
   const startVoiceConsultation = useCallback(async () => {
     setIsLoading(true);
     setMode('voice');
     setVoiceError(null);
-    
+    shouldReconnectRef.current = true;
+    reconnectAttemptsRef.current = 0;
+    clearReconnectTimer();
+    setIsReconnecting(false);
+
     try {
-      // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // Get signed URL from edge function
-      const { data, error } = await supabase.functions.invoke('elevenlabs-voice-agent', {
-        body: { 
-          action: 'get_signed_url',
-          doctorType,
-          systemPrompt: doctorInfo.systemPrompt,
-        },
-      });
-
-      if (error) {
-        throw new Error(typeof error === 'string' ? error : (error as any)?.message || 'Failed to get voice session');
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      if (data?.signed_url) {
-        // Use signed URL for WebSocket connection
-        await elevenLabsConversation.startSession({
-          signedUrl: data.signed_url,
-        });
-      } else if (data?.agent_id) {
-        // Use agent ID directly (for public agents)
-        await elevenLabsConversation.startSession({
-          agentId: data.agent_id,
-        });
-      } else {
-        throw new Error('No session URL or agent ID returned');
-      }
-
+      const permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      permissionStream.getTracks().forEach((track) => track.stop());
+      await startVoiceSession();
     } catch (error) {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
+      setIsLoading(false);
       console.error('Error starting voice consultation:', error);
       setVoiceError(error instanceof Error ? error.message : 'Voice connection failed');
       toast({
-        title: "Voice Connection Failed",
-        description: error instanceof Error ? error.message : "Failed to start voice consultation",
-        variant: "destructive",
+        title: 'Voice Connection Failed',
+        description: error instanceof Error ? error.message : 'Failed to start voice consultation',
+        variant: 'destructive',
       });
       setMode('selection');
-    } finally {
-      setIsLoading(false);
     }
-  }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation, toast]);
+  }, [clearReconnectTimer, startVoiceSession, toast]);
 
   const endVideoConsultation = useCallback(async () => {
     try {
