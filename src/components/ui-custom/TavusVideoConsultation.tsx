@@ -672,14 +672,14 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
             <div className="flex items-center gap-2">
               <Badge variant="default" className={cn(
                 "flex items-center gap-2",
-                isConnected ? "bg-green-500" : "bg-yellow-500"
+                isReconnecting ? "bg-amber-500" : isConnected ? "bg-green-500" : "bg-yellow-500"
               )}>
-                <motion.div 
+                <motion.div
                   className="w-2 h-2 bg-white rounded-full"
                   animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
-                {elevenLabsConversation.isSpeaking ? 'Speaking' : isConnected ? 'Live' : 'Connecting'}
+                {isReconnecting ? 'Reconnecting' : elevenLabsConversation.isSpeaking ? 'Speaking' : isConnected ? 'Live' : 'Connecting'}
               </Badge>
               {isConnected && (
                 <Badge variant="outline" className="flex items-center gap-1 font-mono">
