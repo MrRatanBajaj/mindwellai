@@ -61,7 +61,7 @@ serve(async (req) => {
 
     if (action === 'get_signed_url') {
       // Create an agent for this conversation
-      const defaultPrompt = `You are ${doctorName}, a compassionate healthcare AI assistant. 
+      const defaultPrompt = DOCTOR_PROMPTS[doctorType] || `You are ${doctorName}, a compassionate healthcare AI assistant. 
                 
 Your approach:
 - Listen carefully to patient symptoms and concerns
