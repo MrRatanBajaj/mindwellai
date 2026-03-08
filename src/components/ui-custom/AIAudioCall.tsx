@@ -60,17 +60,29 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
   const [userSpeaking, setUserSpeaking] = useState(false);
   const [moodScore, setMoodScore] = useState<number | null>(null);
   const [breathingMode, setBreathingMode] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shouldReconnectRef = useRef(false);
+  const sessionDurationRef = useRef(0);
+  const reconnectFnRef = useRef<(reason: 'disconnect' | 'error') => void>(() => {});
 
   const conversation = useConversation({
     onConnect: () => {
       setIsConnected(true);
       setIsConnecting(false);
+      setIsReconnecting(false);
+      reconnectAttemptsRef.current = 0;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       toast({ title: "✨ Connected to Sophia", description: "Your AI counselor is ready to listen" });
       setMessages([{
         id: 'welcome-' + Date.now(),
@@ -82,6 +94,10 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     onDisconnect: () => {
       setIsConnected(false);
       setIsConnecting(false);
+      if (shouldReconnectRef.current) {
+        reconnectFnRef.current('disconnect');
+        return;
+      }
       stopAudioAnalysis();
     },
     onMessage: (message: any) => {
@@ -97,9 +113,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     },
     onError: (error) => {
       console.error('ElevenLabs error:', error);
-      toast({ title: "Connection Error", description: "Failed to connect. Please check your microphone and try again.", variant: "destructive" });
       setIsConnecting(false);
       setIsConnected(false);
+      if (shouldReconnectRef.current) {
+        reconnectFnRef.current('error');
+        return;
+      }
+      toast({ title: "Connection Error", description: "Failed to connect. Please check your microphone and try again.", variant: "destructive" });
       stopAudioAnalysis();
     },
   });
@@ -143,6 +163,57 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     setUserSpeaking(false);
   }, []);
 
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const attemptReconnect = useCallback((reason: 'disconnect' | 'error') => {
+    if (!shouldReconnectRef.current || reconnectTimeoutRef.current) return;
+
+    reconnectAttemptsRef.current += 1;
+    const attempts = reconnectAttemptsRef.current;
+
+    if (attempts > 12) {
+      shouldReconnectRef.current = false;
+      setIsReconnecting(false);
+      setIsConnecting(false);
+      setIsConnected(false);
+      stopAudioAnalysis();
+      toast({
+        title: 'Session Ended',
+        description: 'Network connection kept dropping. Please tap Talk to Sophia again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsReconnecting(true);
+    const delay = Math.min(10000, 1000 * Math.pow(1.5, attempts - 1));
+
+    reconnectTimeoutRef.current = setTimeout(async () => {
+      reconnectTimeoutRef.current = null;
+      if (!shouldReconnectRef.current) return;
+
+      try {
+        await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
+      } catch (error) {
+        console.error(`Reconnect attempt ${attempts} failed after ${reason}:`, error);
+        attemptReconnect('error');
+      }
+    }, delay);
+  }, [conversation, stopAudioAnalysis, toast]);
+
+  useEffect(() => {
+    reconnectFnRef.current = attemptReconnect;
+  }, [attemptReconnect]);
+
+  useEffect(() => {
+    sessionDurationRef.current = sessionDuration;
+  }, [sessionDuration]);
+
   // Chat auto-scroll
   useEffect(() => {
     if (chatEndRef.current) {
@@ -159,6 +230,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
         setSessionDuration(prev => {
           const next = prev + 1;
           if (maxDurationSeconds && next >= maxDurationSeconds) {
+            shouldReconnectRef.current = false;
+            clearReconnectTimer();
             toast({ title: "⏰ Free Trial Time Up", description: "Your 15-minute session has ended. Upgrade for unlimited access!" });
             conversation.endSession();
             setIsConnected(false);
@@ -175,7 +248,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isConnected, maxDurationSeconds, onTimeUp, conversation, stopAudioAnalysis, toast]);
+  }, [isConnected, maxDurationSeconds, onTimeUp, conversation, stopAudioAnalysis, toast, clearReconnectTimer]);
 
   // Output level simulation
   useEffect(() => {
@@ -188,35 +261,34 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     return () => clearInterval(interval);
   }, [isConnected, conversation.isSpeaking]);
 
-  // Robust keep-alive for 1hr+ sessions — ping every 15s + connection health check
+  // Long-session keepalive + health recovery (stable for 1hr+)
   useEffect(() => {
     let keepAlive: NodeJS.Timeout;
     let healthCheck: NodeJS.Timeout;
-    if (isConnected) {
-      // Send activity ping every 15 seconds to prevent timeout
-      keepAlive = setInterval(() => {
-        try { 
-          conversation.sendUserActivity(); 
-        } catch (e) { 
-          console.log('Keep-alive ping sent at', new Date().toLocaleTimeString()); 
-        }
-      }, 15000);
 
-      // Health check every 60 seconds — verify connection is still alive
-      healthCheck = setInterval(() => {
-        if (conversation.status === 'connected') {
-          console.log(`Session healthy — ${formatDuration(sessionDuration)} elapsed`);
-        } else {
-          console.warn('Session connection degraded, sending recovery ping');
-          try { conversation.sendUserActivity(); } catch {}
+    if (isConnected) {
+      keepAlive = setInterval(() => {
+        try {
+          conversation.sendUserActivity();
+        } catch {
+          reconnectFnRef.current('disconnect');
         }
-      }, 60000);
+      }, 10000);
+
+      healthCheck = setInterval(() => {
+        if (conversation.status !== 'connected' && shouldReconnectRef.current) {
+          reconnectFnRef.current('disconnect');
+        } else {
+          console.log(`Sophia call healthy — ${formatDuration(sessionDurationRef.current)}`);
+        }
+      }, 30000);
     }
+
     return () => {
       clearInterval(keepAlive);
       clearInterval(healthCheck);
     };
-  }, [isConnected, conversation, sessionDuration]);
+  }, [isConnected, conversation]);
 
   // Volume control
   useEffect(() => {
@@ -225,9 +297,14 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
 
   const startCall = useCallback(async () => {
     try {
+      shouldReconnectRef.current = true;
+      reconnectAttemptsRef.current = 0;
+      clearReconnectTimer();
+      setIsReconnecting(false);
       setIsConnecting(true);
       setSessionDuration(0);
       setMessages([]);
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       micStreamRef.current = stream;
       startAudioAnalysis(stream);
@@ -243,6 +320,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
       toast({ title: "🎤 Microphone Active", description: "Speak naturally — Sophia is listening" });
     } catch (error) {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
       console.error('Error starting call:', error);
       let errorMessage = "Failed to start audio call.";
       if (error instanceof Error) {
@@ -252,14 +331,25 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       }
       toast({ title: "Call Failed", description: errorMessage, variant: "destructive" });
       setIsConnecting(false);
+      setIsReconnecting(false);
       stopAudioAnalysis();
     }
-  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore]);
+  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore, clearReconnectTimer]);
 
   const endCall = useCallback(async () => {
-    try { await conversation.endSession(); setIsConnected(false); stopAudioAnalysis(); setShowSummary(true); onCallEnd?.(); }
-    catch (error) { console.error('Error ending call:', error); }
-  }, [conversation, onCallEnd, stopAudioAnalysis]);
+    try {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
+      await conversation.endSession();
+      setIsConnected(false);
+      stopAudioAnalysis();
+      setShowSummary(true);
+      onCallEnd?.();
+    } catch (error) {
+      console.error('Error ending call:', error);
+    }
+  }, [conversation, onCallEnd, stopAudioAnalysis, clearReconnectTimer]);
 
   const toggleMute = useCallback(() => {
     const newMuted = !isMuted;
@@ -278,8 +368,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
   const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTextMessage(); } };
 
   useEffect(() => {
-    return () => { if (isConnected) conversation.endSession(); stopAudioAnalysis(); };
-  }, []);
+    return () => {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      conversation.endSession().catch(() => {});
+      stopAudioAnalysis();
+    };
+  }, [conversation, stopAudioAnalysis, clearReconnectTimer]);
 
   const moodEmojis = ['😢', '😔', '😐', '🙂', '😊'];
 
@@ -287,7 +382,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     <>
       <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* Mood Check */}
-        {!isConnected && !isConnecting && moodScore === null && (
+        {!isConnected && !isConnecting && !isReconnecting && moodScore === null && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="bg-card border-border/50">
               <CardContent className="p-6 text-center">
@@ -321,10 +416,19 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   <Zap className="h-3.5 w-3.5 text-emerald-500" /> Real-time AI
                 </div>
               </div>
-              {isConnected && (
+              {(isConnected || isReconnecting) && (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2">
-                  <motion.div className="w-2 h-2 rounded-full bg-rose-500" animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1, repeat: Infinity }} />
-                  <span className="text-sm font-medium">Live • {formatDuration(sessionDuration)}</span>
+                  <motion.div
+                    className={cn(
+                      "w-2 h-2 rounded-full",
+                      isReconnecting ? "bg-amber-500" : "bg-rose-500"
+                    )}
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span className="text-sm font-medium">
+                    {isReconnecting ? 'Reconnecting…' : `Live • ${formatDuration(sessionDuration)}`}
+                  </span>
                 </motion.div>
               )}
             </div>
@@ -341,8 +445,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 >
                   <Sophia3DAvatar
                     isSpeaking={conversation.isSpeaking}
-                    isListening={isConnected && !conversation.isSpeaking && !isMuted}
-                    isActive={isConnected}
+                    isListening={(isConnected || isReconnecting) && !conversation.isSpeaking && !isMuted}
+                    isActive={isConnected || isReconnecting}
                     size="xl"
                   />
                 </motion.div>
@@ -353,8 +457,17 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                     <Brain className="h-4 w-4 text-purple-500" /> AI Mental Health Counselor
                   </p>
-                  <Badge variant={isConnected ? "default" : "secondary"} className={cn("mt-1", isConnected && "bg-gradient-to-r from-primary to-purple-500")}>
-                    {isConnecting ? 'Connecting...' : isConnected ? `In Session • ${formatDuration(sessionDuration)}` : 'Ready to Help'}
+                  <Badge
+                    variant={isConnected ? "default" : "secondary"}
+                    className={cn("mt-1", isConnected && "bg-gradient-to-r from-primary to-purple-500", isReconnecting && "bg-amber-500/20 text-amber-700")}
+                  >
+                    {isReconnecting
+                      ? 'Reconnecting securely...'
+                      : isConnecting
+                        ? 'Connecting...'
+                        : isConnected
+                          ? `In Session • ${formatDuration(sessionDuration)}`
+                          : 'Ready to Help'}
                   </Badge>
                 </div>
 
@@ -390,9 +503,9 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 <div className="flex items-center gap-3">
                   {!isConnected ? (
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button onClick={startCall} disabled={isConnecting} size="lg"
+                      <Button onClick={startCall} disabled={isConnecting || isReconnecting} size="lg"
                         className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-6 rounded-2xl shadow-lg shadow-emerald-500/25 text-lg gap-2">
-                        <Phone className="h-5 w-5" /> {isConnecting ? 'Connecting...' : 'Talk to Sophia'}
+                        <Phone className="h-5 w-5" /> {isReconnecting ? 'Reconnecting...' : isConnecting ? 'Connecting...' : 'Talk to Sophia'}
                       </Button>
                     </motion.div>
                   ) : (
