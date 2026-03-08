@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS update_user_sessions_updated_at ON public.user_sessions;
