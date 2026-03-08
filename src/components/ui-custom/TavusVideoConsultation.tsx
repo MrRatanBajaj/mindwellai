@@ -706,7 +706,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Shield, label: 'Encrypted', value: 'End-to-end' },
-              { icon: Brain, label: 'AI Model', value: 'ElevenLabs' },
+              { icon: Brain, label: 'AI Model', value: doctorInfo.knowledgeBase },
               { icon: Volume2, label: 'Audio', value: 'HD Quality' },
             ].map((item, index) => (
               <motion.div
