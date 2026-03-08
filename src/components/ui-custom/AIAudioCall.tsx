@@ -163,6 +163,57 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     setUserSpeaking(false);
   }, []);
 
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const attemptReconnect = useCallback((reason: 'disconnect' | 'error') => {
+    if (!shouldReconnectRef.current || reconnectTimeoutRef.current) return;
+
+    reconnectAttemptsRef.current += 1;
+    const attempts = reconnectAttemptsRef.current;
+
+    if (attempts > 12) {
+      shouldReconnectRef.current = false;
+      setIsReconnecting(false);
+      setIsConnecting(false);
+      setIsConnected(false);
+      stopAudioAnalysis();
+      toast({
+        title: 'Session Ended',
+        description: 'Network connection kept dropping. Please tap Talk to Sophia again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsReconnecting(true);
+    const delay = Math.min(10000, 1000 * Math.pow(1.5, attempts - 1));
+
+    reconnectTimeoutRef.current = setTimeout(async () => {
+      reconnectTimeoutRef.current = null;
+      if (!shouldReconnectRef.current) return;
+
+      try {
+        await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
+      } catch (error) {
+        console.error(`Reconnect attempt ${attempts} failed after ${reason}:`, error);
+        attemptReconnect('error');
+      }
+    }, delay);
+  }, [conversation, stopAudioAnalysis, toast]);
+
+  useEffect(() => {
+    reconnectFnRef.current = attemptReconnect;
+  }, [attemptReconnect]);
+
+  useEffect(() => {
+    sessionDurationRef.current = sessionDuration;
+  }, [sessionDuration]);
+
   // Chat auto-scroll
   useEffect(() => {
     if (chatEndRef.current) {
@@ -179,6 +230,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
         setSessionDuration(prev => {
           const next = prev + 1;
           if (maxDurationSeconds && next >= maxDurationSeconds) {
+            shouldReconnectRef.current = false;
+            clearReconnectTimer();
             toast({ title: "⏰ Free Trial Time Up", description: "Your 15-minute session has ended. Upgrade for unlimited access!" });
             conversation.endSession();
             setIsConnected(false);
@@ -195,7 +248,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isConnected, maxDurationSeconds, onTimeUp, conversation, stopAudioAnalysis, toast]);
+  }, [isConnected, maxDurationSeconds, onTimeUp, conversation, stopAudioAnalysis, toast, clearReconnectTimer]);
 
   // Output level simulation
   useEffect(() => {
@@ -208,35 +261,34 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     return () => clearInterval(interval);
   }, [isConnected, conversation.isSpeaking]);
 
-  // Robust keep-alive for 1hr+ sessions — ping every 15s + connection health check
+  // Long-session keepalive + health recovery (stable for 1hr+)
   useEffect(() => {
     let keepAlive: NodeJS.Timeout;
     let healthCheck: NodeJS.Timeout;
-    if (isConnected) {
-      // Send activity ping every 15 seconds to prevent timeout
-      keepAlive = setInterval(() => {
-        try { 
-          conversation.sendUserActivity(); 
-        } catch (e) { 
-          console.log('Keep-alive ping sent at', new Date().toLocaleTimeString()); 
-        }
-      }, 15000);
 
-      // Health check every 60 seconds — verify connection is still alive
-      healthCheck = setInterval(() => {
-        if (conversation.status === 'connected') {
-          console.log(`Session healthy — ${formatDuration(sessionDuration)} elapsed`);
-        } else {
-          console.warn('Session connection degraded, sending recovery ping');
-          try { conversation.sendUserActivity(); } catch {}
+    if (isConnected) {
+      keepAlive = setInterval(() => {
+        try {
+          conversation.sendUserActivity();
+        } catch {
+          reconnectFnRef.current('disconnect');
         }
-      }, 60000);
+      }, 10000);
+
+      healthCheck = setInterval(() => {
+        if (conversation.status !== 'connected' && shouldReconnectRef.current) {
+          reconnectFnRef.current('disconnect');
+        } else {
+          console.log(`Sophia call healthy — ${formatDuration(sessionDurationRef.current)}`);
+        }
+      }, 30000);
     }
+
     return () => {
       clearInterval(keepAlive);
       clearInterval(healthCheck);
     };
-  }, [isConnected, conversation, sessionDuration]);
+  }, [isConnected, conversation]);
 
   // Volume control
   useEffect(() => {
