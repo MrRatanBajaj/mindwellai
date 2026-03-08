@@ -123,12 +123,25 @@ const Auth = () => {
       >
         <div className="max-w-lg text-center space-y-8">
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto backdrop-blur-sm border border-primary/20"
+            className="mx-auto"
           >
-            <Brain className="w-12 h-12 text-primary" />
+            <motion.img
+              src={wellmindLogo}
+              alt="WellMindAI Logo"
+              className="w-36 h-36 object-contain mx-auto drop-shadow-2xl"
+              animate={{
+                y: [0, -8, 0],
+                filter: [
+                  "drop-shadow(0 4px 20px rgba(var(--primary), 0.2))",
+                  "drop-shadow(0 8px 30px rgba(var(--primary), 0.4))",
+                  "drop-shadow(0 4px 20px rgba(var(--primary), 0.2))",
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
           </motion.div>
 
           <motion.h1
@@ -192,9 +205,13 @@ const Auth = () => {
             transition={{ delay: 0.2 }}
             className="lg:hidden text-center mb-8"
           >
-            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
-              <Brain className="w-8 h-8 text-primary" />
-            </div>
+            <motion.img
+              src={wellmindLogo}
+              alt="WellMindAI Logo"
+              className="w-20 h-20 object-contain mx-auto mb-4 drop-shadow-lg"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            />
             <h1 className="text-2xl font-bold text-foreground">WellMindAI</h1>
           </motion.div>
 
