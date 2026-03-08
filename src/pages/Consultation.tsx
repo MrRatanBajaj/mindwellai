@@ -9,115 +9,17 @@ import TavusVideoConsultation from "@/components/ui-custom/TavusVideoConsultatio
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Shield, Video, Clock, Heart, AlertTriangle, CheckCircle, Stethoscope, User, Brain, Activity, Baby, Apple, Sparkles, Phone, Star, Zap, ArrowRight } from "lucide-react";
+import { Calendar, Shield, Video, Clock, AlertTriangle, CheckCircle, Star, Zap, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { DOCTOR_CARD_ORDER, DOCTOR_PROFILES, type DoctorType } from "@/lib/doctorProfiles";
 
 type ConsultationStep = 'selection' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'tavus-video' | 'completed';
-type DoctorType = 'general' | 'dermatologist' | 'mental_health' | 'cardiologist' | 'pediatrician' | 'neurologist' | 'gynecologist' | 'nutritionist';
 
-interface DoctorCardInfo {
-  type: DoctorType;
-  name: string;
-  specialty: string;
-  description: string;
-  icon: React.ElementType;
-  gradient: string;
-  accent: string;
-  rating: number;
-  available: boolean;
-}
-
-const DOCTORS: DoctorCardInfo[] = [
-  {
-    type: 'general',
-    name: 'Dr. Sarah',
-    specialty: 'General Physician',
-    description: 'General health consultations and wellness guidance',
-    icon: Stethoscope,
-    gradient: 'from-blue-500 via-blue-600 to-indigo-600',
-    accent: 'blue',
-    rating: 4.9,
-    available: true,
-  },
-  {
-    type: 'mental_health',
-    name: 'Dr. Emma',
-    specialty: 'Mental Health Counselor',
-    description: 'Anxiety, stress, and emotional well-being support',
-    icon: Brain,
-    gradient: 'from-purple-500 via-purple-600 to-violet-600',
-    accent: 'purple',
-    rating: 4.8,
-    available: true,
-  },
-  {
-    type: 'cardiologist',
-    name: 'Dr. James',
-    specialty: 'Cardiologist',
-    description: 'Heart health and cardiovascular wellness',
-    icon: Heart,
-    gradient: 'from-red-500 via-rose-500 to-pink-600',
-    accent: 'red',
-    rating: 4.9,
-    available: true,
-  },
-  {
-    type: 'dermatologist',
-    name: 'Dr. Michael',
-    specialty: 'Dermatologist',
-    description: 'Skin conditions and cosmetic dermatology',
-    icon: Sparkles,
-    gradient: 'from-amber-500 via-orange-500 to-yellow-500',
-    accent: 'amber',
-    rating: 4.7,
-    available: true,
-  },
-  {
-    type: 'pediatrician',
-    name: 'Dr. Lily',
-    specialty: 'Pediatrician',
-    description: 'Children\'s health and development',
-    icon: Baby,
-    gradient: 'from-pink-500 via-pink-600 to-rose-500',
-    accent: 'pink',
-    rating: 4.9,
-    available: true,
-  },
-  {
-    type: 'neurologist',
-    name: 'Dr. Nathan',
-    specialty: 'Neurologist',
-    description: 'Brain health and nervous system',
-    icon: Activity,
-    gradient: 'from-indigo-500 via-indigo-600 to-blue-600',
-    accent: 'indigo',
-    rating: 4.8,
-    available: true,
-  },
-  {
-    type: 'gynecologist',
-    name: 'Dr. Maya',
-    specialty: 'Gynecologist',
-    description: 'Women\'s reproductive health',
-    icon: User,
-    gradient: 'from-rose-500 via-pink-500 to-fuchsia-500',
-    accent: 'rose',
-    rating: 4.9,
-    available: true,
-  },
-  {
-    type: 'nutritionist',
-    name: 'Dr. Sophie',
-    specialty: 'Nutritionist',
-    description: 'Dietary health and nutrition planning',
-    icon: Apple,
-    gradient: 'from-green-500 via-emerald-500 to-teal-500',
-    accent: 'green',
-    rating: 4.8,
-    available: true,
-  },
-];
+const DOCTORS = DOCTOR_CARD_ORDER.map((type) => ({
+  type,
+  ...DOCTOR_PROFILES[type],
+}));
 
 const Consultation = () => {
   const [currentStep, setCurrentStep] = useState<ConsultationStep>('selection');
