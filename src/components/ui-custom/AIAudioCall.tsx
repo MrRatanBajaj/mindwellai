@@ -77,6 +77,12 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     onConnect: () => {
       setIsConnected(true);
       setIsConnecting(false);
+      setIsReconnecting(false);
+      reconnectAttemptsRef.current = 0;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       toast({ title: "✨ Connected to Sophia", description: "Your AI counselor is ready to listen" });
       setMessages([{
         id: 'welcome-' + Date.now(),
@@ -88,6 +94,10 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     onDisconnect: () => {
       setIsConnected(false);
       setIsConnecting(false);
+      if (shouldReconnectRef.current) {
+        reconnectFnRef.current('disconnect');
+        return;
+      }
       stopAudioAnalysis();
     },
     onMessage: (message: any) => {
@@ -103,9 +113,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     },
     onError: (error) => {
       console.error('ElevenLabs error:', error);
-      toast({ title: "Connection Error", description: "Failed to connect. Please check your microphone and try again.", variant: "destructive" });
       setIsConnecting(false);
       setIsConnected(false);
+      if (shouldReconnectRef.current) {
+        reconnectFnRef.current('error');
+        return;
+      }
+      toast({ title: "Connection Error", description: "Failed to connect. Please check your microphone and try again.", variant: "destructive" });
       stopAudioAnalysis();
     },
   });
