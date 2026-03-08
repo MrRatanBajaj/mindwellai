@@ -11,32 +11,29 @@ export function useSessionManagement() {
   const createSession = useCallback(async () => {
     if (user && session) {
       try {
+        // Use upsert to avoid duplicate key constraint violations
         const { error } = await supabase
           .from('user_sessions')
-          .insert({
+          .upsert({
             user_id: user.id,
             session_token: session.access_token,
             user_agent: navigator.userAgent,
             last_activity: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
-          });
+            is_active: true,
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          }, { onConflict: 'session_token' });
 
         if (error) {
-          console.error('Failed to create session record:', error);
-        } else {
-          await logSecurityEvent({
-            event_type: 'session_created',
-            metadata: { 
-              session_id: session.access_token.substring(0, 8) + '...',
-              timestamp: new Date().toISOString()
-            }
-          });
+          // Silently ignore duplicate — session already exists
+          if (error.code !== '23505') {
+            console.error('Failed to create session record:', error);
+          }
         }
       } catch (error) {
         console.error('Session creation error:', error);
       }
     }
-  }, [user, session, logSecurityEvent]);
+  }, [user, session]);
 
   // Update session activity
   const updateActivity = useCallback(async () => {
