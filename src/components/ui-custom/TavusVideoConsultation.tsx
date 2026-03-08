@@ -1,29 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Video, 
-  VideoOff, 
-  Mic, 
-  MicOff, 
-  Phone, 
+import {
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
   PhoneOff,
-  User,
-  Stethoscope,
-  Heart,
-  Brain,
   Clock,
   Shield,
   Loader2,
   ExternalLink,
-  Activity,
-  Baby,
-  Apple,
-  Sparkles,
+  Brain,
+  Heart,
   Volume2,
   AlertCircle,
-  Waves
+  Waves,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,116 +24,15 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversation } from '@11labs/react';
 import VoiceWaveformVisualizer from './VoiceWaveformVisualizer';
+import { DOCTOR_PROFILES, type DoctorType } from '@/lib/doctorProfiles';
 
 interface TavusVideoConsultationProps {
-  doctorType?: 'general' | 'dermatologist' | 'mental_health' | 'cardiologist' | 'pediatrician' | 'neurologist' | 'gynecologist' | 'nutritionist';
+  doctorType?: DoctorType;
   onEndCall: () => void;
 }
 
-interface DoctorInfo {
-  name: string;
-  specialty: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  gradient: string;
-  description: string;
-  voiceId: string;
-  systemPrompt: string;
-}
-
-const DOCTOR_INFO: Record<string, DoctorInfo> = {
-  general: {
-    name: 'Dr. Sarah',
-    specialty: 'General Physician',
-    icon: Stethoscope,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-    gradient: 'from-blue-500 to-blue-600',
-    description: 'Expert in general health consultations and preventive care',
-    voiceId: 'EXAVITQu4vr4xnSDxMaL',
-    systemPrompt: 'You are Dr. Sarah, a compassionate General Physician. Provide helpful medical guidance, ask about symptoms, and recommend when to see a doctor in person.',
-  },
-  dermatologist: {
-    name: 'Dr. Michael',
-    specialty: 'Dermatologist',
-    icon: Sparkles,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
-    gradient: 'from-amber-500 to-orange-600',
-    description: 'Specialist in skin health, hair, and cosmetic concerns',
-    voiceId: 'JBFqnCBsd6RMkjVDRZzb',
-    systemPrompt: 'You are Dr. Michael, a skilled Dermatologist. Help patients with skin conditions, provide skincare advice, and guide them on when to seek in-person examination.',
-  },
-  mental_health: {
-    name: 'Dr. Emma',
-    specialty: 'Mental Health Counselor',
-    icon: Brain,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-    gradient: 'from-purple-500 to-purple-600',
-    description: 'Compassionate support for anxiety, depression, and emotional wellness',
-    voiceId: 'FGY2WhTYpPnrIDTdsKH5',
-    systemPrompt: 'You are Dr. Emma, a compassionate Mental Health Counselor. Provide emotional support, coping strategies, and always prioritize crisis intervention if needed.',
-  },
-  cardiologist: {
-    name: 'Dr. James',
-    specialty: 'Cardiologist',
-    icon: Heart,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
-    gradient: 'from-red-500 to-rose-600',
-    description: 'Expert in heart health and cardiovascular wellness',
-    voiceId: 'onwK4e9ZLuTAKqWW03F9',
-    systemPrompt: 'You are Dr. James, an experienced Cardiologist. Help with heart health concerns and immediately advise emergency services for chest pain or heart attack symptoms.',
-  },
-  pediatrician: {
-    name: 'Dr. Lily',
-    specialty: 'Pediatrician',
-    icon: Baby,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100',
-    gradient: 'from-pink-500 to-pink-600',
-    description: "Caring specialist for children's health and development",
-    voiceId: 'pFZP5JQG7iQjIQuC4Bku',
-    systemPrompt: 'You are Dr. Lily, a caring Pediatrician. Help parents with child health concerns, development questions, and provide reassurance.',
-  },
-  neurologist: {
-    name: 'Dr. Nathan',
-    specialty: 'Neurologist',
-    icon: Activity,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100',
-    gradient: 'from-indigo-500 to-indigo-600',
-    description: 'Expert in brain and nervous system health',
-    voiceId: 'TX3LPaxmHKxFdv7VOQHJ',
-    systemPrompt: 'You are Dr. Nathan, a Neurologist. Help with neurological concerns and immediately advise emergency for stroke symptoms.',
-  },
-  gynecologist: {
-    name: 'Dr. Maya',
-    specialty: 'Gynecologist',
-    icon: User,
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-100',
-    gradient: 'from-rose-500 to-pink-600',
-    description: "Specialist in women's reproductive health and wellness",
-    voiceId: 'XrExE9yKIg1WjnnlVkGX',
-    systemPrompt: "You are Dr. Maya, a compassionate Gynecologist. Provide sensitive, professional guidance on women's health topics.",
-  },
-  nutritionist: {
-    name: 'Dr. Sophie',
-    specialty: 'Nutritionist',
-    icon: Apple,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    gradient: 'from-green-500 to-emerald-600',
-    description: 'Expert in dietary health and nutrition planning',
-    voiceId: 'cgSgspJ2msm6clMCkdW9',
-    systemPrompt: 'You are Dr. Sophie, a Nutritionist. Provide balanced dietary advice without promoting restrictive eating behaviors.',
-  },
-};
-
 type ConsultationMode = 'selection' | 'video' | 'voice';
+type ReconnectReason = 'disconnect' | 'error';
 
 const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   doctorType = 'general',
