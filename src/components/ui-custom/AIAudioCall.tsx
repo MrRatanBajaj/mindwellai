@@ -416,10 +416,19 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   <Zap className="h-3.5 w-3.5 text-emerald-500" /> Real-time AI
                 </div>
               </div>
-              {isConnected && (
+              {(isConnected || isReconnecting) && (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2">
-                  <motion.div className="w-2 h-2 rounded-full bg-rose-500" animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1, repeat: Infinity }} />
-                  <span className="text-sm font-medium">Live • {formatDuration(sessionDuration)}</span>
+                  <motion.div
+                    className={cn(
+                      "w-2 h-2 rounded-full",
+                      isReconnecting ? "bg-amber-500" : "bg-rose-500"
+                    )}
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span className="text-sm font-medium">
+                    {isReconnecting ? 'Reconnecting…' : `Live • ${formatDuration(sessionDuration)}`}
+                  </span>
                 </motion.div>
               )}
             </div>
@@ -436,8 +445,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 >
                   <Sophia3DAvatar
                     isSpeaking={conversation.isSpeaking}
-                    isListening={isConnected && !conversation.isSpeaking && !isMuted}
-                    isActive={isConnected}
+                    isListening={(isConnected || isReconnecting) && !conversation.isSpeaking && !isMuted}
+                    isActive={isConnected || isReconnecting}
                     size="xl"
                   />
                 </motion.div>
@@ -448,8 +457,17 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                     <Brain className="h-4 w-4 text-purple-500" /> AI Mental Health Counselor
                   </p>
-                  <Badge variant={isConnected ? "default" : "secondary"} className={cn("mt-1", isConnected && "bg-gradient-to-r from-primary to-purple-500")}>
-                    {isConnecting ? 'Connecting...' : isConnected ? `In Session • ${formatDuration(sessionDuration)}` : 'Ready to Help'}
+                  <Badge
+                    variant={isConnected ? "default" : "secondary"}
+                    className={cn("mt-1", isConnected && "bg-gradient-to-r from-primary to-purple-500", isReconnecting && "bg-amber-500/20 text-amber-700")}
+                  >
+                    {isReconnecting
+                      ? 'Reconnecting securely...'
+                      : isConnecting
+                        ? 'Connecting...'
+                        : isConnected
+                          ? `In Session • ${formatDuration(sessionDuration)}`
+                          : 'Ready to Help'}
                   </Badge>
                 </div>
 
@@ -485,9 +503,9 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 <div className="flex items-center gap-3">
                   {!isConnected ? (
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button onClick={startCall} disabled={isConnecting} size="lg"
+                      <Button onClick={startCall} disabled={isConnecting || isReconnecting} size="lg"
                         className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-6 rounded-2xl shadow-lg shadow-emerald-500/25 text-lg gap-2">
-                        <Phone className="h-5 w-5" /> {isConnecting ? 'Connecting...' : 'Talk to Sophia'}
+                        <Phone className="h-5 w-5" /> {isReconnecting ? 'Reconnecting...' : isConnecting ? 'Connecting...' : 'Talk to Sophia'}
                       </Button>
                     </motion.div>
                   ) : (
