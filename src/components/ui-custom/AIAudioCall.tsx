@@ -60,12 +60,18 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
   const [userSpeaking, setUserSpeaking] = useState(false);
   const [moodScore, setMoodScore] = useState<number | null>(null);
   const [breathingMode, setBreathingMode] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shouldReconnectRef = useRef(false);
+  const sessionDurationRef = useRef(0);
+  const reconnectFnRef = useRef<(reason: 'disconnect' | 'error') => void>(() => {});
 
   const conversation = useConversation({
     onConnect: () => {
