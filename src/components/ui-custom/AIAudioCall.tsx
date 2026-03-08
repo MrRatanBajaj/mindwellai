@@ -7,27 +7,9 @@ import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Mic, 
-  MicOff, 
-  Phone, 
-  PhoneOff, 
-  Volume2, 
-  VolumeX,
-  MessageSquare,
-  Heart,
-  Shield,
-  Clock,
-  Send,
-  User,
-  Bot,
-  Sparkles,
-  Star,
-  Zap,
-  Brain,
-  Activity,
-  Headphones,
-  Waves,
-  AudioWaveform
+  Mic, MicOff, Phone, PhoneOff, Volume2, VolumeX,
+  MessageSquare, Heart, Shield, Clock, Send, User, Bot,
+  Sparkles, Star, Zap, Brain, Activity, Headphones, Waves, AudioWaveform
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,8 +34,15 @@ interface Message {
   timestamp: Date;
 }
 
-// Public ElevenLabs Agent ID for Juli
 const JULI_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
+
+const formatDuration = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
 
 const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds, onTimeUp, isFreeTrial, trialRemainingSeconds }) => {
   const { toast } = useToast();
@@ -80,85 +69,42 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log('Connected to Juli AI Counselor');
       setIsConnected(true);
       setIsConnecting(false);
-      toast({
-        title: "✨ Connected to Juli",
-        description: "Your AI mental health counselor is ready to listen",
-      });
-      
-      // Add welcome message with enhanced content
-      const welcomeMessage: Message = {
+      toast({ title: "✨ Connected to Juli", description: "Your AI counselor is ready to listen" });
+      setMessages([{
         id: 'welcome-' + Date.now(),
         role: 'assistant',
-        content: "Hi there! I'm Juli, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. Everything we discuss stays completely private. How are you feeling today?",
+        content: "Hi there! I'm Juli, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?",
         timestamp: new Date()
-      };
-      setMessages([welcomeMessage]);
+      }]);
     },
     onDisconnect: () => {
-      console.log('Disconnected from Juli');
       setIsConnected(false);
       setIsConnecting(false);
       stopAudioAnalysis();
     },
     onMessage: (message: any) => {
-      console.log('Message received:', message);
-      
-      // Handle different message types from ElevenLabs
       if (message.type === 'user_transcript' && message.user_transcription_event?.user_transcript) {
-        const transcript = message.user_transcription_event.user_transcript;
-        const newMessage: Message = {
-          id: Date.now().toString() + '-user',
-          role: 'user',
-          content: transcript,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => [...prev, { id: Date.now().toString() + '-user', role: 'user', content: message.user_transcription_event.user_transcript, timestamp: new Date() }]);
       } else if (message.type === 'agent_response' && message.agent_response_event?.agent_response) {
-        const response = message.agent_response_event.agent_response;
-        const newMessage: Message = {
-          id: Date.now().toString() + '-assistant',
-          role: 'assistant',
-          content: response,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => [...prev, { id: Date.now().toString() + '-assistant', role: 'assistant', content: message.agent_response_event.agent_response, timestamp: new Date() }]);
       } else if (message.source === 'user' && message.message) {
-        // Fallback for older message format
-        const newMessage: Message = {
-          id: Date.now().toString() + '-user-legacy',
-          role: 'user',
-          content: message.message,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => [...prev, { id: Date.now().toString() + '-user-legacy', role: 'user', content: message.message, timestamp: new Date() }]);
       } else if (message.source === 'ai' && message.message) {
-        // Fallback for older message format
-        const newMessage: Message = {
-          id: Date.now().toString() + '-assistant-legacy',
-          role: 'assistant',
-          content: message.message,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, newMessage]);
+        setMessages(prev => [...prev, { id: Date.now().toString() + '-assistant-legacy', role: 'assistant', content: message.message, timestamp: new Date() }]);
       }
     },
     onError: (error) => {
       console.error('ElevenLabs error:', error);
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect to Juli. Please check your microphone permissions and try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Connection Error", description: "Failed to connect. Please check your microphone and try again.", variant: "destructive" });
       setIsConnecting(false);
       setIsConnected(false);
       stopAudioAnalysis();
     },
   });
 
-  // Real-time audio analysis for visualization and voice activity detection
+  // Audio analysis
   const startAudioAnalysis = useCallback(async (stream: MediaStream) => {
     try {
       audioContextRef.current = new AudioContext();
@@ -167,92 +113,53 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       source.connect(analyserRef.current);
       analyserRef.current.fftSize = 512;
       analyserRef.current.smoothingTimeConstant = 0.4;
-      
       const bufferLength = analyserRef.current.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
-      
       let silenceFrames = 0;
-      const silenceThreshold = 0.08;
-      const speakingThreshold = 0.12;
       
       const analyze = () => {
         if (!analyserRef.current) return;
-        
         analyserRef.current.getByteFrequencyData(dataArray);
-        
-        // Focus on voice frequency range (300Hz - 3400Hz for human voice)
         const voiceStart = Math.floor(300 / (audioContextRef.current!.sampleRate / analyserRef.current.fftSize));
         const voiceEnd = Math.floor(3400 / (audioContextRef.current!.sampleRate / analyserRef.current.fftSize));
-        
         let voiceSum = 0;
-        for (let i = voiceStart; i < voiceEnd && i < bufferLength; i++) {
-          voiceSum += dataArray[i];
-        }
-        const voiceAverage = voiceSum / (voiceEnd - voiceStart);
-        const normalizedLevel = voiceAverage / 128;
-        
+        for (let i = voiceStart; i < voiceEnd && i < bufferLength; i++) voiceSum += dataArray[i];
+        const normalizedLevel = (voiceSum / (voiceEnd - voiceStart)) / 128;
         setInputLevel(normalizedLevel);
-        
-        // Better voice activity detection with debouncing
-        if (normalizedLevel > speakingThreshold) {
-          silenceFrames = 0;
-          setUserSpeaking(true);
-        } else if (normalizedLevel < silenceThreshold) {
-          silenceFrames++;
-          // Only mark as not speaking after consistent silence (about 300ms)
-          if (silenceFrames > 10) {
-            setUserSpeaking(false);
-          }
-        }
-        
+        if (normalizedLevel > 0.12) { silenceFrames = 0; setUserSpeaking(true); }
+        else if (normalizedLevel < 0.08) { silenceFrames++; if (silenceFrames > 10) setUserSpeaking(false); }
         animationFrameRef.current = requestAnimationFrame(analyze);
       };
-      
       analyze();
-    } catch (error) {
-      console.error('Audio analysis error:', error);
-    }
+    } catch (error) { console.error('Audio analysis error:', error); }
   }, []);
 
   const stopAudioAnalysis = useCallback(() => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach(track => track.stop());
-      micStreamRef.current = null;
-    }
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    if (audioContextRef.current) audioContextRef.current.close().catch(() => {});
+    if (micStreamRef.current) micStreamRef.current.getTracks().forEach(track => track.stop());
+    micStreamRef.current = null;
     setInputLevel(0);
     setUserSpeaking(false);
   }, []);
 
-  // Auto-scroll chat messages only (not the whole page)
+  // Chat auto-scroll
   useEffect(() => {
     if (chatEndRef.current) {
       const scrollArea = chatEndRef.current.closest('[data-radix-scroll-area-viewport]');
-      if (scrollArea) {
-        scrollArea.scrollTop = scrollArea.scrollHeight;
-      }
+      if (scrollArea) scrollArea.scrollTop = scrollArea.scrollHeight;
     }
   }, [messages, messages.length]);
 
-  // Session timer with auto-end for free trial
+  // Session timer + auto-end for free trial
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
         setSessionDuration(prev => {
           const next = prev + 1;
-          // Auto-end if free trial and time is up
           if (maxDurationSeconds && next >= maxDurationSeconds) {
-            toast({
-              title: "⏰ Free Trial Time Up",
-              description: "Your 15-minute free counseling session has ended. Upgrade to continue!",
-            });
+            toast({ title: "⏰ Free Trial Time Up", description: "Your 15-minute session has ended. Upgrade for unlimited access!" });
             conversation.endSession();
             setIsConnected(false);
             stopAudioAnalysis();
@@ -260,12 +167,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
             onTimeUp?.();
             clearInterval(interval);
           }
-          // Warning at 2 minutes remaining
           if (maxDurationSeconds && next === maxDurationSeconds - 120) {
-            toast({
-              title: "⚠️ 2 Minutes Remaining",
-              description: "Your free session will end in 2 minutes.",
-            });
+            toast({ title: "⚠️ 2 Minutes Remaining", description: "Your free session will end in 2 minutes." });
           }
           return next;
         });
@@ -274,180 +177,89 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     return () => clearInterval(interval);
   }, [isConnected, maxDurationSeconds, onTimeUp, conversation, stopAudioAnalysis, toast]);
 
-  // Output level based on AI speaking state
+  // Output level simulation
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
-        const baseOutput = conversation.isSpeaking ? Math.random() * 0.6 + 0.4 : 0.1;
-        setOutputLevel(baseOutput);
+        setOutputLevel(conversation.isSpeaking ? Math.random() * 0.6 + 0.4 : 0.1);
       }, 100);
     }
     return () => clearInterval(interval);
   }, [isConnected, conversation.isSpeaking]);
 
-  // Keep-alive ping to prevent session timeout during long talks
+  // Keep-alive for long sessions
   useEffect(() => {
-    let keepAliveInterval: NodeJS.Timeout;
+    let keepAlive: NodeJS.Timeout;
     if (isConnected) {
-      keepAliveInterval = setInterval(() => {
-        // Send activity signal to keep connection alive
-        try {
-          conversation.sendUserActivity();
-        } catch (e) {
-          console.log('Keep-alive ping sent');
-        }
-      }, 30000); // Every 30 seconds
+      keepAlive = setInterval(() => {
+        try { conversation.sendUserActivity(); } catch (e) { console.log('Keep-alive sent'); }
+      }, 30000);
     }
-    return () => clearInterval(keepAliveInterval);
+    return () => clearInterval(keepAlive);
   }, [isConnected, conversation]);
 
   // Volume control
   useEffect(() => {
-    if (isConnected) {
-      conversation.setVolume({ volume: volume[0] });
-    }
+    if (isConnected) conversation.setVolume({ volume: volume[0] });
   }, [volume, isConnected, conversation]);
 
-  const formatDuration = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hrs > 0) {
-      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const startCall = useCallback(async () => {
-    setIsConnecting(true);
-    setMessages([]);
-    setSessionDuration(0);
-    setShowSummary(false);
-    setMoodScore(null);
-    
     try {
-      // Request microphone permission with optimal settings for voice
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 16000,
-          channelCount: 1,
-        } 
-      });
-      
+      setIsConnecting(true);
+      setSessionDuration(0);
+      setMessages([]);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       micStreamRef.current = stream;
+      startAudioAnalysis(stream);
       
-      // Start audio analysis for visualization
-      await startAudioAnalysis(stream);
-      
-      console.log('Starting ElevenLabs conversation with agent:', JULI_AGENT_ID);
-      
-      // Start the conversation session with the public agent ID using WebRTC
-      await conversation.startSession({
-        agentId: JULI_AGENT_ID,
-      });
-      
-      toast({
-        title: "🎤 Microphone Active",
-        description: "Speak naturally - Juli is listening to you",
-      });
-      
+      // Log session
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('ai_counseling_sessions').insert({
+          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: 'juli-ai', session_type: 'audio_call', status: 'active',
+          metadata: { agent_id: JULI_AGENT_ID, mood_score: moodScore } as any
+        });
+      }
+      await conversation.startSession({ agentId: JULI_AGENT_ID });
+      toast({ title: "🎤 Microphone Active", description: "Speak naturally — Juli is listening" });
     } catch (error) {
       console.error('Error starting call:', error);
-      
       let errorMessage = "Failed to start audio call.";
       if (error instanceof Error) {
-        if (error.message.includes('Permission denied') || error.message.includes('NotAllowedError')) {
-          errorMessage = "Microphone access denied. Please allow microphone access in your browser settings.";
-        } else if (error.message.includes('NotFoundError')) {
-          errorMessage = "No microphone found. Please connect a microphone and try again.";
-        } else {
-          errorMessage = error.message;
-        }
+        if (error.message.includes('Permission denied') || error.message.includes('NotAllowedError')) errorMessage = "Microphone access denied. Please allow microphone in browser settings.";
+        else if (error.message.includes('NotFoundError')) errorMessage = "No microphone found. Please connect a microphone.";
+        else errorMessage = error.message;
       }
-      
-      toast({
-        title: "Call Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast({ title: "Call Failed", description: errorMessage, variant: "destructive" });
       setIsConnecting(false);
       stopAudioAnalysis();
     }
-  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis]);
+  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore]);
 
   const endCall = useCallback(async () => {
-    try {
-      await conversation.endSession();
-      setIsConnected(false);
-      stopAudioAnalysis();
-      setShowSummary(true);
-      onCallEnd?.();
-    } catch (error) {
-      console.error('Error ending call:', error);
-    }
+    try { await conversation.endSession(); setIsConnected(false); stopAudioAnalysis(); setShowSummary(true); onCallEnd?.(); }
+    catch (error) { console.error('Error ending call:', error); }
   }, [conversation, onCallEnd, stopAudioAnalysis]);
 
   const toggleMute = useCallback(() => {
     const newMuted = !isMuted;
     setIsMuted(newMuted);
-    
-    // Actually mute/unmute the microphone stream
-    if (micStreamRef.current) {
-      micStreamRef.current.getAudioTracks().forEach(track => {
-        track.enabled = !newMuted;
-      });
-    }
-    
-    toast({
-      title: newMuted ? "🔇 Microphone Muted" : "🎤 Microphone Unmuted",
-      description: newMuted ? "Juli cannot hear you" : "Juli can hear you now",
-    });
+    if (micStreamRef.current) micStreamRef.current.getAudioTracks().forEach(track => { track.enabled = !newMuted; });
+    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? "Juli cannot hear you" : "Juli can hear you now" });
   }, [isMuted, toast]);
 
   const sendTextMessage = useCallback(() => {
     if (!chatInput.trim() || !isConnected) return;
-    
-    // Send text message through conversation
     conversation.sendUserMessage(chatInput.trim());
-    
-    // Add to local messages
-    const newMessage: Message = {
-      id: Date.now().toString() + '-user-text',
-      role: 'user',
-      content: chatInput.trim(),
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => [...prev, { id: Date.now().toString() + '-user-text', role: 'user', content: chatInput.trim(), timestamp: new Date() }]);
     setChatInput('');
   }, [chatInput, isConnected, conversation]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendTextMessage();
-    }
-  };
+  const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTextMessage(); } };
 
-  const handleMoodSelect = (score: number) => {
-    setMoodScore(score);
-    toast({
-      title: "Mood recorded",
-      description: `You're feeling ${score <= 2 ? 'low' : score <= 4 ? 'okay' : 'good'} today. Juli is here to help.`,
-    });
-  };
-
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (isConnected) {
-        conversation.endSession();
-      }
-      stopAudioAnalysis();
-    };
+    return () => { if (isConnected) conversation.endSession(); stopAudioAnalysis(); };
   }, []);
 
   const moodEmojis = ['😢', '😔', '😐', '🙂', '😊'];
@@ -455,467 +267,253 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
   return (
     <>
       <div className="w-full max-w-6xl mx-auto space-y-6">
-
-        {/* Mood Check Card - Before Call */}
+        {/* Mood Check */}
         {!isConnected && !isConnecting && moodScore === null && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-emerald-500/10 border-primary/20">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="bg-card border-border/50">
               <CardContent className="p-6 text-center">
                 <h3 className="text-lg font-semibold mb-3 flex items-center justify-center gap-2">
-                  <Heart className="h-5 w-5 text-rose-500" />
-                  How are you feeling right now?
+                  <Heart className="h-5 w-5 text-rose-500" /> How are you feeling right now?
                 </h3>
-                <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center gap-4">
                   {moodEmojis.map((emoji, index) => (
-                    <motion.button
-                      key={index}
-                      onClick={() => handleMoodSelect(index + 1)}
-                      className="text-3xl p-2 hover:scale-125 transition-transform rounded-full hover:bg-primary/20"
-                      whileHover={{ scale: 1.2 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
+                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `Juli will personalize your session based on how you're feeling.` }); }}
+                      className="text-3xl p-3 hover:bg-primary/10 rounded-2xl transition-colors" whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
                       {emoji}
                     </motion.button>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-3">
-                  This helps Juli understand how to best support you
-                </p>
+                <p className="text-sm text-muted-foreground mt-3">This helps Juli personalize your session</p>
               </CardContent>
             </Card>
           </motion.div>
         )}
 
-        {/* Main Call Interface */}
-        <Card className="overflow-hidden bg-gradient-to-br from-card via-primary/3 to-purple-500/5 border-primary/20 backdrop-blur-sm shadow-2xl shadow-primary/5">
-          <CardContent className="p-6 md:p-8 lg:p-10">
-            {/* Quick Stats Bar */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-wrap justify-center gap-3 mb-6"
-            >
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-sm">
-                <Shield className="h-3.5 w-3.5 text-primary" />
-                <span>End-to-End Encrypted</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-sm">
-                <Zap className="h-3.5 w-3.5 text-emerald-500" />
-                <span>Real-time AI</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 text-sm">
-                <Star className="h-3.5 w-3.5 text-amber-500" />
-                <span>24/7 Available</span>
+        {/* ═══ Main Interface ═══ */}
+        <Card className="overflow-hidden bg-card border-border/50 shadow-xl">
+          <CardContent className="p-0">
+            {/* Top Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-border/30 bg-muted/20">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-xs font-medium">
+                  <Shield className="h-3.5 w-3.5 text-primary" /> Encrypted
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-xs font-medium">
+                  <Zap className="h-3.5 w-3.5 text-emerald-500" /> Real-time AI
+                </div>
               </div>
               {isConnected && (
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 text-sm"
-                >
-                  <Activity className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
-                  <span>Live Session</span>
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2">
+                  <motion.div className="w-2 h-2 rounded-full bg-rose-500" animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1, repeat: Infinity }} />
+                  <span className="text-sm font-medium">Live • {formatDuration(sessionDuration)}</span>
                 </motion.div>
               )}
-            </motion.div>
+            </div>
 
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Left Side - Mascot, Visualizers & Controls */}
-              <div className="flex flex-col items-center justify-center space-y-6">
-                {/* Juli 3D Avatar */}
-                <Juli3DAvatar
-                  isSpeaking={conversation.isSpeaking}
-                  isListening={isConnected && !conversation.isSpeaking && !isMuted}
-                  isActive={isConnected}
-                  size="xl"
-                />
+            <div className="grid lg:grid-cols-5 gap-0">
+              {/* ═══ LEFT: Avatar + Controls (3 cols) ═══ */}
+              <div className="lg:col-span-3 flex flex-col items-center justify-center p-8 space-y-6 bg-gradient-to-b from-muted/10 to-transparent min-h-[500px]">
+                
+                {/* 3D Avatar — Centerpiece */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Juli3DAvatar
+                    isSpeaking={conversation.isSpeaking}
+                    isListening={isConnected && !conversation.isSpeaking && !isMuted}
+                    isActive={isConnected}
+                    size="xl"
+                  />
+                </motion.div>
+
+                {/* Name + Status */}
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">Juli</h2>
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                    <Brain className="h-4 w-4 text-purple-500" /> AI Mental Health Counselor
+                  </p>
+                  <Badge variant={isConnected ? "default" : "secondary"} className={cn("mt-1", isConnected && "bg-gradient-to-r from-primary to-purple-500")}>
+                    {isConnecting ? 'Connecting...' : isConnected ? `In Session • ${formatDuration(sessionDuration)}` : 'Ready to Help'}
+                  </Badge>
+                </div>
 
                 {/* Voice Visualizers */}
                 {isConnected && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-sm space-y-3"
-                  >
-                    {/* AI Voice Visualizer */}
-                    <div className="bg-gradient-to-r from-primary/10 to-emerald-500/10 rounded-xl p-4 border border-primary/20">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <motion.div
-                            animate={conversation.isSpeaking ? { scale: [1, 1.2, 1] } : {}}
-                            transition={{ duration: 0.5, repeat: Infinity }}
-                          >
-                            <Bot className="h-5 w-5 text-primary" />
-                          </motion.div>
-                          <span className="text-sm font-medium">Juli</span>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md grid grid-cols-2 gap-3">
+                    <div className="rounded-xl p-3 border border-primary/15 bg-primary/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <Bot className="h-4 w-4 text-primary" />
+                          <span className="text-xs font-medium">Juli</span>
                         </div>
-                        {conversation.isSpeaking && (
-                          <Badge className="text-[10px] px-2 py-0.5 bg-primary/20 text-primary animate-pulse">
-                            <AudioWaveform className="h-3 w-3 mr-1" />
-                            Speaking
-                          </Badge>
-                        )}
+                        {conversation.isSpeaking && <Badge className="text-[9px] px-1.5 py-0 bg-primary/20 text-primary">Speaking</Badge>}
                       </div>
-                      <VoiceVisualizer
-                        isActive={isConnected}
-                        isSpeaking={conversation.isSpeaking}
-                        type="ai"
-                        outputLevel={outputLevel}
-                      />
+                      <VoiceVisualizer isActive={isConnected} isSpeaking={conversation.isSpeaking} type="ai" outputLevel={outputLevel} />
                     </div>
-
-                    {/* User Voice Visualizer */}
-                    <div className="bg-gradient-to-r from-emerald-500/10 to-primary/10 rounded-xl p-4 border border-emerald-500/20">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <motion.div
-                            animate={userSpeaking && !isMuted ? { scale: [1, 1.15, 1] } : {}}
-                            transition={{ duration: 0.3, repeat: Infinity }}
-                          >
-                            <User className="h-5 w-5 text-emerald-500" />
-                          </motion.div>
-                          <span className="text-sm font-medium">You</span>
+                    <div className="rounded-xl p-3 border border-emerald-500/15 bg-emerald-500/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-4 w-4 text-emerald-500" />
+                          <span className="text-xs font-medium">You</span>
                         </div>
-                        {isMuted ? (
-                          <Badge variant="destructive" className="text-[10px] px-2 py-0.5">
-                            <MicOff className="h-3 w-3 mr-1" />
-                            Muted
-                          </Badge>
-                        ) : userSpeaking ? (
-                          <Badge className="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-600">
-                            <Mic className="h-3 w-3 mr-1 animate-pulse" />
-                            Speaking
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
-                            <Headphones className="h-3 w-3 mr-1" />
-                            Ready
-                          </Badge>
-                        )}
+                        {isMuted ? <Badge variant="destructive" className="text-[9px] px-1.5 py-0">Muted</Badge>
+                          : userSpeaking ? <Badge className="text-[9px] px-1.5 py-0 bg-emerald-500/20 text-emerald-600">Speaking</Badge>
+                          : <Badge variant="secondary" className="text-[9px] px-1.5 py-0">Ready</Badge>}
                       </div>
-                      <VoiceVisualizer
-                        isActive={isConnected && !isMuted}
-                        isSpeaking={userSpeaking}
-                        type="user"
-                        inputLevel={isMuted ? 0 : inputLevel}
-                      />
+                      <VoiceVisualizer isActive={isConnected && !isMuted} isSpeaking={userSpeaking} type="user" inputLevel={isMuted ? 0 : inputLevel} />
                     </div>
                   </motion.div>
                 )}
 
-                {/* Name & Status */}
-                <div className="text-center space-y-3">
-                  <motion.h2 
-                    className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm"
-                    animate={isConnected ? { scale: [1, 1.02, 1] } : {}}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  >
-                    Juli
-                  </motion.h2>
-                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                    <Brain className="h-4 w-4 text-purple-500" />
-                    <span className="font-medium">AI Mental Health Counselor</span>
-                    <Heart className="h-4 w-4 text-rose-500" />
-                  </p>
-                  <p className="text-xs text-muted-foreground max-w-xs mx-auto">Trained in CBT, DBT, and Mindfulness-Based Therapy</p>
-                  
-                  <motion.div
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    className="inline-block"
-                  >
-                    <Badge 
-                      variant={isConnected ? "default" : "secondary"} 
-                      className={cn(
-                        "mt-2 px-4 py-1.5 text-sm",
-                        isConnected && "bg-gradient-to-r from-primary via-purple-500 to-emerald-500"
-                      )}
-                    >
-                      {isConnecting ? (
-                        <span className="flex items-center gap-2">
-                          <motion.div
-                            className="w-2 h-2 bg-white rounded-full"
-                            animate={{ scale: [1, 0.5, 1] }}
-                            transition={{ duration: 0.5, repeat: Infinity }}
-                          />
-                          Connecting to Juli...
-                        </span>
-                      ) : isConnected ? (
-                        <span className="flex items-center gap-2">
-                          <motion.div
-                            className="w-2 h-2 bg-white rounded-full"
-                            animate={{ opacity: [1, 0.5, 1] }}
-                            transition={{ duration: 1, repeat: Infinity }}
-                          />
-                          In Session • {formatDuration(sessionDuration)}
-                        </span>
-                      ) : "Ready to Help 24/7"}
-                    </Badge>
-                  </motion.div>
-                </div>
-
-                {/* Call Controls */}
-                <div className="flex items-center gap-4">
+                {/* Controls */}
+                <div className="flex items-center gap-3">
                   {!isConnected ? (
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button
-                        onClick={startCall}
-                        disabled={isConnecting}
-                        size="lg"
-                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-6 rounded-full shadow-lg shadow-green-500/30 text-lg"
-                      >
-                        <Phone className="h-6 w-6 mr-2" />
-                        {isConnecting ? 'Connecting...' : 'Talk to Juli'}
+                      <Button onClick={startCall} disabled={isConnecting} size="lg"
+                        className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-6 rounded-2xl shadow-lg shadow-emerald-500/25 text-lg gap-2">
+                        <Phone className="h-5 w-5" /> {isConnecting ? 'Connecting...' : 'Talk to Juli'}
                       </Button>
                     </motion.div>
                   ) : (
                     <>
                       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button
-                          onClick={toggleMute}
-                          variant={isMuted ? "destructive" : "secondary"}
-                          size="lg"
-                          className="rounded-full h-14 w-14 shadow-lg"
-                        >
-                          {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+                        <Button onClick={toggleMute} variant={isMuted ? "destructive" : "secondary"} size="lg" className="rounded-full h-14 w-14">
+                          {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                         </Button>
                       </motion.div>
-                      
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                        <Button
-                          onClick={endCall}
-                          variant="destructive"
-                          size="lg"
-                          className="px-8 py-6 rounded-full shadow-lg shadow-red-500/30"
-                        >
-                          <PhoneOff className="h-6 w-6 mr-2" />
-                          End Session
+                        <Button onClick={endCall} variant="destructive" size="lg" className="px-6 py-5 rounded-2xl gap-2">
+                          <PhoneOff className="h-5 w-5" /> End Session
                         </Button>
                       </motion.div>
-
                       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <Button
-                          onClick={() => setShowChat(!showChat)}
-                          variant={showChat ? "default" : "secondary"}
-                          size="lg"
-                          className="rounded-full h-14 w-14 shadow-lg"
-                        >
-                          <MessageSquare className="h-6 w-6" />
+                        <Button onClick={() => setShowChat(!showChat)} variant={showChat ? "default" : "secondary"} size="lg" className="rounded-full h-14 w-14">
+                          <MessageSquare className="h-5 w-5" />
                         </Button>
                       </motion.div>
                     </>
                   )}
                 </div>
 
-                {/* Volume Control */}
+                {/* Volume + Breathing */}
                 {isConnected && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="w-full max-w-xs flex items-center gap-3 bg-muted/30 rounded-full px-4 py-2"
-                  >
-                    <VolumeX className="h-4 w-4 text-muted-foreground" />
-                    <Slider
-                      value={volume}
-                      onValueChange={setVolume}
-                      max={1}
-                      step={0.1}
-                      className="flex-1"
-                    />
-                    <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  </motion.div>
-                )}
-
-                {/* Breathing Exercise Button */}
-                {isConnected && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setBreathingMode(!breathingMode)}
-                      className="rounded-full"
-                    >
-                      <Waves className="h-4 w-4 mr-2" />
-                      {breathingMode ? 'Stop Breathing Exercise' : 'Start Breathing Exercise'}
+                  <div className="flex flex-col items-center gap-3 w-full max-w-xs">
+                    <div className="w-full flex items-center gap-3 bg-muted/30 rounded-full px-4 py-2">
+                      <VolumeX className="h-4 w-4 text-muted-foreground" />
+                      <Slider value={volume} onValueChange={setVolume} max={1} step={0.1} className="flex-1" />
+                      <Volume2 className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setBreathingMode(!breathingMode)} className="rounded-full gap-2 text-xs">
+                      <Waves className="h-3.5 w-3.5" /> {breathingMode ? 'Stop Breathing' : 'Breathing Exercise'}
                     </Button>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Breathing Animation */}
                 <AnimatePresence>
                   {breathingMode && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      className="text-center"
-                    >
+                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="text-center">
                       <motion.div
-                        className="w-24 h-24 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 mx-auto mb-2 flex items-center justify-center"
-                        animate={{
-                          scale: [1, 1.5, 1.5, 1],
-                        }}
-                        transition={{
-                          duration: 8,
-                          repeat: Infinity,
-                          times: [0, 0.25, 0.75, 1],
-                        }}
+                        className="w-20 h-20 rounded-full bg-gradient-to-r from-primary/40 to-emerald-500/40 mx-auto mb-2 flex items-center justify-center"
+                        animate={{ scale: [1, 1.5, 1.5, 1] }}
+                        transition={{ duration: 8, repeat: Infinity, times: [0, 0.25, 0.75, 1] }}
                       >
-                        <motion.span
-                          className="text-white font-medium"
-                          animate={{
-                            opacity: [1, 1, 1, 1],
-                          }}
-                          transition={{
-                            duration: 8,
-                            repeat: Infinity,
-                          }}
-                        >
-                          Breathe
-                        </motion.span>
+                        <span className="text-sm font-medium text-foreground">Breathe</span>
                       </motion.div>
-                      <p className="text-sm text-muted-foreground">
-                        Inhale... Hold... Exhale...
-                      </p>
+                      <p className="text-xs text-muted-foreground">Inhale... Hold... Exhale...</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              {/* Right Side - Chat */}
+              {/* ═══ RIGHT: Chat Panel (2 cols) ═══ */}
               <AnimatePresence>
                 {showChat && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="flex flex-col"
+                    className="lg:col-span-2 flex flex-col border-l border-border/30 min-h-[500px] bg-muted/5"
                   >
-                    <Card className="flex-1 flex flex-col bg-gradient-to-b from-card/90 to-muted/30 border-primary/10 backdrop-blur-sm min-h-[400px] lg:min-h-[550px] shadow-xl">
-                      <div className="p-4 border-b border-border/30 flex items-center justify-between bg-gradient-to-r from-primary/5 to-purple-500/5">
-                        <h3 className="font-semibold flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg bg-primary/10">
-                            <MessageSquare className="h-4 w-4 text-primary" />
-                          </div>
-                          <span>Conversation</span>
-                          {messages.length > 0 && (
-                            <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">{messages.length}</Badge>
-                          )}
-                        </h3>
-                        {isConnected && (
-                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10">
-                            <motion.div 
-                              className="w-2 h-2 rounded-full bg-emerald-500"
-                              animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
-                              transition={{ duration: 1.5, repeat: Infinity }}
-                            />
-                            <span className="text-xs text-emerald-600 font-medium">Live Session</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <ScrollArea className="flex-1 p-4">
-                        <div className="space-y-4">
-                          {messages.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-center p-4 min-h-[200px]">
-                              <motion.div
-                                animate={{ scale: [1, 1.1, 1] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                              >
-                                <Heart className="h-16 w-16 mb-4 text-rose-300" />
-                              </motion.div>
-                              <p className="text-lg font-medium">Start a session with Juli</p>
-                              <p className="text-sm mt-2 max-w-xs">
-                                Just speak naturally or type your messages. Juli is here to listen and support you.
-                              </p>
-                            </div>
-                          ) : (
-                            messages.map((msg, index) => (
-                              <motion.div
-                                key={msg.id}
-                                initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                transition={{ duration: 0.3, delay: index * 0.05 }}
-                                className={cn(
-                                  "flex gap-3",
-                                  msg.role === 'user' ? 'justify-end' : 'justify-start'
-                                )}
-                              >
-                                {msg.role === 'assistant' && (
-                                  <motion.div 
-                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-primary via-purple-500 to-primary flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-primary/20"
-                                    whileHover={{ scale: 1.1 }}
-                                  >
-                                    <Sparkles className="h-5 w-5 text-white" />
-                                  </motion.div>
-                                )}
-                                <motion.div 
-                                  className={cn(
-                                    "max-w-[75%] rounded-2xl px-4 py-3 shadow-md",
-                                    msg.role === 'user' 
-                                      ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-br-md' 
-                                      : 'bg-gradient-to-br from-muted to-muted/80 text-foreground rounded-bl-md border border-border/50'
-                                  )}
-                                  whileHover={{ scale: 1.01 }}
-                                >
-                                  <p className="text-sm leading-relaxed">{msg.content}</p>
-                                  <span className={cn(
-                                    "text-[10px] mt-2 block opacity-70",
-                                    msg.role === 'user' ? 'text-primary-foreground' : 'text-muted-foreground'
-                                  )}>
-                                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </motion.div>
-                                {msg.role === 'user' && (
-                                  <motion.div 
-                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-emerald-500/20"
-                                    whileHover={{ scale: 1.1 }}
-                                  >
-                                    <User className="h-5 w-5 text-white" />
-                                  </motion.div>
-                                )}
-                              </motion.div>
-                            ))
-                          )}
-                          <div ref={chatEndRef} />
-                        </div>
-                      </ScrollArea>
-
-                      {/* Chat Input - Enhanced */}
+                    {/* Chat Header */}
+                    <div className="p-4 border-b border-border/30 flex items-center justify-between">
+                      <h3 className="font-semibold flex items-center gap-2 text-sm">
+                        <MessageSquare className="h-4 w-4 text-primary" /> Conversation
+                        {messages.length > 0 && <Badge variant="secondary" className="text-xs">{messages.length}</Badge>}
+                      </h3>
                       {isConnected && (
-                        <div className="p-4 border-t border-border/30 bg-gradient-to-r from-muted/20 to-transparent">
-                          <div className="flex gap-3">
-                            <Input
-                              ref={inputRef}
-                              value={chatInput}
-                              onChange={(e) => setChatInput(e.target.value)}
-                              onKeyPress={handleKeyPress}
-                              placeholder="Type a message to Juli..."
-                              className="flex-1 bg-background/80 border-border/50 focus:border-primary/50 rounded-xl"
-                            />
-                            <Button
-                              onClick={sendTextMessage}
-                              disabled={!chatInput.trim()}
-                              size="icon"
-                              className="bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 rounded-xl shadow-lg"
-                            >
-                              <Send className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-3 text-center flex items-center justify-center gap-2">
-                            <Mic className="h-3 w-3 text-primary" />
-                            <span>Speak naturally or press Enter to send</span>
-                          </p>
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10">
+                          <motion.div className="w-1.5 h-1.5 rounded-full bg-emerald-500" animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+                          <span className="text-[10px] text-emerald-600 font-medium">Live</span>
                         </div>
                       )}
-                    </Card>
+                    </div>
+                    
+                    {/* Messages */}
+                    <ScrollArea className="flex-1 p-4">
+                      <div className="space-y-4">
+                        {messages.length === 0 ? (
+                          <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-center p-6 min-h-[200px]">
+                            <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+                              <Heart className="h-12 w-12 mb-3 text-rose-300" />
+                            </motion.div>
+                            <p className="text-sm font-medium">Start a session with Juli</p>
+                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. Juli is here to listen.</p>
+                          </div>
+                        ) : (
+                          messages.map((msg) => (
+                            <motion.div
+                              key={msg.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className={cn("flex gap-2.5", msg.role === 'user' ? 'justify-end' : 'justify-start')}
+                            >
+                              {msg.role === 'assistant' && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center flex-shrink-0 shadow">
+                                  <Sparkles className="h-4 w-4 text-white" />
+                                </div>
+                              )}
+                              <div className={cn(
+                                "max-w-[80%] rounded-2xl px-3.5 py-2.5 shadow-sm",
+                                msg.role === 'user' 
+                                  ? 'bg-primary text-primary-foreground rounded-br-md' 
+                                  : 'bg-muted text-foreground rounded-bl-md border border-border/30'
+                              )}>
+                                <p className="text-sm leading-relaxed">{msg.content}</p>
+                                <span className={cn("text-[10px] mt-1 block opacity-60", msg.role === 'user' ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              {msg.role === 'user' && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0 shadow">
+                                  <User className="h-4 w-4 text-white" />
+                                </div>
+                              )}
+                            </motion.div>
+                          ))
+                        )}
+                        <div ref={chatEndRef} />
+                      </div>
+                    </ScrollArea>
+
+                    {/* Chat Input */}
+                    {isConnected && (
+                      <div className="p-4 border-t border-border/30">
+                        <div className="flex gap-2">
+                          <Input ref={inputRef} value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyPress={handleKeyPress}
+                            placeholder="Type a message..." className="flex-1 rounded-xl text-sm" />
+                          <Button onClick={sendTextMessage} disabled={!chatInput.trim()} size="icon"
+                            className="bg-primary hover:bg-primary/90 rounded-xl">
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-2 text-center flex items-center justify-center gap-1">
+                          <Mic className="h-3 w-3" /> Speak or type to communicate
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -923,78 +521,44 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
           </CardContent>
         </Card>
 
-        {/* Features & Info */}
-        <div className="grid md:grid-cols-4 gap-4">
-          <Card className="p-4 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-colors">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-green-500/20">
-                <Shield className="h-5 w-5 text-green-600" />
+        {/* Quick Info Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { icon: Shield, title: "100% Private", desc: "Confidential sessions", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+            { icon: Brain, title: "AI Powered", desc: "Advanced understanding", color: "text-purple-500", bg: "bg-purple-500/10" },
+            { icon: Heart, title: "Empathetic", desc: "Compassionate support", color: "text-rose-500", bg: "bg-rose-500/10" },
+            { icon: Clock, title: "24/7 Available", desc: "Anytime support", color: "text-amber-500", bg: "bg-amber-500/10" },
+          ].map((item) => (
+            <Card key={item.title} className="p-4 bg-card border-border/50 hover:border-primary/20 transition-colors">
+              <div className="flex items-start gap-3">
+                <div className={cn("p-2 rounded-lg", item.bg)}>
+                  <item.icon className={cn("h-4 w-4", item.color)} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold text-foreground">100% Private</h4>
-                <p className="text-sm text-muted-foreground">Confidential & secure</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20 hover:border-purple-500/40 transition-colors">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/20">
-                <Brain className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground">AI Powered</h4>
-                <p className="text-sm text-muted-foreground">Advanced understanding</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 hover:border-blue-500/40 transition-colors">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <Heart className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground">Empathetic</h4>
-                <p className="text-sm text-muted-foreground">Compassionate support</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20 hover:border-amber-500/40 transition-colors">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20">
-                <Clock className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground">24/7 Available</h4>
-                <p className="text-sm text-muted-foreground">Anytime support</p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
 
         {/* Crisis Notice */}
-        <Card className="p-4 bg-destructive/10 border-destructive/20">
-          <p className="text-sm text-center text-destructive">
-            <strong>🆘 Crisis Support:</strong> If you're experiencing thoughts of self-harm or suicide, 
-            please contact emergency services immediately or call a crisis helpline.
+        <Card className="p-4 bg-destructive/5 border-destructive/15">
+          <p className="text-xs text-center text-muted-foreground">
+            <strong className="text-destructive">🆘 Crisis:</strong> For self-harm or suicidal thoughts, contact emergency services or iCall (9152987821) • 988 Lifeline (US)
           </p>
         </Card>
       </div>
 
-      {/* Session Summary Modal */}
+      {/* Session Summary */}
       <AnimatePresence>
         {showSummary && (
           <SessionSummary
             duration={sessionDuration}
             messages={messages}
             onClose={() => setShowSummary(false)}
-            onNewSession={() => {
-              setShowSummary(false);
-              setMoodScore(null);
-              startCall();
-            }}
+            onNewSession={() => { setShowSummary(false); setMoodScore(null); startCall(); }}
           />
         )}
       </AnimatePresence>
