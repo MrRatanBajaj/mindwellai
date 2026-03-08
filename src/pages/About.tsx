@@ -10,7 +10,7 @@ import {
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRef, useState, useEffect } from "react";
-import JuliMascot from "@/components/ui-custom/JuliMascot";
+import Juli3DAvatar from "@/components/ui-custom/Juli3DAvatar";
 
 const About = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -179,8 +179,8 @@ const About = () => {
                   {/* Background glow for mascot */}
                   <div className="absolute inset-0 bg-gradient-to-br from-mindwell-500/30 via-purple-500/20 to-pink-500/30 rounded-full blur-3xl scale-150" />
                   
-                  {/* Juli Mascot */}
-                  <JuliMascot 
+                  {/* Juli 3D Avatar */}
+                  <Juli3DAvatar 
                     isActive={true}
                     isSpeaking={true}
                     isListening={false}
