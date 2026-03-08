@@ -297,9 +297,14 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
 
   const startCall = useCallback(async () => {
     try {
+      shouldReconnectRef.current = true;
+      reconnectAttemptsRef.current = 0;
+      clearReconnectTimer();
+      setIsReconnecting(false);
       setIsConnecting(true);
       setSessionDuration(0);
       setMessages([]);
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       micStreamRef.current = stream;
       startAudioAnalysis(stream);
@@ -315,6 +320,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
       toast({ title: "🎤 Microphone Active", description: "Speak naturally — Sophia is listening" });
     } catch (error) {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
       console.error('Error starting call:', error);
       let errorMessage = "Failed to start audio call.";
       if (error instanceof Error) {
@@ -324,14 +331,25 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       }
       toast({ title: "Call Failed", description: errorMessage, variant: "destructive" });
       setIsConnecting(false);
+      setIsReconnecting(false);
       stopAudioAnalysis();
     }
-  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore]);
+  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore, clearReconnectTimer]);
 
   const endCall = useCallback(async () => {
-    try { await conversation.endSession(); setIsConnected(false); stopAudioAnalysis(); setShowSummary(true); onCallEnd?.(); }
-    catch (error) { console.error('Error ending call:', error); }
-  }, [conversation, onCallEnd, stopAudioAnalysis]);
+    try {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
+      await conversation.endSession();
+      setIsConnected(false);
+      stopAudioAnalysis();
+      setShowSummary(true);
+      onCallEnd?.();
+    } catch (error) {
+      console.error('Error ending call:', error);
+    }
+  }, [conversation, onCallEnd, stopAudioAnalysis, clearReconnectTimer]);
 
   const toggleMute = useCallback(() => {
     const newMuted = !isMuted;
@@ -350,8 +368,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
   const handleKeyPress = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTextMessage(); } };
 
   useEffect(() => {
-    return () => { if (isConnected) conversation.endSession(); stopAudioAnalysis(); };
-  }, []);
+    return () => {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      conversation.endSession().catch(() => {});
+      stopAudioAnalysis();
+    };
+  }, [conversation, stopAudioAnalysis, clearReconnectTimer]);
 
   const moodEmojis = ['😢', '😔', '😐', '🙂', '😊'];
 
