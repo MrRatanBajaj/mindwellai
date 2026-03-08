@@ -209,7 +209,7 @@ const Dashboard = () => {
                   {
                     icon: Headphones,
                     title: 'AI Voice Counseling',
-                    desc: 'Talk to Juli, your AI counselor',
+                    desc: 'Talk to Sophia, your AI counselor',
                     path: '/ai-audio-call',
                     color: 'from-primary/20 to-purple-500/20',
                     iconColor: 'text-primary',

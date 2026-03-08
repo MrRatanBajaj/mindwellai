@@ -10,7 +10,7 @@ import {
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRef, useState, useEffect } from "react";
-import Juli3DAvatar from "@/components/ui-custom/Juli3DAvatar";
+import Sophia3DAvatar from "@/components/ui-custom/Sophia3DAvatar";
 
 const About = () => {
   const containerRef = useRef<HTMLDivElement>(null);

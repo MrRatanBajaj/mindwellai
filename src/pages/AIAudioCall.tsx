@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AIAudioCall from '@/components/ui-custom/AIAudioCall';
-import Juli3DAvatar from '@/components/ui-custom/Juli3DAvatar';
+import Sophia3DAvatar from '@/components/ui-custom/Sophia3DAvatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -69,9 +69,9 @@ const AIAudioCallPage: React.FC = () => {
   ];
 
   const testimonials = [
-    { text: "Juli helped me through my darkest moments. It felt like talking to someone who truly understands.", name: "Priya S.", rating: 5 },
+    { text: "Sophia helped me through my darkest moments. It felt like talking to someone who truly understands.", name: "Priya S.", rating: 5 },
     { text: "The breathing exercises during sessions changed my daily anxiety management completely.", name: "Arjun M.", rating: 5 },
-    { text: "I was skeptical about AI therapy, but Juli's empathy and insights surprised me.", name: "Sneha K.", rating: 5 },
+    { text: "I was skeptical about AI therapy, but Sophia's empathy and insights surprised me.", name: "Sneha K.", rating: 5 },
   ];
 
   if (trialLoading || subLoading) {
@@ -135,7 +135,7 @@ const AIAudioCallPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-sm">🎁 Free Trial — {Math.ceil(trialRemainingSeconds / 60)} min remaining</p>
-                      <p className="text-xs text-muted-foreground">Experience Juli's counseling completely free</p>
+                      <p className="text-xs text-muted-foreground">Experience Sophia's counseling completely free</p>
                     </div>
                   </div>
                   <div className="w-full sm:w-48">
@@ -151,7 +151,7 @@ const AIAudioCallPage: React.FC = () => {
               <Card className="p-8 text-center border border-amber-500/20 bg-amber-500/5">
                 <Lock className="h-12 w-12 text-amber-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Free Trial Completed</h2>
-                <p className="text-muted-foreground mb-6">Upgrade to continue unlimited counseling with Juli.</p>
+                <p className="text-muted-foreground mb-6">Upgrade to continue unlimited counseling with Sophia.</p>
                 <Button onClick={() => navigate('/plans')} size="lg" className="bg-gradient-to-r from-primary to-purple-500 text-primary-foreground gap-2">
                   <Sparkles className="h-5 w-5" /> View Plans & Upgrade
                 </Button>
@@ -181,7 +181,7 @@ const AIAudioCallPage: React.FC = () => {
               >
                 Meet{' '}
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">
-                  Juli
+                  Sophia
                 </span>
                 <br />
                 <span className="text-3xl md:text-4xl lg:text-5xl text-muted-foreground font-medium">
@@ -237,7 +237,7 @@ const AIAudioCallPage: React.FC = () => {
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </div>
-                <Juli3DAvatar size="xl" isActive={false} isSpeaking={false} />
+                <Sophia3DAvatar size="xl" isActive={false} isSpeaking={false} />
                 
                 {/* Floating cards around avatar */}
                 <motion.div
@@ -310,7 +310,7 @@ const AIAudioCallPage: React.FC = () => {
             >
               <div className="text-center mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold mb-2">Start Your Session</h2>
-                <p className="text-muted-foreground">Click below to begin a private voice conversation with Juli</p>
+                <p className="text-muted-foreground">Click below to begin a private voice conversation with Sophia</p>
               </div>
               <AIAudioCall
                 onCallEnd={handleCallEnd}
@@ -334,7 +334,7 @@ const AIAudioCallPage: React.FC = () => {
             >
               <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 mb-4">Evidence-Based</Badge>
               <h2 className="text-2xl md:text-3xl font-bold mb-2">Trained in Leading Therapy Methods</h2>
-              <p className="text-muted-foreground max-w-lg mx-auto">Juli combines multiple therapeutic approaches personalized to your needs</p>
+              <p className="text-muted-foreground max-w-lg mx-auto">Sophia combines multiple therapeutic approaches personalized to your needs</p>
             </motion.div>
             
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -379,7 +379,7 @@ const AIAudioCallPage: React.FC = () => {
             
             {[
               { step: 1, title: "Start Session", desc: "Click the button and allow microphone access for voice conversation", icon: Play, color: "from-primary to-purple-500" },
-              { step: 2, title: "Talk Naturally", desc: "Share your thoughts and feelings — Juli listens and responds empathetically", icon: Mic, color: "from-purple-500 to-rose-500" },
+              { step: 2, title: "Talk Naturally", desc: "Share your thoughts and feelings — Sophia listens and responds empathetically", icon: Mic, color: "from-purple-500 to-rose-500" },
               { step: 3, title: "Get Support", desc: "Receive personalized coping strategies and therapeutic guidance", icon: Heart, color: "from-rose-500 to-emerald-500" }
             ].map((item, index) => (
               <motion.div 
@@ -414,7 +414,7 @@ const AIAudioCallPage: React.FC = () => {
               className="text-center mb-10"
             >
               <h2 className="text-2xl md:text-3xl font-bold mb-2">What Users Say</h2>
-              <p className="text-muted-foreground">Real experiences from people who talk to Juli</p>
+              <p className="text-muted-foreground">Real experiences from people who talk to Sophia</p>
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-6">
