@@ -320,6 +320,42 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     }
   }, [clearReconnectTimer, startVoiceSession, toast]);
 
+  useEffect(() => {
+    let keepAlive: NodeJS.Timeout;
+    let healthCheck: NodeJS.Timeout;
+
+    if (mode === 'voice' && isConnected) {
+      keepAlive = setInterval(() => {
+        try {
+          elevenLabsConversation.sendUserActivity();
+        } catch {
+          reconnectFnRef.current('disconnect');
+        }
+      }, 10000);
+
+      healthCheck = setInterval(() => {
+        if (elevenLabsConversation.status !== 'connected' && shouldReconnectRef.current) {
+          reconnectFnRef.current('disconnect');
+        } else {
+          console.log(`Voice call healthy — ${formatDuration(sessionDurationRef.current)}`);
+        }
+      }, 30000);
+    }
+
+    return () => {
+      clearInterval(keepAlive);
+      clearInterval(healthCheck);
+    };
+  }, [mode, isConnected, elevenLabsConversation]);
+
+  useEffect(() => {
+    return () => {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      elevenLabsConversation.endSession().catch(() => {});
+    };
+  }, [clearReconnectTimer, elevenLabsConversation]);
+
   const endVideoConsultation = useCallback(async () => {
     try {
       if (conversationId) {
@@ -345,8 +381,11 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
 
   const endVoiceConsultation = useCallback(async () => {
     try {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
       await elevenLabsConversation.endSession();
-      
+
       toast({
         title: "Session Ended",
         description: `Consultation duration: ${formatDuration(sessionDuration)}`,
@@ -358,7 +397,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       console.error('Error ending voice consultation:', error);
       onEndCall();
     }
-  }, [elevenLabsConversation, sessionDuration, toast, onEndCall]);
+  }, [clearReconnectTimer, elevenLabsConversation, sessionDuration, toast, onEndCall]);
 
   const openInNewTab = () => {
     if (conversationUrl) {
