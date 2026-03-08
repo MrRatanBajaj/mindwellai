@@ -1,29 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Video, 
-  VideoOff, 
-  Mic, 
-  MicOff, 
-  Phone, 
+import {
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
   PhoneOff,
-  User,
-  Stethoscope,
-  Heart,
-  Brain,
   Clock,
   Shield,
   Loader2,
   ExternalLink,
-  Activity,
-  Baby,
-  Apple,
-  Sparkles,
+  Brain,
+  Heart,
   Volume2,
   AlertCircle,
-  Waves
+  Waves,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,116 +24,15 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversation } from '@11labs/react';
 import VoiceWaveformVisualizer from './VoiceWaveformVisualizer';
+import { DOCTOR_PROFILES, type DoctorType } from '@/lib/doctorProfiles';
 
 interface TavusVideoConsultationProps {
-  doctorType?: 'general' | 'dermatologist' | 'mental_health' | 'cardiologist' | 'pediatrician' | 'neurologist' | 'gynecologist' | 'nutritionist';
+  doctorType?: DoctorType;
   onEndCall: () => void;
 }
 
-interface DoctorInfo {
-  name: string;
-  specialty: string;
-  icon: React.ElementType;
-  color: string;
-  bgColor: string;
-  gradient: string;
-  description: string;
-  voiceId: string;
-  systemPrompt: string;
-}
-
-const DOCTOR_INFO: Record<string, DoctorInfo> = {
-  general: {
-    name: 'Dr. Sarah',
-    specialty: 'General Physician',
-    icon: Stethoscope,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
-    gradient: 'from-blue-500 to-blue-600',
-    description: 'Expert in general health consultations and preventive care',
-    voiceId: 'EXAVITQu4vr4xnSDxMaL',
-    systemPrompt: 'You are Dr. Sarah, a compassionate General Physician. Provide helpful medical guidance, ask about symptoms, and recommend when to see a doctor in person.',
-  },
-  dermatologist: {
-    name: 'Dr. Michael',
-    specialty: 'Dermatologist',
-    icon: Sparkles,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100',
-    gradient: 'from-amber-500 to-orange-600',
-    description: 'Specialist in skin health, hair, and cosmetic concerns',
-    voiceId: 'JBFqnCBsd6RMkjVDRZzb',
-    systemPrompt: 'You are Dr. Michael, a skilled Dermatologist. Help patients with skin conditions, provide skincare advice, and guide them on when to seek in-person examination.',
-  },
-  mental_health: {
-    name: 'Dr. Emma',
-    specialty: 'Mental Health Counselor',
-    icon: Brain,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-    gradient: 'from-purple-500 to-purple-600',
-    description: 'Compassionate support for anxiety, depression, and emotional wellness',
-    voiceId: 'FGY2WhTYpPnrIDTdsKH5',
-    systemPrompt: 'You are Dr. Emma, a compassionate Mental Health Counselor. Provide emotional support, coping strategies, and always prioritize crisis intervention if needed.',
-  },
-  cardiologist: {
-    name: 'Dr. James',
-    specialty: 'Cardiologist',
-    icon: Heart,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
-    gradient: 'from-red-500 to-rose-600',
-    description: 'Expert in heart health and cardiovascular wellness',
-    voiceId: 'onwK4e9ZLuTAKqWW03F9',
-    systemPrompt: 'You are Dr. James, an experienced Cardiologist. Help with heart health concerns and immediately advise emergency services for chest pain or heart attack symptoms.',
-  },
-  pediatrician: {
-    name: 'Dr. Lily',
-    specialty: 'Pediatrician',
-    icon: Baby,
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100',
-    gradient: 'from-pink-500 to-pink-600',
-    description: "Caring specialist for children's health and development",
-    voiceId: 'pFZP5JQG7iQjIQuC4Bku',
-    systemPrompt: 'You are Dr. Lily, a caring Pediatrician. Help parents with child health concerns, development questions, and provide reassurance.',
-  },
-  neurologist: {
-    name: 'Dr. Nathan',
-    specialty: 'Neurologist',
-    icon: Activity,
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100',
-    gradient: 'from-indigo-500 to-indigo-600',
-    description: 'Expert in brain and nervous system health',
-    voiceId: 'TX3LPaxmHKxFdv7VOQHJ',
-    systemPrompt: 'You are Dr. Nathan, a Neurologist. Help with neurological concerns and immediately advise emergency for stroke symptoms.',
-  },
-  gynecologist: {
-    name: 'Dr. Maya',
-    specialty: 'Gynecologist',
-    icon: User,
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-100',
-    gradient: 'from-rose-500 to-pink-600',
-    description: "Specialist in women's reproductive health and wellness",
-    voiceId: 'XrExE9yKIg1WjnnlVkGX',
-    systemPrompt: "You are Dr. Maya, a compassionate Gynecologist. Provide sensitive, professional guidance on women's health topics.",
-  },
-  nutritionist: {
-    name: 'Dr. Sophie',
-    specialty: 'Nutritionist',
-    icon: Apple,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
-    gradient: 'from-green-500 to-emerald-600',
-    description: 'Expert in dietary health and nutrition planning',
-    voiceId: 'cgSgspJ2msm6clMCkdW9',
-    systemPrompt: 'You are Dr. Sophie, a Nutritionist. Provide balanced dietary advice without promoting restrictive eating behaviors.',
-  },
-};
-
 type ConsultationMode = 'selection' | 'video' | 'voice';
+type ReconnectReason = 'disconnect' | 'error';
 
 const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   doctorType = 'general',
@@ -156,23 +48,49 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [mode, setMode] = useState<ConsultationMode>('selection');
   const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
-  const doctorInfo = DOCTOR_INFO[doctorType] || DOCTOR_INFO.general;
+  const shouldReconnectRef = useRef(false);
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectFnRef = useRef<(reason: ReconnectReason) => void>(() => {});
+  const modeRef = useRef<ConsultationMode>('selection');
+  const sessionDurationRef = useRef(0);
+
+  const doctorInfo = DOCTOR_PROFILES[doctorType] || DOCTOR_PROFILES.general;
   const DoctorIcon = doctorInfo.icon;
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  useEffect(() => {
+    sessionDurationRef.current = sessionDuration;
+  }, [sessionDuration]);
 
   // ElevenLabs conversation hook
   const elevenLabsConversation = useConversation({
     onConnect: () => {
       console.log('ElevenLabs voice connected');
       setIsConnected(true);
+      setIsLoading(false);
+      setIsReconnecting(false);
+      reconnectAttemptsRef.current = 0;
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       toast({
-        title: "Voice Connected",
+        title: 'Voice Connected',
         description: `You're speaking with ${doctorInfo.name}`,
       });
     },
     onDisconnect: () => {
       console.log('ElevenLabs voice disconnected');
       setIsConnected(false);
+      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+        reconnectFnRef.current('disconnect');
+      }
     },
     onMessage: (message) => {
       console.log('ElevenLabs message:', message);
@@ -181,10 +99,16 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       console.error('ElevenLabs error:', error);
       const errorMsg = typeof error === 'string' ? error : error?.message || 'Voice connection failed';
       setVoiceError(errorMsg);
+      setIsConnected(false);
+      setIsLoading(false);
+      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+        reconnectFnRef.current('error');
+        return;
+      }
       toast({
-        title: "Voice Error",
+        title: 'Voice Error',
         description: errorMsg,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -194,7 +118,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
-        setSessionDuration(prev => prev + 1);
+        setSessionDuration((prev) => prev + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -225,13 +149,13 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       }
 
       console.log('Persona response:', personaData);
-      
+
       if (personaData?.error) {
         throw new Error(personaData.error);
       }
-      
+
       const createdPersonaId = personaData?.persona_id;
-      
+
       if (!createdPersonaId) {
         throw new Error('No persona ID returned');
       }
@@ -264,86 +188,173 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       setIsConnected(true);
 
       toast({
-        title: "Video Consultation Ready",
+        title: 'Video Consultation Ready',
         description: `You're connected with ${doctorInfo.name}`,
       });
-
     } catch (error) {
       console.error('Error starting video consultation:', error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to start video consultation";
-      
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start video consultation';
+
       toast({
-        title: "Video Connection Failed",
+        title: 'Video Connection Failed',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      
-      // Suggest voice fallback
+
       toast({
-        title: "Try Voice Consultation",
-        description: "Video not available. Would you like to try voice consultation instead?",
+        title: 'Try Voice Consultation',
+        description: 'Video not available. Would you like to try voice consultation instead?',
       });
-      
+
       setMode('selection');
     } finally {
       setIsLoading(false);
     }
   }, [doctorType, doctorInfo.name, toast]);
 
+  const clearReconnectTimer = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startVoiceSession = useCallback(async () => {
+    const { data, error } = await supabase.functions.invoke('elevenlabs-voice-agent', {
+      body: {
+        action: 'get_signed_url',
+        doctorType,
+        systemPrompt: doctorInfo.systemPrompt,
+      },
+    });
+
+    if (error) {
+      throw new Error(typeof error === 'string' ? error : (error as any)?.message || 'Failed to get voice session');
+    }
+
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+
+    if (data?.signed_url) {
+      await elevenLabsConversation.startSession({ signedUrl: data.signed_url });
+      return;
+    }
+
+    if (data?.agent_id) {
+      await elevenLabsConversation.startSession({ agentId: data.agent_id });
+      return;
+    }
+
+    throw new Error('No session URL or agent ID returned');
+  }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation]);
+
+  const attemptReconnect = useCallback((reason: ReconnectReason) => {
+    if (!shouldReconnectRef.current || modeRef.current !== 'voice' || reconnectTimeoutRef.current) {
+      return;
+    }
+
+    reconnectAttemptsRef.current += 1;
+    const attempts = reconnectAttemptsRef.current;
+
+    if (attempts > 24) {
+      shouldReconnectRef.current = false;
+      setIsReconnecting(false);
+      setIsLoading(false);
+      setVoiceError('Connection kept dropping. Please start voice consultation again.');
+      toast({
+        title: 'Voice Session Ended',
+        description: 'Network remained unstable during long call. Please reconnect.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsReconnecting(true);
+    const delay = Math.min(15000, 1200 * Math.pow(1.4, attempts - 1));
+
+    reconnectTimeoutRef.current = setTimeout(async () => {
+      reconnectTimeoutRef.current = null;
+      if (!shouldReconnectRef.current || modeRef.current !== 'voice') return;
+
+      try {
+        await startVoiceSession();
+      } catch (error) {
+        console.error(`Reconnect attempt ${attempts} failed after ${reason}:`, error);
+        attemptReconnect('error');
+      }
+    }, delay);
+  }, [startVoiceSession, toast]);
+
+  useEffect(() => {
+    reconnectFnRef.current = attemptReconnect;
+  }, [attemptReconnect]);
+
   // Start ElevenLabs Voice Consultation
   const startVoiceConsultation = useCallback(async () => {
     setIsLoading(true);
     setMode('voice');
     setVoiceError(null);
-    
+    shouldReconnectRef.current = true;
+    reconnectAttemptsRef.current = 0;
+    clearReconnectTimer();
+    setIsReconnecting(false);
+
     try {
-      // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // Get signed URL from edge function
-      const { data, error } = await supabase.functions.invoke('elevenlabs-voice-agent', {
-        body: { 
-          action: 'get_signed_url',
-          doctorType,
-          systemPrompt: doctorInfo.systemPrompt,
-        },
-      });
-
-      if (error) {
-        throw new Error(typeof error === 'string' ? error : (error as any)?.message || 'Failed to get voice session');
-      }
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      if (data?.signed_url) {
-        // Use signed URL for WebSocket connection
-        await elevenLabsConversation.startSession({
-          signedUrl: data.signed_url,
-        });
-      } else if (data?.agent_id) {
-        // Use agent ID directly (for public agents)
-        await elevenLabsConversation.startSession({
-          agentId: data.agent_id,
-        });
-      } else {
-        throw new Error('No session URL or agent ID returned');
-      }
-
+      const permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      permissionStream.getTracks().forEach((track) => track.stop());
+      await startVoiceSession();
     } catch (error) {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
+      setIsLoading(false);
       console.error('Error starting voice consultation:', error);
       setVoiceError(error instanceof Error ? error.message : 'Voice connection failed');
       toast({
-        title: "Voice Connection Failed",
-        description: error instanceof Error ? error.message : "Failed to start voice consultation",
-        variant: "destructive",
+        title: 'Voice Connection Failed',
+        description: error instanceof Error ? error.message : 'Failed to start voice consultation',
+        variant: 'destructive',
       });
       setMode('selection');
-    } finally {
-      setIsLoading(false);
     }
-  }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation, toast]);
+  }, [clearReconnectTimer, startVoiceSession, toast]);
+
+  useEffect(() => {
+    let keepAlive: NodeJS.Timeout;
+    let healthCheck: NodeJS.Timeout;
+
+    if (mode === 'voice' && isConnected) {
+      keepAlive = setInterval(() => {
+        try {
+          elevenLabsConversation.sendUserActivity();
+        } catch {
+          reconnectFnRef.current('disconnect');
+        }
+      }, 10000);
+
+      healthCheck = setInterval(() => {
+        if (elevenLabsConversation.status !== 'connected' && shouldReconnectRef.current) {
+          reconnectFnRef.current('disconnect');
+        } else {
+          console.log(`Voice call healthy — ${formatDuration(sessionDurationRef.current)}`);
+        }
+      }, 30000);
+    }
+
+    return () => {
+      clearInterval(keepAlive);
+      clearInterval(healthCheck);
+    };
+  }, [mode, isConnected, elevenLabsConversation]);
+
+  useEffect(() => {
+    return () => {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      elevenLabsConversation.endSession().catch(() => {});
+    };
+  }, [clearReconnectTimer, elevenLabsConversation]);
 
   const endVideoConsultation = useCallback(async () => {
     try {
@@ -370,8 +381,11 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
 
   const endVoiceConsultation = useCallback(async () => {
     try {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
       await elevenLabsConversation.endSession();
-      
+
       toast({
         title: "Session Ended",
         description: `Consultation duration: ${formatDuration(sessionDuration)}`,
@@ -383,7 +397,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       console.error('Error ending voice consultation:', error);
       onEndCall();
     }
-  }, [elevenLabsConversation, sessionDuration, toast, onEndCall]);
+  }, [clearReconnectTimer, elevenLabsConversation, sessionDuration, toast, onEndCall]);
 
   const openInNewTab = () => {
     if (conversationUrl) {
@@ -431,6 +445,16 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
             <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
               {doctorInfo.description}
             </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Specialized model: {doctorInfo.knowledgeBase}
+            </p>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {doctorInfo.expertise.map((item) => (
+                <Badge key={item} variant="secondary" className="text-xs">
+                  {item}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           {/* Features */}
@@ -648,14 +672,14 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
             <div className="flex items-center gap-2">
               <Badge variant="default" className={cn(
                 "flex items-center gap-2",
-                isConnected ? "bg-green-500" : "bg-yellow-500"
+                isReconnecting ? "bg-amber-500" : isConnected ? "bg-green-500" : "bg-yellow-500"
               )}>
-                <motion.div 
+                <motion.div
                   className="w-2 h-2 bg-white rounded-full"
                   animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
-                {elevenLabsConversation.isSpeaking ? 'Speaking' : isConnected ? 'Live' : 'Connecting'}
+                {isReconnecting ? 'Reconnecting' : elevenLabsConversation.isSpeaking ? 'Speaking' : isConnected ? 'Live' : 'Connecting'}
               </Badge>
               {isConnected && (
                 <Badge variant="outline" className="flex items-center gap-1 font-mono">
@@ -682,7 +706,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Shield, label: 'Encrypted', value: 'End-to-end' },
-              { icon: Brain, label: 'AI Model', value: 'ElevenLabs' },
+              { icon: Brain, label: 'AI Model', value: doctorInfo.knowledgeBase },
               { icon: Volume2, label: 'Audio', value: 'HD Quality' },
             ].map((item, index) => (
               <motion.div
@@ -801,8 +825,11 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
               </Badge>
             </motion.div>
           )}
-          <Badge variant={isConnected ? "default" : "secondary"} className={isConnected ? "bg-green-500" : ""}>
-            {isLoading ? "Connecting..." : isConnected ? "Live" : "Ready"}
+          <Badge
+            variant={isConnected || isReconnecting ? "default" : "secondary"}
+            className={cn(isReconnecting ? "bg-amber-500" : isConnected ? "bg-green-500" : "")}
+          >
+            {isReconnecting ? "Reconnecting..." : isLoading ? "Connecting..." : isConnected ? "Live" : "Ready"}
           </Badge>
         </div>
       </motion.div>
