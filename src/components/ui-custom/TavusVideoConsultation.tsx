@@ -825,8 +825,11 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
               </Badge>
             </motion.div>
           )}
-          <Badge variant={isConnected ? "default" : "secondary"} className={isConnected ? "bg-green-500" : ""}>
-            {isLoading ? "Connecting..." : isConnected ? "Live" : "Ready"}
+          <Badge
+            variant={isConnected || isReconnecting ? "default" : "secondary"}
+            className={cn(isReconnecting ? "bg-amber-500" : isConnected ? "bg-green-500" : "")}
+          >
+            {isReconnecting ? "Reconnecting..." : isLoading ? "Connecting..." : isConnected ? "Live" : "Ready"}
           </Badge>
         </div>
       </motion.div>
