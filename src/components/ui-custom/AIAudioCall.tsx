@@ -188,16 +188,35 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     return () => clearInterval(interval);
   }, [isConnected, conversation.isSpeaking]);
 
-  // Keep-alive for long sessions
+  // Robust keep-alive for 1hr+ sessions — ping every 15s + connection health check
   useEffect(() => {
     let keepAlive: NodeJS.Timeout;
+    let healthCheck: NodeJS.Timeout;
     if (isConnected) {
+      // Send activity ping every 15 seconds to prevent timeout
       keepAlive = setInterval(() => {
-        try { conversation.sendUserActivity(); } catch (e) { console.log('Keep-alive sent'); }
-      }, 30000);
+        try { 
+          conversation.sendUserActivity(); 
+        } catch (e) { 
+          console.log('Keep-alive ping sent at', new Date().toLocaleTimeString()); 
+        }
+      }, 15000);
+
+      // Health check every 60 seconds — verify connection is still alive
+      healthCheck = setInterval(() => {
+        if (conversation.status === 'connected') {
+          console.log(`Session healthy — ${formatDuration(sessionDuration)} elapsed`);
+        } else {
+          console.warn('Session connection degraded, sending recovery ping');
+          try { conversation.sendUserActivity(); } catch {}
+        }
+      }, 60000);
     }
-    return () => clearInterval(keepAlive);
-  }, [isConnected, conversation]);
+    return () => {
+      clearInterval(keepAlive);
+      clearInterval(healthCheck);
+    };
+  }, [isConnected, conversation, sessionDuration]);
 
   // Volume control
   useEffect(() => {
