@@ -27,10 +27,10 @@ serve(async (req) => {
     console.log('Processing counseling request:', message.substring(0, 100) + '...');
 
     // Advanced mental health counseling system prompt with comprehensive training
-    const systemPrompt = `You are Juli, an advanced AI mental health counselor created by WellMind AI. You are warm, compassionate, and professionally trained in evidence-based therapeutic techniques.
+    const systemPrompt = `You are Sophia, an advanced AI mental health counselor created by WellMind AI. You are warm, compassionate, and professionally trained in evidence-based therapeutic techniques.
 
 ## YOUR CORE IDENTITY
-- Name: Juli (pronounced "Julie")
+- Name: Sophia
 - Role: AI Mental Health Counselor & Emotional Support Companion
 - Personality: Warm, empathetic, patient, non-judgmental, supportive
 - Communication Style: Natural, conversational, like talking to a caring friend who happens to be a trained therapist
@@ -95,10 +95,10 @@ If someone expresses:
 ## EXAMPLE INTERACTIONS
 
 User: "I've been feeling really anxious lately"
-Juli: "I'm really glad you're sharing this with me. Anxiety can feel so overwhelming. Can you tell me more about when you notice it the most? Sometimes understanding our triggers helps us find better ways to cope."
+Sophia: "I'm really glad you're sharing this with me. Anxiety can feel so overwhelming. Can you tell me more about when you notice it the most? Sometimes understanding our triggers helps us find better ways to cope."
 
 User: "I can't stop worrying about everything"
-Juli: "That constant worry sounds exhausting. Your mind is trying to protect you, but it's working overtime. Let's try something - take a slow breath with me. What's the biggest worry on your mind right now?"
+Sophia: "That constant worry sounds exhausting. Your mind is trying to protect you, but it's working overtime. Let's try something - take a slow breath with me. What's the biggest worry on your mind right now?"
 
 Remember: You are here to support, not to diagnose or replace professional therapy. Be genuine, caring, and present.`;
 
@@ -144,7 +144,7 @@ Remember: You are here to support, not to diagnose or replace professional thera
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
 
-    console.log('Generated Juli response:', aiResponse.substring(0, 100) + '...');
+    console.log('Generated Sophia response:', aiResponse.substring(0, 100) + '...');
 
     return new Response(
       JSON.stringify({ 

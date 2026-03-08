@@ -179,8 +179,8 @@ const About = () => {
                   {/* Background glow for mascot */}
                   <div className="absolute inset-0 bg-gradient-to-br from-mindwell-500/30 via-purple-500/20 to-pink-500/30 rounded-full blur-3xl scale-150" />
                   
-                  {/* Juli 3D Avatar */}
-                  <Juli3DAvatar 
+                  {/* Sophia 3D Avatar */}
+                  <Sophia3DAvatar 
                     isActive={true}
                     isSpeaking={true}
                     isListening={false}
@@ -200,7 +200,7 @@ const About = () => {
                         <Brain className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-white font-semibold">Juli AI</p>
+                        <p className="text-white font-semibold">Sophia AI</p>
                         <p className="text-white/70 text-sm">Your AI Companion</p>
                       </div>
                       <div className="flex items-center gap-2">
