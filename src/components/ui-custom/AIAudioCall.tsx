@@ -532,33 +532,6 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   isActive={isConnected}
                   size="xl"
                 />
-                      {[
-                        { emoji: '✨', x: '-20%', y: '10%', delay: 0 },
-                        { emoji: '💜', x: '110%', y: '20%', delay: 0.8 },
-                        { emoji: '🌿', x: '-15%', y: '70%', delay: 1.6 },
-                        { emoji: '💫', x: '105%', y: '75%', delay: 2.4 },
-                      ].map((p, i) => (
-                        <motion.div
-                          key={i}
-                          className="absolute text-sm"
-                          style={{ left: p.x, top: p.y }}
-                          animate={{
-                            y: [0, -15, 0],
-                            opacity: [0.4, 1, 0.4],
-                            scale: [0.8, 1.1, 0.8],
-                          }}
-                          transition={{
-                            duration: 3,
-                            repeat: Infinity,
-                            delay: p.delay,
-                          }}
-                        >
-                          {p.emoji}
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
                 {/* Voice Visualizers */}
                 {isConnected && (
