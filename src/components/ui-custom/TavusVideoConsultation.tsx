@@ -445,6 +445,16 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
             <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
               {doctorInfo.description}
             </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Specialized model: {doctorInfo.knowledgeBase}
+            </p>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              {doctorInfo.expertise.map((item) => (
+                <Badge key={item} variant="secondary" className="text-xs">
+                  {item}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           {/* Features */}
