@@ -1,9 +1,7 @@
-import React, { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, ContactShadows } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import juliImg from '@/assets/juli-fullbody.png';
 
 interface Juli3DAvatarProps {
   isSpeaking?: boolean;
@@ -13,315 +11,6 @@ interface Juli3DAvatarProps {
   className?: string;
 }
 
-// ──────────── Head mesh ────────────
-function Head({ isSpeaking, isListening }: { isSpeaking: boolean; isListening: boolean }) {
-  const headRef = useRef<THREE.Group>(null!);
-  const mouthRef = useRef<THREE.Mesh>(null!);
-  const leftEyelidRef = useRef<THREE.Mesh>(null!);
-  const rightEyelidRef = useRef<THREE.Mesh>(null!);
-  const leftBrowRef = useRef<THREE.Mesh>(null!);
-  const rightBrowRef = useRef<THREE.Mesh>(null!);
-  const hairRef = useRef<THREE.Group>(null!);
-
-  const skinMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#C68642'), 
-    roughness: 0.55, 
-    metalness: 0.05 
-  }), []);
-
-  const lipMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#C0616B'), 
-    roughness: 0.4, 
-    metalness: 0.0 
-  }), []);
-
-  const eyeWhiteMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#FAFAFA'), 
-    roughness: 0.3 
-  }), []);
-
-  const irisMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#3B1F0B'), 
-    roughness: 0.2, 
-    metalness: 0.1 
-  }), []);
-
-  const pupilMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#0A0A0A'), 
-    roughness: 0.1 
-  }), []);
-
-  const hairMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#1A0A00'), 
-    roughness: 0.6, 
-    metalness: 0.15 
-  }), []);
-
-  const eyelidMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#B07540'), 
-    roughness: 0.5 
-  }), []);
-
-  const browMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#1A0A00'), 
-    roughness: 0.7 
-  }), []);
-
-  const blushMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#D4847C'), 
-    roughness: 0.7, 
-    transparent: true, 
-    opacity: 0.35 
-  }), []);
-
-  const noseMat = useMemo(() => new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color('#B8733A'), 
-    roughness: 0.5 
-  }), []);
-
-  // Track blink and breathing state
-  const blinkTimer = useRef(0);
-  const nextBlink = useRef(2 + Math.random() * 4);
-  const isBlinking = useRef(false);
-  const blinkProgress = useRef(0);
-
-  useFrame((state, delta) => {
-    const t = state.clock.getElapsedTime();
-
-    // ── Natural breathing head bob ──
-    if (headRef.current) {
-      const breathe = Math.sin(t * 0.8) * 0.015;
-      headRef.current.position.y = breathe;
-      // Subtle random head turn for lifelike feel
-      const headTurnX = Math.sin(t * 0.3) * 0.04 + Math.sin(t * 0.7) * 0.02;
-      const headTurnY = Math.sin(t * 0.2) * 0.06 + Math.cos(t * 0.5) * 0.03;
-      headRef.current.rotation.x = headTurnX;
-      headRef.current.rotation.y = headTurnY;
-
-      if (isSpeaking) {
-        // Extra subtle nod when speaking
-        headRef.current.rotation.x += Math.sin(t * 2.5) * 0.03;
-        headRef.current.rotation.z = Math.sin(t * 1.8) * 0.015;
-      }
-    }
-
-    // ── Mouth animation ──
-    if (mouthRef.current) {
-      if (isSpeaking) {
-        // Realistic mouth shapes cycling for speech
-        const mouthOpen = 
-          0.06 + 
-          Math.abs(Math.sin(t * 6)) * 0.06 + 
-          Math.abs(Math.sin(t * 9.3)) * 0.03 +
-          Math.abs(Math.cos(t * 4.2)) * 0.02;
-        const mouthWide = 
-          0.14 + 
-          Math.sin(t * 5) * 0.03 + 
-          Math.sin(t * 7.5) * 0.015;
-        mouthRef.current.scale.set(mouthWide / 0.14, mouthOpen / 0.04, 1);
-      } else if (isListening) {
-        // Slight smile when listening
-        mouthRef.current.scale.set(1.05 + Math.sin(t * 1.2) * 0.05, 0.7, 1);
-      } else {
-        // Resting gentle smile
-        const restSmile = 1 + Math.sin(t * 0.5) * 0.03;
-        mouthRef.current.scale.set(restSmile, 0.8, 1);
-      }
-    }
-
-    // ── Blinking ──
-    blinkTimer.current += delta;
-    if (!isBlinking.current && blinkTimer.current > nextBlink.current) {
-      isBlinking.current = true;
-      blinkProgress.current = 0;
-      blinkTimer.current = 0;
-      nextBlink.current = 2 + Math.random() * 5;
-    }
-
-    if (isBlinking.current) {
-      blinkProgress.current += delta * 8;
-      const blink = blinkProgress.current < 0.5 
-        ? blinkProgress.current * 2 
-        : 2 - blinkProgress.current * 2;
-      const lidScale = Math.max(0.01, blink);
-
-      if (leftEyelidRef.current) leftEyelidRef.current.scale.y = lidScale;
-      if (rightEyelidRef.current) rightEyelidRef.current.scale.y = lidScale;
-
-      if (blinkProgress.current >= 1) {
-        isBlinking.current = false;
-        if (leftEyelidRef.current) leftEyelidRef.current.scale.y = 0.01;
-        if (rightEyelidRef.current) rightEyelidRef.current.scale.y = 0.01;
-      }
-    }
-
-    // ── Eyebrow motion ──
-    if (leftBrowRef.current && rightBrowRef.current) {
-      const browLift = isSpeaking 
-        ? Math.sin(t * 3) * 0.015 + 0.005
-        : Math.sin(t * 0.8) * 0.005;
-      leftBrowRef.current.position.y = 0.38 + browLift;
-      rightBrowRef.current.position.y = 0.38 + browLift;
-    }
-
-    // ── Hair sway ──
-    if (hairRef.current) {
-      hairRef.current.rotation.z = Math.sin(t * 0.6) * 0.02;
-    }
-  });
-
-  return (
-    <group ref={headRef} position={[0, 0.1, 0]}>
-      {/* Head sphere */}
-      <mesh material={skinMat}>
-        <sphereGeometry args={[0.55, 64, 64]} />
-      </mesh>
-
-      {/* Jaw area - slight extension */}
-      <mesh position={[0, -0.2, 0.08]} material={skinMat}>
-        <sphereGeometry args={[0.42, 32, 32]} />
-      </mesh>
-
-      {/* Nose */}
-      <mesh position={[0, -0.02, 0.5]} material={noseMat}>
-        <sphereGeometry args={[0.06, 16, 16]} />
-      </mesh>
-      <mesh position={[0, -0.06, 0.48]} material={noseMat}>
-        <sphereGeometry args={[0.04, 16, 16]} />
-      </mesh>
-
-      {/* === Eyes === */}
-      {/* Left eye */}
-      <group position={[-0.17, 0.12, 0.42]}>
-        <mesh material={eyeWhiteMat}>
-          <sphereGeometry args={[0.065, 32, 32]} />
-        </mesh>
-        <mesh position={[0, 0, 0.04]} material={irisMat}>
-          <sphereGeometry args={[0.04, 24, 24]} />
-        </mesh>
-        <mesh position={[0, 0, 0.06]} material={pupilMat}>
-          <sphereGeometry args={[0.02, 16, 16]} />
-        </mesh>
-        {/* Eye highlight */}
-        <mesh position={[0.015, 0.015, 0.065]}>
-          <sphereGeometry args={[0.008, 8, 8]} />
-          <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
-        </mesh>
-        {/* Eyelid */}
-        <mesh ref={leftEyelidRef} position={[0, 0.04, 0.02]} material={eyelidMat}>
-          <boxGeometry args={[0.14, 0.06, 0.08]} />
-        </mesh>
-      </group>
-
-      {/* Right eye */}
-      <group position={[0.17, 0.12, 0.42]}>
-        <mesh material={eyeWhiteMat}>
-          <sphereGeometry args={[0.065, 32, 32]} />
-        </mesh>
-        <mesh position={[0, 0, 0.04]} material={irisMat}>
-          <sphereGeometry args={[0.04, 24, 24]} />
-        </mesh>
-        <mesh position={[0, 0, 0.06]} material={pupilMat}>
-          <sphereGeometry args={[0.02, 16, 16]} />
-        </mesh>
-        <mesh position={[0.015, 0.015, 0.065]}>
-          <sphereGeometry args={[0.008, 8, 8]} />
-          <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
-        </mesh>
-        <mesh ref={rightEyelidRef} position={[0, 0.04, 0.02]} material={eyelidMat}>
-          <boxGeometry args={[0.14, 0.06, 0.08]} />
-        </mesh>
-      </group>
-
-      {/* Eyebrows */}
-      <mesh ref={leftBrowRef} position={[-0.17, 0.38, 0.4]} rotation={[0, 0, 0.15]} material={browMat}>
-        <boxGeometry args={[0.12, 0.02, 0.03]} />
-      </mesh>
-      <mesh ref={rightBrowRef} position={[0.17, 0.38, 0.4]} rotation={[0, 0, -0.15]} material={browMat}>
-        <boxGeometry args={[0.12, 0.02, 0.03]} />
-      </mesh>
-
-      {/* Blush cheeks */}
-      <mesh position={[-0.3, -0.02, 0.35]} material={blushMat}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-      </mesh>
-      <mesh position={[0.3, -0.02, 0.35]} material={blushMat}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-      </mesh>
-
-      {/* Mouth */}
-      <mesh ref={mouthRef} position={[0, -0.18, 0.46]} material={lipMat}>
-        <boxGeometry args={[0.14, 0.04, 0.04]} />
-      </mesh>
-
-      {/* === Hair === */}
-      <group ref={hairRef}>
-        {/* Top hair volume */}
-        <mesh position={[0, 0.32, -0.05]} material={hairMat}>
-          <sphereGeometry args={[0.52, 32, 32]} />
-        </mesh>
-        {/* Side hair - left */}
-        <mesh position={[-0.45, -0.1, -0.05]} material={hairMat}>
-          <capsuleGeometry args={[0.15, 0.6, 16, 16]} />
-        </mesh>
-        {/* Side hair - right */}
-        <mesh position={[0.45, -0.1, -0.05]} material={hairMat}>
-          <capsuleGeometry args={[0.15, 0.6, 16, 16]} />
-        </mesh>
-        {/* Back hair */}
-        <mesh position={[0, -0.2, -0.3]} material={hairMat}>
-          <capsuleGeometry args={[0.35, 0.7, 16, 16]} />
-        </mesh>
-        {/* Fringe / bangs */}
-        <mesh position={[0, 0.35, 0.25]} rotation={[0.5, 0, 0]} material={hairMat}>
-          <boxGeometry args={[0.7, 0.12, 0.25]} />
-        </mesh>
-      </group>
-
-      {/* Ears */}
-      <mesh position={[-0.52, 0.05, 0]} material={skinMat}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-      </mesh>
-      <mesh position={[0.52, 0.05, 0]} material={skinMat}>
-        <sphereGeometry args={[0.08, 16, 16]} />
-      </mesh>
-
-      {/* Small bindi (traditional Indian touch) */}
-      <mesh position={[0, 0.25, 0.52]}>
-        <sphereGeometry args={[0.018, 16, 16]} />
-        <meshStandardMaterial color="#CC1100" roughness={0.3} metalness={0.2} />
-      </mesh>
-
-      {/* Neck */}
-      <mesh position={[0, -0.55, 0]} material={skinMat}>
-        <cylinderGeometry args={[0.15, 0.18, 0.25, 16]} />
-      </mesh>
-
-      {/* Upper shoulders hint */}
-      <mesh position={[0, -0.72, -0.05]}>
-        <boxGeometry args={[0.8, 0.15, 0.3]} />
-        <meshStandardMaterial color="#9B7DD4" roughness={0.6} />
-      </mesh>
-    </group>
-  );
-}
-
-// ──────────── Scene ────────────
-function Scene({ isSpeaking, isListening }: { isSpeaking: boolean; isListening: boolean }) {
-  return (
-    <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[3, 5, 5]} intensity={1.2} color="#FFF5E6" />
-      <directionalLight position={[-3, 3, 2]} intensity={0.5} color="#E8D5FF" />
-      <pointLight position={[0, 0, 3]} intensity={0.4} color="#FFE0D0" />
-      <Head isSpeaking={isSpeaking} isListening={isListening} />
-      <ContactShadows position={[0, -0.85, 0]} opacity={0.3} scale={3} blur={2} />
-      <Environment preset="studio" />
-    </>
-  );
-}
-
-// ──────────── Main component ────────────
 const Juli3DAvatar: React.FC<Juli3DAvatarProps> = ({
   isSpeaking = false,
   isListening = false,
@@ -330,79 +19,145 @@ const Juli3DAvatar: React.FC<Juli3DAvatarProps> = ({
   className,
 }) => {
   const sizeMap = {
-    sm: 'w-32 h-32',
-    md: 'w-48 h-48',
-    lg: 'w-64 h-64',
-    xl: 'w-80 h-80',
+    sm: 'w-40 h-48',
+    md: 'w-56 h-64',
+    lg: 'w-72 h-80',
+    xl: 'w-[340px] h-[400px]',
   };
 
   return (
-    <div className={cn('relative', className)}>
-      {/* Glow rings when active */}
+    <div className={cn('relative flex items-end justify-center', className)}>
+
+      {/* Soft ambient glow behind — no circle */}
       {isActive && (
-        <>
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="absolute inset-0 rounded-full"
-              style={{
-                border: `2px solid hsl(var(--primary) / ${0.35 - i * 0.1})`,
-              }}
-              animate={{ scale: [1, 1.5 + i * 0.2], opacity: [0.5, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4, ease: 'easeOut' }}
-            />
-          ))}
-        </>
+        <motion.div
+          className="absolute inset-0 -m-8"
+          style={{ background: 'radial-gradient(ellipse 60% 70% at 50% 55%, hsl(var(--primary) / 0.12), transparent 70%)' }}
+          animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.04, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
       )}
 
-      {/* Speaking glow */}
+      {/* Speaking energy pulse — no circle */}
       {isSpeaking && (
         <motion.div
-          className="absolute -inset-4 rounded-full"
-          style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%)' }}
-          animate={{ opacity: [0.4, 0.8, 0.4], scale: [0.95, 1.08, 0.95] }}
-          transition={{ duration: 0.6, repeat: Infinity }}
+          className="absolute inset-0 -m-6"
+          style={{ background: 'radial-gradient(ellipse 55% 65% at 50% 50%, hsl(var(--primary) / 0.2), hsl(280 76% 50% / 0.08), transparent 70%)' }}
+          animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.97, 1.05, 0.97] }}
+          transition={{ duration: 0.7, repeat: Infinity }}
         />
       )}
 
-      {/* Listening glow */}
+      {/* Listening soft glow */}
       {isListening && !isSpeaking && (
         <motion.div
-          className="absolute -inset-3 rounded-full"
-          style={{ background: 'radial-gradient(circle, hsl(142 76% 36% / 0.2), transparent 70%)' }}
+          className="absolute inset-0 -m-4"
+          style={{ background: 'radial-gradient(ellipse 50% 60% at 50% 55%, hsl(142 76% 36% / 0.12), transparent 70%)' }}
           animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 2.5, repeat: Infinity }}
         />
       )}
 
-      {/* 3D Canvas */}
-      <div
-        className={cn(
-          sizeMap[size],
-          'rounded-full overflow-hidden shadow-2xl',
-          isActive && 'ring-4 ring-primary/25 ring-offset-4 ring-offset-background',
+      {/* ═══ Main Avatar Container — NO circle, clean transparent ═══ */}
+      <div className={cn(sizeMap[size], 'relative')}>
+
+        {/* Full-body image with lifelike animations */}
+        <motion.img
+          src={juliImg}
+          alt="Juli — AI Mental Health Counselor"
+          className="w-full h-full object-contain object-bottom select-none pointer-events-none"
+          draggable={false}
+          animate={isSpeaking ? {
+            // Speaking: subtle head nod + body sway + hand gesture
+            y: [0, -3, 1, -2, 0],
+            x: [0, 1.5, -1, 0.8, 0],
+            rotate: [0, 0.4, -0.3, 0.2, 0],
+            scale: [1, 1.005, 0.998, 1.003, 1],
+          } : isListening ? {
+            // Listening: gentle lean-in + slight nod
+            y: [0, -1.5, 0],
+            rotate: [0, 0.2, 0, -0.15, 0],
+            scale: [1, 1.002, 1],
+          } : isActive ? {
+            // Active idle: natural breathing sway
+            y: [0, -2, 0],
+            rotate: [0, 0.15, 0, -0.15, 0],
+          } : {
+            // Static idle: very subtle breathing
+            y: [0, -1, 0],
+            scale: [1, 1.002, 1],
+          }}
+          transition={{
+            duration: isSpeaking ? 0.55 : isListening ? 3 : isActive ? 5 : 7,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+
+        {/* ─── Face region motion overlay (mouth area animation) ─── */}
+        {isSpeaking && (
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2"
+            style={{ top: '28%', width: '30%', height: '8%' }}
+          >
+            {/* Mouth movement indicator — subtle shadow pulse */}
+            <motion.div
+              className="w-full h-full rounded-full"
+              style={{ background: 'radial-gradient(ellipse, hsl(var(--primary) / 0.08), transparent 80%)' }}
+              animate={{
+                scaleX: [1, 1.3, 0.85, 1.2, 0.95, 1.15, 1],
+                scaleY: [1, 0.7, 1.4, 0.8, 1.25, 0.85, 1],
+                opacity: [0.15, 0.35, 0.15],
+              }}
+              transition={{ duration: 0.3, repeat: Infinity }}
+            />
+          </motion.div>
         )}
-        style={{
-          boxShadow: isSpeaking
-            ? '0 0 80px hsl(var(--primary) / 0.4), 0 30px 60px -12px hsl(var(--primary) / 0.3)'
-            : isActive
-              ? '0 0 50px hsl(var(--primary) / 0.25)'
-              : '0 20px 40px hsl(var(--primary) / 0.1)',
-        }}
-      >
-        <Canvas
-          camera={{ position: [0, 0.1, 1.8], fov: 35 }}
-          gl={{ antialias: true, alpha: true }}
-          style={{ background: 'linear-gradient(180deg, #F3E8FF 0%, #EDE9FE 50%, #DDD6FE 100%)' }}
+
+        {/* ─── Eye blink simulation ─── */}
+        <motion.div
+          className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ top: '18%', width: '40%', height: '4%' }}
         >
-          <Scene isSpeaking={isSpeaking} isListening={isListening} />
-        </Canvas>
+          <motion.div
+            className="w-full h-full"
+            style={{ background: 'linear-gradient(180deg, transparent 30%, hsl(var(--background) / 0.08) 50%, transparent 70%)' }}
+            animate={{ 
+              opacity: [0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+              scaleY: [0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            }}
+            transition={{ duration: 5, repeat: Infinity, repeatDelay: 1 }}
+          />
+        </motion.div>
+
+        {/* ─── Speaking sound waves ─── */}
+        {isSpeaking && (
+          <div className="absolute right-0 top-[22%] flex flex-col gap-1">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={`wave-${i}`}
+                className="rounded-full bg-primary/50"
+                style={{ width: `${8 + i * 3}px`, height: '2px' }}
+                animate={{ scaleX: [1, 2, 1], opacity: [0.3, 0.8, 0.3] }}
+                transition={{ duration: 0.35, repeat: Infinity, delay: i * 0.08 }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Shimmer light sweep for depth */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(110deg, transparent 35%, hsl(var(--primary) / 0.04) 50%, transparent 65%)' }}
+          animate={{ x: ['-120%', '220%'] }}
+          transition={{ duration: 5, repeat: Infinity, repeatDelay: 4 }}
+        />
       </div>
 
-      {/* Status badge */}
+      {/* ═══ Status Badge — below avatar ═══ */}
       {isActive && (
         <motion.div
-          className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-bold shadow-xl"
+          className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-white text-xs font-bold shadow-xl z-10"
           style={{
             background: isSpeaking
               ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(280 76% 50%))'
@@ -415,7 +170,7 @@ const Juli3DAvatar: React.FC<Juli3DAvatarProps> = ({
         >
           {isSpeaking ? (
             <span className="flex items-center gap-2">
-              <motion.div className="flex gap-0.5">
+              <motion.div className="flex gap-0.5 items-end">
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
