@@ -126,21 +126,22 @@ const Auth = () => {
             initial={{ scale: 0, rotate: -20 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            className="mx-auto"
+            className="mx-auto relative"
           >
-            <motion.img
-              src={wellmindLogo}
-              alt="WellMindAI Logo"
-              className="w-36 h-36 object-contain mx-auto drop-shadow-2xl"
-              animate={{
-                y: [0, -8, 0],
-                filter: [
-                  "drop-shadow(0 4px 20px rgba(var(--primary), 0.2))",
-                  "drop-shadow(0 8px 30px rgba(var(--primary), 0.4))",
-                  "drop-shadow(0 4px 20px rgba(var(--primary), 0.2))",
-                ],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            <div className="w-48 h-48 rounded-3xl bg-card/90 backdrop-blur-md border border-border/50 shadow-2xl flex items-center justify-center mx-auto overflow-hidden">
+              <motion.img
+                src={wellmindLogo}
+                alt="WellMindAI Logo"
+                className="w-44 h-44 object-contain"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+            {/* Glow ring */}
+            <motion.div
+              className="absolute inset-0 rounded-3xl border-2 border-primary/30"
+              animate={{ scale: [1, 1.08, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             />
           </motion.div>
 
@@ -205,13 +206,15 @@ const Auth = () => {
             transition={{ delay: 0.2 }}
             className="lg:hidden text-center mb-8"
           >
-            <motion.img
-              src={wellmindLogo}
-              alt="WellMindAI Logo"
-              className="w-20 h-20 object-contain mx-auto mb-4 drop-shadow-lg"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-            />
+            <div className="w-24 h-24 rounded-2xl bg-card border border-border/50 shadow-lg flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <motion.img
+                src={wellmindLogo}
+                alt="WellMindAI Logo"
+                className="w-22 h-22 object-contain"
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
             <h1 className="text-2xl font-bold text-foreground">WellMindAI</h1>
           </motion.div>
 
