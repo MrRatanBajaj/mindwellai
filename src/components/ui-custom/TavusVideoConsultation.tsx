@@ -135,78 +135,53 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     setIsLoading(true);
     setMode('video');
     try {
-      // Step 1: Create persona
+      // Step 1: Create persona (with automatic fallback to direct conversation)
       console.log('Creating persona for:', doctorType);
       const { data: personaData, error: personaError } = await supabase.functions.invoke(
         'tavus-conversation',
-        {
-          body: { action: 'create_persona', doctorType },
-        }
+        { body: { action: 'create_persona', doctorType } }
       );
 
-      if (personaError) {
-        throw new Error(personaError.message || 'Failed to create persona');
-      }
+      if (personaError) throw new Error(personaError.message || 'Failed to create persona');
+      if (personaData?.error) throw new Error(personaData.error);
 
-      console.log('Persona response:', personaData);
-
-      if (personaData?.error) {
-        throw new Error(personaData.error);
+      // If direct conversation was created as fallback
+      if (personaData?.direct && personaData?.conversation_url) {
+        setConversationId(personaData.conversation_id);
+        setConversationUrl(personaData.conversation_url);
+        setIsConnected(true);
+        toast({ title: 'Video Consultation Ready', description: `Connected with ${doctorInfo.name}` });
+        return;
       }
 
       const createdPersonaId = personaData?.persona_id;
-
-      if (!createdPersonaId) {
-        throw new Error('No persona ID returned');
-      }
+      if (!createdPersonaId) throw new Error('No persona ID returned');
 
       // Step 2: Create conversation
-      console.log('Creating conversation with persona:', createdPersonaId);
       const { data: conversationData, error: conversationError } = await supabase.functions.invoke(
         'tavus-conversation',
-        {
-          body: { action: 'create_conversation', personaId: createdPersonaId, doctorType },
-        }
+        { body: { action: 'create_conversation', personaId: createdPersonaId, doctorType } }
       );
 
-      if (conversationError) {
-        throw new Error(conversationError.message || 'Failed to create conversation');
-      }
-
-      console.log('Conversation response:', conversationData);
-
-      if (conversationData?.error) {
-        throw new Error(conversationData.error);
-      }
-
-      if (!conversationData?.conversation_url) {
-        throw new Error('No conversation URL returned');
-      }
+      if (conversationError) throw new Error(conversationError.message || 'Failed to create conversation');
+      if (conversationData?.error) throw new Error(conversationData.error);
+      if (!conversationData?.conversation_url) throw new Error('No conversation URL returned');
 
       setConversationId(conversationData.conversation_id);
       setConversationUrl(conversationData.conversation_url);
       setIsConnected(true);
 
-      toast({
-        title: 'Video Consultation Ready',
-        description: `You're connected with ${doctorInfo.name}`,
-      });
+      toast({ title: 'Video Consultation Ready', description: `Connected with ${doctorInfo.name}` });
     } catch (error) {
       console.error('Error starting video consultation:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start video consultation';
-
       toast({
         title: 'Video Connection Failed',
-        description: errorMessage,
+        description: 'Falling back to voice consultation...',
         variant: 'destructive',
       });
-
-      toast({
-        title: 'Try Voice Consultation',
-        description: 'Video not available. Would you like to try voice consultation instead?',
-      });
-
+      // Auto-fallback to voice
       setMode('selection');
+      startVoiceConsultation();
     } finally {
       setIsLoading(false);
     }
