@@ -92,7 +92,7 @@ const Consultation = () => {
                   </h1>
                   
                   <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                    Connect instantly with specialized AI doctors for personalized medical guidance. 
+                    Connect instantly with specialized AI doctors and counselors for personalized guidance.
                     Available 24/7 with HD video consultations.
                   </p>
 
@@ -121,8 +121,8 @@ const Consultation = () => {
 
             {/* Doctors Grid */}
             <div className="max-w-7xl mx-auto px-6 pb-16">
-              <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -136,7 +136,7 @@ const Consultation = () => {
                     onMouseEnter={() => setHoveredDoctor(doctor.type)}
                     onMouseLeave={() => setHoveredDoctor(null)}
                   >
-                    <Card 
+                    <Card
                       className={cn(
                         "group relative h-full overflow-hidden cursor-pointer transition-all duration-500",
                         "border-2 border-transparent hover:border-primary/30",
@@ -150,11 +150,11 @@ const Consultation = () => {
                         "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
                         `bg-gradient-to-br ${doctor.gradient}`
                       )} style={{ opacity: hoveredDoctor === doctor.type ? 0.05 : 0 }} />
-                      
+
                       <CardContent className="relative p-6">
                         {/* Status Badge */}
                         <div className="flex justify-between items-start mb-4">
-                          <motion.div 
+                          <motion.div
                             className={cn(
                               "w-14 h-14 rounded-2xl flex items-center justify-center",
                               `bg-gradient-to-br ${doctor.gradient}`,
@@ -165,9 +165,9 @@ const Consultation = () => {
                           >
                             <doctor.icon className="w-7 h-7 text-white" />
                           </motion.div>
-                          
-                          <Badge 
-                            variant="outline" 
+
+                          <Badge
+                            variant="outline"
                             className={cn(
                               "bg-green-500/10 text-green-600 border-green-500/30",
                               "flex items-center gap-1"
@@ -184,9 +184,17 @@ const Consultation = () => {
                           <p className="text-sm font-medium text-primary">{doctor.specialty}</p>
                         </div>
 
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                           {doctor.description}
                         </p>
+
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {doctor.expertise.slice(0, 2).map((item) => (
+                            <Badge key={item} variant="secondary" className="text-[10px] px-2 py-0.5">
+                              {item}
+                            </Badge>
+                          ))}
+                        </div>
 
                         {/* Rating */}
                         <div className="flex items-center gap-2 mb-4">
