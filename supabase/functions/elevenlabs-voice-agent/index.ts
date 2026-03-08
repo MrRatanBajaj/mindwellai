@@ -17,6 +17,8 @@ const DOCTOR_VOICES: Record<string, string> = {
   neurologist: 'TX3LPaxmHKxFdv7VOQHJ', // Liam
   gynecologist: 'XrExE9yKIg1WjnnlVkGX', // Matilda
   nutritionist: 'cgSgspJ2msm6clMCkdW9', // Jessica
+  career: 'VR6AewLTigWG4xSOukaG', // Arnold
+  relationship: 'ErXwobaYiN019PkySvjV', // Antoni
 };
 
 const DOCTOR_NAMES: Record<string, string> = {
@@ -28,6 +30,13 @@ const DOCTOR_NAMES: Record<string, string> = {
   neurologist: 'Dr. Nathan',
   gynecologist: 'Dr. Maya',
   nutritionist: 'Dr. Sophie',
+  career: 'Dr. Arjun',
+  relationship: 'Dr. Riya',
+};
+
+const DOCTOR_PROMPTS: Record<string, string> = {
+  career: `You are Dr. Arjun, a career counselor. Help with role clarity, interview preparation, job transitions, and workplace stress using practical step-by-step plans. Keep guidance realistic and actionable for the next 7-30 days.`,
+  relationship: `You are Dr. Riya, a relationship counselor. Help users improve communication, repair conflicts, set healthy boundaries, and build trust. Stay neutral, avoid blame, and provide practical scripts users can use.`,
 };
 
 serve(async (req) => {
