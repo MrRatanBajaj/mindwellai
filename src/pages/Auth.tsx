@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import wellmindLogo from "@/assets/wellmind-logo-2.png";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
