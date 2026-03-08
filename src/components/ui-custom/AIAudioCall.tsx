@@ -382,7 +382,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     <>
       <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* Mood Check */}
-        {!isConnected && !isConnecting && moodScore === null && (
+        {!isConnected && !isConnecting && !isReconnecting && moodScore === null && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="bg-card border-border/50">
               <CardContent className="p-6 text-center">
