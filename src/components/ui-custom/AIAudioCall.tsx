@@ -34,7 +34,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import VoiceVisualizer from './VoiceVisualizer';
 import SessionSummary from './SessionSummary';
-import juliCounselorImg from '@/assets/juli-counselor.png';
+import juliCounselorImg from '@/assets/juli-avatar.png';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AIAudioCallProps {
@@ -586,51 +586,79 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                     />
                   )}
 
-                  {/* Counselor Image - Bigger with realistic motion */}
+                  {/* Counselor Image - Realistic Indian Girl Avatar */}
                   <motion.div
-                    className="relative w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full overflow-hidden shadow-2xl"
+                    className="relative w-60 h-60 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full overflow-hidden shadow-2xl"
                     style={{
                       boxShadow: isConnected 
-                        ? '0 0 60px hsl(var(--primary) / 0.3), 0 25px 50px -12px hsl(var(--primary) / 0.25)' 
+                        ? '0 0 80px hsl(var(--primary) / 0.35), 0 30px 60px -12px hsl(var(--primary) / 0.3)' 
                         : '0 25px 50px -12px hsl(var(--primary) / 0.15)',
-                      border: '4px solid hsl(var(--primary) / 0.2)',
+                      border: '4px solid hsl(var(--primary) / 0.25)',
                     }}
                     initial={{ scale: 0.7, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", stiffness: 150, damping: 15, delay: 0.2 }}
-                    whileHover={{ scale: 1.06 }}
+                    whileHover={{ scale: 1.04 }}
                   >
-                    {/* Image with zoom & subtle motion for lifelike feel */}
+                    {/* Realistic face with breathing, head tilt, and speaking motion */}
                     <motion.img
                       src={juliCounselorImg}
                       alt="Juli - AI Mental Health Counselor"
                       className="w-full h-full object-cover object-top"
                       animate={conversation.isSpeaking ? {
-                        scale: [1.05, 1.1, 1.05],
-                        y: [0, -2, 0],
+                        scale: [1.08, 1.12, 1.08, 1.1, 1.08],
+                        y: [0, -3, 1, -2, 0],
+                        x: [0, 1, -1, 0.5, 0],
+                        rotate: [0, 0.5, -0.3, 0.2, 0],
                       } : isConnected ? {
-                        scale: [1.03, 1.06, 1.03],
-                        y: [0, -1, 0],
+                        scale: [1.05, 1.08, 1.05],
+                        y: [0, -2, 0],
+                        rotate: [0, 0.3, 0, -0.3, 0],
                       } : {
-                        scale: [1, 1.03, 1],
+                        scale: [1.02, 1.05, 1.02],
+                        y: [0, -1, 0],
                       }}
                       transition={{
-                        duration: conversation.isSpeaking ? 0.6 : isConnected ? 4 : 6,
+                        duration: conversation.isSpeaking ? 0.5 : isConnected ? 5 : 7,
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
                     />
-                    {/* Subtle gradient overlay for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/20 via-transparent to-transparent" />
                     
-                    {/* Shimmer effect on hover */}
+                    {/* Warm skin-tone lighting overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/10 via-transparent to-transparent" />
+                    
+                    {/* Subtle eye-blink simulation overlay */}
+                    <motion.div
+                      className="absolute inset-0 bg-background/5"
+                      animate={{ opacity: [0, 0, 0, 0.15, 0, 0, 0, 0, 0, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
+                    />
+                    
+                    {/* Speaking mouth glow effect */}
+                    {conversation.isSpeaking && (
+                      <motion.div
+                        className="absolute bottom-[20%] left-1/2 -translate-x-1/2 w-16 h-6 rounded-full"
+                        style={{
+                          background: 'radial-gradient(ellipse, hsl(var(--primary) / 0.12), transparent 70%)',
+                        }}
+                        animate={{ 
+                          scaleX: [1, 1.3, 0.9, 1.2, 1],
+                          scaleY: [1, 0.8, 1.2, 0.9, 1],
+                          opacity: [0.3, 0.6, 0.3],
+                        }}
+                        transition={{ duration: 0.35, repeat: Infinity }}
+                      />
+                    )}
+                    
+                    {/* Shimmer light sweep */}
                     <motion.div
                       className="absolute inset-0"
                       style={{
-                        background: 'linear-gradient(135deg, transparent 40%, hsl(var(--primary) / 0.08) 50%, transparent 60%)',
+                        background: 'linear-gradient(120deg, transparent 30%, hsl(var(--primary) / 0.06) 50%, transparent 70%)',
                       }}
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                      animate={{ x: ['-150%', '250%'] }}
+                      transition={{ duration: 4, repeat: Infinity, repeatDelay: 3 }}
                     />
                   </motion.div>
 
