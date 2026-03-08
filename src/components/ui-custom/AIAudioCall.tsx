@@ -16,7 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import VoiceVisualizer from './VoiceVisualizer';
 import SessionSummary from './SessionSummary';
-import Juli3DAvatar from './Juli3DAvatar';
+import Sophia3DAvatar from './Sophia3DAvatar';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AIAudioCallProps {
@@ -34,7 +34,7 @@ interface Message {
   timestamp: Date;
 }
 
-const JULI_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
+const SOPHIA_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
 
 const formatDuration = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
@@ -71,11 +71,11 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     onConnect: () => {
       setIsConnected(true);
       setIsConnecting(false);
-      toast({ title: "✨ Connected to Juli", description: "Your AI counselor is ready to listen" });
+      toast({ title: "✨ Connected to Sophia", description: "Your AI counselor is ready to listen" });
       setMessages([{
         id: 'welcome-' + Date.now(),
         role: 'assistant',
-        content: "Hi there! I'm Juli, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?",
+        content: "Hi there! I'm Sophia, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?",
         timestamp: new Date()
       }]);
     },
@@ -236,12 +236,12 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('ai_counseling_sessions').insert({
-          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: 'juli-ai', session_type: 'audio_call', status: 'active',
-          metadata: { agent_id: JULI_AGENT_ID, mood_score: moodScore } as any
+          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: 'sophia-ai', session_type: 'audio_call', status: 'active',
+          metadata: { agent_id: SOPHIA_AGENT_ID, mood_score: moodScore } as any
         });
       }
-      await conversation.startSession({ agentId: JULI_AGENT_ID });
-      toast({ title: "🎤 Microphone Active", description: "Speak naturally — Juli is listening" });
+      await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
+      toast({ title: "🎤 Microphone Active", description: "Speak naturally — Sophia is listening" });
     } catch (error) {
       console.error('Error starting call:', error);
       let errorMessage = "Failed to start audio call.";
@@ -265,7 +265,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     const newMuted = !isMuted;
     setIsMuted(newMuted);
     if (micStreamRef.current) micStreamRef.current.getAudioTracks().forEach(track => { track.enabled = !newMuted; });
-    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? "Juli cannot hear you" : "Juli can hear you now" });
+    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? "Sophia cannot hear you" : "Sophia can hear you now" });
   }, [isMuted, toast]);
 
   const sendTextMessage = useCallback(() => {
@@ -296,13 +296,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 </h3>
                 <div className="flex items-center justify-center gap-4">
                   {moodEmojis.map((emoji, index) => (
-                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `Juli will personalize your session based on how you're feeling.` }); }}
+                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `Sophia will personalize your session based on how you're feeling.` }); }}
                       className="text-3xl p-3 hover:bg-primary/10 rounded-2xl transition-colors" whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
                       {emoji}
                     </motion.button>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-3">This helps Juli personalize your session</p>
+                <p className="text-sm text-muted-foreground mt-3">This helps Sophia personalize your session</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -339,7 +339,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <Juli3DAvatar
+                  <Sophia3DAvatar
                     isSpeaking={conversation.isSpeaking}
                     isListening={isConnected && !conversation.isSpeaking && !isMuted}
                     isActive={isConnected}
@@ -349,7 +349,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
 
                 {/* Name + Status */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">Juli</h2>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">Sophia</h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
                     <Brain className="h-4 w-4 text-purple-500" /> AI Mental Health Counselor
                   </p>
@@ -365,7 +365,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <Bot className="h-4 w-4 text-primary" />
-                          <span className="text-xs font-medium">Juli</span>
+                          <span className="text-xs font-medium">Sophia</span>
                         </div>
                         {conversation.isSpeaking && <Badge className="text-[9px] px-1.5 py-0 bg-primary/20 text-primary">Speaking</Badge>}
                       </div>
@@ -392,7 +392,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button onClick={startCall} disabled={isConnecting} size="lg"
                         className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-6 rounded-2xl shadow-lg shadow-emerald-500/25 text-lg gap-2">
-                        <Phone className="h-5 w-5" /> {isConnecting ? 'Connecting...' : 'Talk to Juli'}
+                        <Phone className="h-5 w-5" /> {isConnecting ? 'Connecting...' : 'Talk to Sophia'}
                       </Button>
                     </motion.div>
                   ) : (
@@ -478,8 +478,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                               <Heart className="h-12 w-12 mb-3 text-rose-300" />
                             </motion.div>
-                            <p className="text-sm font-medium">Start a session with Juli</p>
-                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. Juli is here to listen.</p>
+                            <p className="text-sm font-medium">Start a session with Sophia</p>
+                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. Sophia is here to listen.</p>
                           </div>
                         ) : (
                           messages.map((msg) => (

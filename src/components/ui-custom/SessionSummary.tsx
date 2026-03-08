@@ -65,14 +65,14 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({
 
   const downloadTranscript = () => {
     const transcript = messages.map(m => 
-      `[${m.timestamp.toLocaleTimeString()}] ${m.role === 'user' ? 'You' : 'Juli'}: ${m.content}`
+      `[${m.timestamp.toLocaleTimeString()}] ${m.role === 'user' ? 'You' : 'Sophia'}: ${m.content}`
     ).join('\n\n');
     
     const blob = new Blob([transcript], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `juli-session-${new Date().toISOString().split('T')[0]}.txt`;
+    a.download = `sophia-session-${new Date().toISOString().split('T')[0]}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -90,7 +90,7 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({
             <CheckCircle2 className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">Session Complete</CardTitle>
-          <p className="text-muted-foreground">Thank you for sharing with Juli</p>
+          <p className="text-muted-foreground">Thank you for sharing with Sophia</p>
         </CardHeader>
         
         <CardContent className="space-y-6">
@@ -108,7 +108,7 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <Brain className="h-5 w-5 mx-auto mb-1 text-primary" />
-              <p className="text-xs text-muted-foreground">Juli's Responses</p>
+              <p className="text-xs text-muted-foreground">Sophia's Responses</p>
               <p className="font-semibold text-sm">{aiMessages}</p>
             </div>
           </div>
@@ -134,7 +134,7 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({
                 {messages.slice(-4).map((msg) => (
                   <div key={msg.id} className="text-xs">
                     <span className="font-semibold text-primary">
-                      {msg.role === 'user' ? 'You: ' : 'Juli: '}
+                      {msg.role === 'user' ? 'You: ' : 'Sophia: '}
                     </span>
                     <span className="text-muted-foreground">
                       {msg.content.slice(0, 80)}
