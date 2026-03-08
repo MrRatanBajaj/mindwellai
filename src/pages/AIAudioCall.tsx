@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AIAudioCall from '@/components/ui-custom/AIAudioCall';
-import JuliMascot from '@/components/ui-custom/JuliMascot';
+import Juli3DAvatar from '@/components/ui-custom/Juli3DAvatar';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -163,7 +163,7 @@ const AIAudioCallPage: React.FC = () => {
           
           <div className="flex justify-center mb-6">
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-              <JuliMascot size="md" isActive={false} />
+              <Juli3DAvatar size="md" isActive={false} />
             </motion.div>
           </div>
 
