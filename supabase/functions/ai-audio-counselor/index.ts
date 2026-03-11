@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationHistory = [] } = await req.json();
+    const { message, conversationHistory = [], sessionId, userId } = await req.json();
 
     if (!message) {
       throw new Error('Message is required');
@@ -22,6 +22,26 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('Lovable API key not found');
+    }
+
+    // Run content moderation check
+    let moderationWarning: string | null = null;
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const modResp = await fetch(`${supabaseUrl}/functions/v1/content-moderation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, sessionId: sessionId || 'audio-session', userId }),
+      });
+      if (modResp.ok) {
+        const modResult = await modResp.json();
+        if (modResult.flagged) {
+          moderationWarning = modResult.warningMessage;
+          console.log(`Content flagged: ${modResult.alertType} (${modResult.severity})`);
+        }
+      }
+    } catch (e) {
+      console.error('Moderation check failed:', e);
     }
 
     console.log('Processing counseling request:', message.substring(0, 100) + '...');
@@ -149,6 +169,7 @@ Remember: You are here to support, not to diagnose or replace professional thera
     return new Response(
       JSON.stringify({ 
         response: aiResponse,
+        moderationWarning,
         conversationHistory: [...conversationHistory, 
           { role: 'user', content: message },
           { role: 'assistant', content: aiResponse }

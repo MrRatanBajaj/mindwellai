@@ -232,6 +232,51 @@ export type Database = {
         }
         Relationships: []
       }
+      content_moderation_alerts: {
+        Row: {
+          ai_analysis: string | null
+          alert_type: string
+          created_at: string
+          detected_words: string[] | null
+          flagged_message: string
+          id: string
+          reviewed: boolean
+          reviewed_at: string | null
+          reviewed_by: string | null
+          session_id: string
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          alert_type?: string
+          created_at?: string
+          detected_words?: string[] | null
+          flagged_message: string
+          id?: string
+          reviewed?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_id: string
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          alert_type?: string
+          created_at?: string
+          detected_words?: string[] | null
+          flagged_message?: string
+          id?: string
+          reviewed?: boolean
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          session_id?: string
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string
