@@ -158,6 +158,37 @@ const AIChatCounselor = ({
     setIsLoading(true);
 
     try {
+      // Content moderation check
+      try {
+        const { data: modResult } = await supabase.functions.invoke('content-moderation', {
+          body: { message: userMessage.content, sessionId: sessionId || 'chat-session', userId: null }
+        });
+
+        if (modResult?.flagged) {
+          if (modResult.warningMessage) {
+            toast.warning(modResult.warningMessage, {
+              duration: modResult.crisisResources ? 10000 : 5000,
+              icon: <ShieldAlert className="h-5 w-5 text-destructive" />,
+            });
+          }
+
+          // Add moderation warning as system message
+          if (modResult.severity === 'critical' || modResult.severity === 'high') {
+            const warningMsg: Message = {
+              id: `mod-${Date.now()}`,
+              content: modResult.warningMessage || 'Please keep our conversation respectful and safe.',
+              sender: 'ai',
+              timestamp: new Date(),
+              type: 'resource',
+            };
+            setMessages(prev => [...prev, warningMsg]);
+          }
+        }
+      } catch (modError) {
+        console.error('Moderation check failed:', modError);
+        // Continue even if moderation fails
+      }
+
       const aiResponse = await generateAIResponse(userMessage.content);
       setMessages(prev => [...prev, aiResponse]);
     } catch (error) {
