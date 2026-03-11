@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Send, Mic, MicOff, Brain, Heart, Lightbulb, 
   BookOpen, Smile, AlertCircle, Calendar, Clock,
-  ThumbsUp, ThumbsDown, Copy, Download, Star
+  ThumbsUp, ThumbsDown, Copy, Download, Star, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
