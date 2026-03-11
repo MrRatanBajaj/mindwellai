@@ -169,6 +169,7 @@ Remember: You are here to support, not to diagnose or replace professional thera
     return new Response(
       JSON.stringify({ 
         response: aiResponse,
+        moderationWarning,
         conversationHistory: [...conversationHistory, 
           { role: 'user', content: message },
           { role: 'assistant', content: aiResponse }
