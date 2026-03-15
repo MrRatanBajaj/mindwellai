@@ -424,7 +424,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 </h3>
                 <div className="flex items-center justify-center gap-4">
                   {moodEmojis.map((emoji, index) => (
-                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `Sophia will personalize your session based on how you're feeling.` }); }}
+                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `${counselorName} will personalize your session based on how you're feeling.` }); }}
                       className="text-3xl p-3 hover:bg-primary/10 rounded-2xl transition-colors" whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
                       {emoji}
                     </motion.button>
