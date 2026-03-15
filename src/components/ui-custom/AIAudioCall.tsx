@@ -476,19 +476,42 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <Sophia3DAvatar
-                    isSpeaking={conversation.isSpeaking}
-                    isListening={(isConnected || isReconnecting) && !conversation.isSpeaking && !isMuted}
-                    isActive={isConnected || isReconnecting}
-                    size="xl"
-                  />
+                  {counselorAvatar ? (
+                    <div className={cn(
+                      "relative rounded-full overflow-hidden border-4 border-primary/20 shadow-2xl",
+                      "w-48 h-48 md:w-56 md:h-56"
+                    )}>
+                      <img src={counselorAvatar} alt={counselorName} className="w-full h-full object-cover" />
+                      {(isConnected || isReconnecting) && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full border-4 border-primary/40"
+                          animate={{ scale: [1, 1.06, 1], opacity: [0.6, 0, 0.6] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                      {conversation.isSpeaking && (
+                        <motion.div
+                          className="absolute inset-0 bg-primary/10"
+                          animate={{ opacity: [0, 0.3, 0] }}
+                          transition={{ duration: 0.8, repeat: Infinity }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <Sophia3DAvatar
+                      isSpeaking={conversation.isSpeaking}
+                      isListening={(isConnected || isReconnecting) && !conversation.isSpeaking && !isMuted}
+                      isActive={isConnected || isReconnecting}
+                      size="xl"
+                    />
+                  )}
                 </motion.div>
 
                 {/* Name + Status */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">Sophia</h2>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">{counselorName}</h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                    <Brain className="h-4 w-4 text-purple-500" /> AI Mental Health Counselor
+                    <Brain className="h-4 w-4 text-purple-500" /> {selectedCounselor?.specialty || 'AI Mental Health Counselor'}
                   </p>
                   <Badge
                     variant={isConnected ? "default" : "secondary"}
