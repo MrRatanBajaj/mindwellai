@@ -534,7 +534,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <Bot className="h-4 w-4 text-primary" />
-                          <span className="text-xs font-medium">Sophia</span>
+                          <span className="text-xs font-medium">{counselorName}</span>
                         </div>
                         {conversation.isSpeaking && <Badge className="text-[9px] px-1.5 py-0 bg-primary/20 text-primary">Speaking</Badge>}
                       </div>
