@@ -182,7 +182,7 @@ const AIAudioCallPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-sm">🎁 Free Trial — {Math.ceil(trialRemainingSeconds / 60)} min remaining</p>
-                      <p className="text-xs text-muted-foreground">Experience Sophia's counseling completely free</p>
+                      <p className="text-xs text-muted-foreground">Experience {selectedCounselor.name}'s counseling completely free</p>
                     </div>
                   </div>
                   <div className="w-full sm:w-48">
