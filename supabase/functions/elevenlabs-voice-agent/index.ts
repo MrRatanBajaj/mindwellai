@@ -66,7 +66,7 @@ serve(async (req) => {
     const doctorName = DOCTOR_NAMES[doctorType] || DOCTOR_NAMES.general;
 
     if (action === 'get_signed_url') {
-      const defaultPrompt = systemPrompt || `You are ${doctorName}, a compassionate healthcare AI assistant. Listen carefully to patient symptoms and concerns. Ask clarifying questions. Provide helpful guidance. Recommend when to seek in-person attention. Be empathetic and professional. Keep responses concise since this is a voice call.`;
+      const defaultPrompt = systemPrompt || DOCTOR_PROMPTS[doctorType] || `You are ${doctorName}, a compassionate healthcare AI assistant. Listen carefully to patient symptoms and concerns. Ask clarifying questions. Provide helpful guidance. Recommend when to seek in-person attention. Be empathetic and professional. Keep responses concise since this is a voice call.`;
 
       const agentConfig = {
         conversation_config: {
