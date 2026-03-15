@@ -99,11 +99,11 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      toast({ title: "✨ Connected to Sophia", description: "Your AI counselor is ready to listen" });
+      toast({ title: `✨ Connected to ${counselorName}`, description: "Your AI counselor is ready to listen" });
       setMessages([{
         id: 'welcome-' + Date.now(),
         role: 'assistant',
-        content: "Hi there! I'm Sophia, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?",
+        content: `Hi there! I'm ${counselorName}, your AI counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?`,
         timestamp: new Date()
       }]);
     },
