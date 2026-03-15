@@ -19,12 +19,24 @@ import SessionSummary from './SessionSummary';
 import Sophia3DAvatar from './Sophia3DAvatar';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface AudioCounselor {
+  id: string;
+  name: string;
+  specialty: string;
+  description: string;
+  gradient: string;
+  avatarImage: string;
+  agentId?: string;
+  doctorType: string;
+}
+
 interface AIAudioCallProps {
   onCallEnd?: () => void;
   maxDurationSeconds?: number;
   onTimeUp?: () => void;
   isFreeTrial?: boolean;
   trialRemainingSeconds?: number;
+  selectedCounselor?: AudioCounselor;
 }
 
 interface Message {
