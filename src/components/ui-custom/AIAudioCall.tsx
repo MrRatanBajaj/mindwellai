@@ -295,7 +295,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
         if (conversation.status !== 'connected' && shouldReconnectRef.current) {
           reconnectFnRef.current('disconnect');
         } else {
-          console.log(`Sophia call healthy — ${formatDuration(sessionDurationRef.current)}`);
+          console.log(`${counselorName} call healthy — ${formatDuration(sessionDurationRef.current)}`);
         }
       }, 30000);
     }
