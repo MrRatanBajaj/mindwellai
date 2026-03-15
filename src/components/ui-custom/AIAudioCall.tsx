@@ -19,12 +19,24 @@ import SessionSummary from './SessionSummary';
 import Sophia3DAvatar from './Sophia3DAvatar';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface AudioCounselor {
+  id: string;
+  name: string;
+  specialty: string;
+  description: string;
+  gradient: string;
+  avatarImage: string;
+  agentId?: string;
+  doctorType: string;
+}
+
 interface AIAudioCallProps {
   onCallEnd?: () => void;
   maxDurationSeconds?: number;
   onTimeUp?: () => void;
   isFreeTrial?: boolean;
   trialRemainingSeconds?: number;
+  selectedCounselor?: AudioCounselor;
 }
 
 interface Message {
@@ -35,6 +47,7 @@ interface Message {
 }
 
 const SOPHIA_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
+const DEFAULT_COUNSELOR_NAME = 'Sophia';
 
 const formatDuration = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
@@ -44,7 +57,10 @@ const formatDuration = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds, onTimeUp, isFreeTrial, trialRemainingSeconds }) => {
+const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds, onTimeUp, isFreeTrial, trialRemainingSeconds, selectedCounselor }) => {
+  const counselorName = selectedCounselor?.name || DEFAULT_COUNSELOR_NAME;
+  const counselorDoctorType = selectedCounselor?.doctorType || 'mental_health';
+  const counselorAvatar = selectedCounselor?.avatarImage;
   const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -83,11 +99,11 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      toast({ title: "✨ Connected to Sophia", description: "Your AI counselor is ready to listen" });
+      toast({ title: `✨ Connected to ${counselorName}`, description: "Your AI counselor is ready to listen" });
       setMessages([{
         id: 'welcome-' + Date.now(),
         role: 'assistant',
-        content: "Hi there! I'm Sophia, your AI mental health counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?",
+        content: `Hi there! I'm ${counselorName}, your AI counselor. 💜 I'm here to listen, support, and help you work through whatever you're experiencing. How are you feeling today?`,
         timestamp: new Date()
       }]);
     },
@@ -184,7 +200,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       stopAudioAnalysis();
       toast({
         title: 'Session Ended',
-        description: 'Network connection kept dropping. Please tap Talk to Sophia again.',
+        description: `Network connection kept dropping. Please tap Talk to ${counselorName} again.`,
         variant: 'destructive',
       });
       return;
@@ -279,7 +295,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
         if (conversation.status !== 'connected' && shouldReconnectRef.current) {
           reconnectFnRef.current('disconnect');
         } else {
-          console.log(`Sophia call healthy — ${formatDuration(sessionDurationRef.current)}`);
+          console.log(`${counselorName} call healthy — ${formatDuration(sessionDurationRef.current)}`);
         }
       }, 30000);
     }
@@ -313,12 +329,29 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('ai_counseling_sessions').insert({
-          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: 'sophia-ai', session_type: 'audio_call', status: 'active',
-          metadata: { agent_id: SOPHIA_AGENT_ID, mood_score: moodScore } as any
+          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: `${counselorDoctorType}-ai`, session_type: 'audio_call', status: 'active',
+          metadata: { agent_id: SOPHIA_AGENT_ID, mood_score: moodScore, counselor: counselorName } as any
         });
       }
-      await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
-      toast({ title: "🎤 Microphone Active", description: "Speak naturally — Sophia is listening" });
+
+      // Use Sophia's hardcoded agent for Sophia, or edge function for others
+      if (!selectedCounselor || selectedCounselor.doctorType === 'mental_health') {
+        await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
+      } else {
+        // Get signed URL from edge function for this doctor type
+        const { data: agentData, error: agentError } = await supabase.functions.invoke('elevenlabs-voice-agent', {
+          body: { action: 'get_signed_url', doctorType: counselorDoctorType }
+        });
+        if (agentError || (!agentData?.signed_url && !agentData?.agent_id)) {
+          throw new Error('Failed to create voice agent for ' + counselorName);
+        }
+        if (agentData.signed_url) {
+          await conversation.startSession({ signedUrl: agentData.signed_url });
+        } else {
+          await conversation.startSession({ agentId: agentData.agent_id });
+        }
+      }
+      toast({ title: "🎤 Microphone Active", description: `Speak naturally — ${counselorName} is listening` });
     } catch (error) {
       shouldReconnectRef.current = false;
       clearReconnectTimer();
@@ -355,7 +388,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     const newMuted = !isMuted;
     setIsMuted(newMuted);
     if (micStreamRef.current) micStreamRef.current.getAudioTracks().forEach(track => { track.enabled = !newMuted; });
-    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? "Sophia cannot hear you" : "Sophia can hear you now" });
+    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? `${counselorName} cannot hear you` : `${counselorName} can hear you now` });
   }, [isMuted, toast]);
 
   const sendTextMessage = useCallback(() => {
@@ -391,13 +424,13 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                 </h3>
                 <div className="flex items-center justify-center gap-4">
                   {moodEmojis.map((emoji, index) => (
-                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `Sophia will personalize your session based on how you're feeling.` }); }}
+                    <motion.button key={index} onClick={() => { setMoodScore(index + 1); toast({ title: "Mood recorded", description: `${counselorName} will personalize your session based on how you're feeling.` }); }}
                       className="text-3xl p-3 hover:bg-primary/10 rounded-2xl transition-colors" whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
                       {emoji}
                     </motion.button>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-3">This helps Sophia personalize your session</p>
+                <p className="text-sm text-muted-foreground mt-3">This helps {counselorName} personalize your session</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -443,19 +476,42 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <Sophia3DAvatar
-                    isSpeaking={conversation.isSpeaking}
-                    isListening={(isConnected || isReconnecting) && !conversation.isSpeaking && !isMuted}
-                    isActive={isConnected || isReconnecting}
-                    size="xl"
-                  />
+                  {counselorAvatar ? (
+                    <div className={cn(
+                      "relative rounded-full overflow-hidden border-4 border-primary/20 shadow-2xl",
+                      "w-48 h-48 md:w-56 md:h-56"
+                    )}>
+                      <img src={counselorAvatar} alt={counselorName} className="w-full h-full object-cover" />
+                      {(isConnected || isReconnecting) && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full border-4 border-primary/40"
+                          animate={{ scale: [1, 1.06, 1], opacity: [0.6, 0, 0.6] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                      {conversation.isSpeaking && (
+                        <motion.div
+                          className="absolute inset-0 bg-primary/10"
+                          animate={{ opacity: [0, 0.3, 0] }}
+                          transition={{ duration: 0.8, repeat: Infinity }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <Sophia3DAvatar
+                      isSpeaking={conversation.isSpeaking}
+                      isListening={(isConnected || isReconnecting) && !conversation.isSpeaking && !isMuted}
+                      isActive={isConnected || isReconnecting}
+                      size="xl"
+                    />
+                  )}
                 </motion.div>
 
                 {/* Name + Status */}
                 <div className="text-center space-y-2">
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">Sophia</h2>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">{counselorName}</h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                    <Brain className="h-4 w-4 text-purple-500" /> AI Mental Health Counselor
+                    <Brain className="h-4 w-4 text-purple-500" /> {selectedCounselor?.specialty || 'AI Mental Health Counselor'}
                   </p>
                   <Badge
                     variant={isConnected ? "default" : "secondary"}
@@ -478,7 +534,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
                           <Bot className="h-4 w-4 text-primary" />
-                          <span className="text-xs font-medium">Sophia</span>
+                          <span className="text-xs font-medium">{counselorName}</span>
                         </div>
                         {conversation.isSpeaking && <Badge className="text-[9px] px-1.5 py-0 bg-primary/20 text-primary">Speaking</Badge>}
                       </div>
@@ -505,7 +561,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button onClick={startCall} disabled={isConnecting || isReconnecting} size="lg"
                         className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-6 rounded-2xl shadow-lg shadow-emerald-500/25 text-lg gap-2">
-                        <Phone className="h-5 w-5" /> {isReconnecting ? 'Reconnecting...' : isConnecting ? 'Connecting...' : 'Talk to Sophia'}
+                        <Phone className="h-5 w-5" /> {isReconnecting ? 'Reconnecting...' : isConnecting ? 'Connecting...' : `Talk to ${counselorName}`}
                       </Button>
                     </motion.div>
                   ) : (
@@ -591,8 +647,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                               <Heart className="h-12 w-12 mb-3 text-rose-300" />
                             </motion.div>
-                            <p className="text-sm font-medium">Start a session with Sophia</p>
-                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. Sophia is here to listen.</p>
+                            <p className="text-sm font-medium">Start a session with {counselorName}</p>
+                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. {counselorName} is here to listen.</p>
                           </div>
                         ) : (
                           messages.map((msg) => (
