@@ -561,7 +561,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button onClick={startCall} disabled={isConnecting || isReconnecting} size="lg"
                         className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-6 rounded-2xl shadow-lg shadow-emerald-500/25 text-lg gap-2">
-                        <Phone className="h-5 w-5" /> {isReconnecting ? 'Reconnecting...' : isConnecting ? 'Connecting...' : 'Talk to Sophia'}
+                        <Phone className="h-5 w-5" /> {isReconnecting ? 'Reconnecting...' : isConnecting ? 'Connecting...' : `Talk to ${counselorName}`}
                       </Button>
                     </motion.div>
                   ) : (
