@@ -430,7 +430,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                     </motion.button>
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-3">This helps Sophia personalize your session</p>
+                <p className="text-sm text-muted-foreground mt-3">This helps {counselorName} personalize your session</p>
               </CardContent>
             </Card>
           </motion.div>
