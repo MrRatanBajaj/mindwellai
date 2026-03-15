@@ -228,16 +228,16 @@ const AIAudioCallPage: React.FC = () => {
               >
                 Meet{' '}
                 <span className="bg-gradient-to-r from-primary via-purple-500 to-emerald-500 bg-clip-text text-transparent">
-                  Sophia
+                  {selectedCounselor.name}
                 </span>
                 <br />
                 <span className="text-3xl md:text-4xl lg:text-5xl text-muted-foreground font-medium">
-                  Your AI Counselor
+                  {selectedCounselor.specialty}
                 </span>
               </motion.h1>
 
               <motion.p variants={fadeUp} custom={2} className="text-lg text-muted-foreground max-w-lg leading-relaxed">
-                Experience compassionate, evidence-based mental health support through natural voice conversations. Available 24/7, completely confidential.
+                {selectedCounselor.description}. Available 24/7, completely confidential.
               </motion.p>
 
               <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3">
@@ -267,15 +267,15 @@ const AIAudioCallPage: React.FC = () => {
               </motion.div>
             </motion.div>
 
-            {/* Right: 3D Avatar */}
+            {/* Right: Avatar */}
             <motion.div 
               className="flex items-center justify-center order-1 lg:order-2"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              key={selectedCounselor.id}
             >
               <div className="relative">
-                {/* Ambient glow behind avatar */}
                 <div className="absolute inset-0 -m-16">
                   <motion.div
                     className="w-full h-full rounded-full"
@@ -284,9 +284,21 @@ const AIAudioCallPage: React.FC = () => {
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                   />
                 </div>
-                <Sophia3DAvatar size="xl" isActive={false} isSpeaking={false} />
                 
-                {/* Floating cards around avatar */}
+                {selectedCounselor.avatarImage ? (
+                  <div className="relative w-56 h-56 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-primary/20 shadow-2xl">
+                    <img src={selectedCounselor.avatarImage} alt={selectedCounselor.name} className="w-full h-full object-cover" />
+                    <motion.div
+                      className="absolute inset-0 rounded-full border-4 border-primary/30"
+                      animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0, 0.5] }}
+                      transition={{ duration: 3, repeat: Infinity }}
+                    />
+                  </div>
+                ) : (
+                  <Sophia3DAvatar size="xl" isActive={false} isSpeaking={false} />
+                )}
+                
+                {/* Floating cards */}
                 <motion.div
                   className="absolute -left-16 top-1/4 px-3 py-2 rounded-xl bg-card/90 backdrop-blur border border-border/50 shadow-lg"
                   animate={{ y: [0, -8, 0] }}
@@ -294,7 +306,7 @@ const AIAudioCallPage: React.FC = () => {
                 >
                   <div className="flex items-center gap-2">
                     <Brain className="h-4 w-4 text-purple-500" />
-                    <span className="text-xs font-medium">CBT Expert</span>
+                    <span className="text-xs font-medium">{selectedCounselor.specialty}</span>
                   </div>
                 </motion.div>
 
@@ -322,6 +334,80 @@ const AIAudioCallPage: React.FC = () => {
               </div>
             </motion.div>
           </div>
+        </section>
+
+        {/* ═══════════ CHOOSE YOUR COUNSELOR ═══════════ */}
+        <section className="container mx-auto px-4 pb-12">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="text-center mb-8">
+              <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20 mb-3">
+                <Users className="h-3 w-3 mr-1" /> Choose Your Counselor
+              </Badge>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">Select Who You'd Like to Talk To</h2>
+              <p className="text-muted-foreground">Each counselor has unique expertise tailored to your needs</p>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              {AUDIO_COUNSELORS.map((counselor, i) => (
+                <motion.div
+                  key={counselor.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.1 }}
+                  whileHover={{ y: -4 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Card 
+                    className={cn(
+                      "p-4 cursor-pointer transition-all border-2 hover:shadow-lg group",
+                      selectedCounselor.id === counselor.id 
+                        ? "border-primary shadow-lg shadow-primary/10 bg-primary/5" 
+                        : "border-border/50 hover:border-primary/30"
+                    )}
+                    onClick={() => setSelectedCounselor(counselor)}
+                  >
+                    <div className="flex flex-col items-center text-center gap-3">
+                      <div className="relative">
+                        {counselor.avatarImage ? (
+                          <div className={cn(
+                            "w-16 h-16 rounded-full overflow-hidden border-2 transition-colors",
+                            selectedCounselor.id === counselor.id ? "border-primary" : "border-border/50 group-hover:border-primary/30"
+                          )}>
+                            <img src={counselor.avatarImage} alt={counselor.name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className={cn(
+                            "w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center border-2 transition-colors",
+                            counselor.gradient,
+                            selectedCounselor.id === counselor.id ? "border-primary" : "border-border/50"
+                          )}>
+                            <Brain className="h-7 w-7 text-white" />
+                          </div>
+                        )}
+                        {selectedCounselor.id === counselor.id && (
+                          <motion.div 
+                            initial={{ scale: 0 }} 
+                            animate={{ scale: 1 }}
+                            className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary-foreground" />
+                          </motion.div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-sm">{counselor.name}</h3>
+                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{counselor.specialty}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </section>
 
         {/* ═══════════ STATS BAR ═══════════ */}
