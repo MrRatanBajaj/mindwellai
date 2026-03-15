@@ -5,16 +5,62 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Phone, Brain, Sparkles, Heart, MessageCircle, 
   Shield, Clock, Zap, Star, Volume2, Headphones, Lock, CheckCircle2,
-  Users, Award, Mic, Play, ChevronRight, Globe
+  Users, Award, Mic, Play, ChevronRight, Globe, User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AIAudioCall from '@/components/ui-custom/AIAudioCall';
+import type { AudioCounselor } from '@/components/ui-custom/AIAudioCall';
 import Sophia3DAvatar from '@/components/ui-custom/Sophia3DAvatar';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useFreeTrial } from '@/hooks/useFreeTrial';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+
+import sophiaAvatar from '@/assets/sophia-avatar.jpg';
+import drAryanAvatar from '@/assets/dr-aryan-avatar.jpg';
+import drMeeraAvatar from '@/assets/dr-meera-avatar.jpg';
+import drZaraAvatar from '@/assets/dr-zara-avatar.jpg';
+
+const AUDIO_COUNSELORS: AudioCounselor[] = [
+  {
+    id: 'sophia',
+    name: 'Sophia',
+    specialty: 'Mental Health Counselor',
+    description: 'CBT, DBT & mindfulness expert for anxiety, stress & emotional well-being',
+    gradient: 'from-purple-500 via-purple-600 to-violet-600',
+    avatarImage: '',  // uses Sophia3DAvatar
+    doctorType: 'mental_health',
+  },
+  {
+    id: 'dr-aryan',
+    name: 'Dr. Aryan',
+    specialty: 'Male Therapist',
+    description: "Men's mental health, anger management & work-life balance specialist",
+    gradient: 'from-slate-500 via-zinc-600 to-gray-700',
+    avatarImage: drAryanAvatar,
+    doctorType: 'male_therapist',
+  },
+  {
+    id: 'dr-meera',
+    name: 'Dr. Meera',
+    specialty: 'Senior Wellness Counselor',
+    description: 'Life transitions, grief support & elder wellness with 35+ years wisdom',
+    gradient: 'from-amber-600 via-yellow-600 to-orange-500',
+    avatarImage: drMeeraAvatar,
+    doctorType: 'elder_counselor',
+  },
+  {
+    id: 'dr-zara',
+    name: 'Dr. Zara',
+    specialty: 'Youth & Teen Counselor',
+    description: 'Academic stress, social anxiety & identity exploration for Gen-Z',
+    gradient: 'from-violet-500 via-purple-500 to-fuchsia-500',
+    avatarImage: drZaraAvatar,
+    doctorType: 'youth_counselor',
+  },
+];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
