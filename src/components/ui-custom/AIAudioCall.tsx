@@ -200,7 +200,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       stopAudioAnalysis();
       toast({
         title: 'Session Ended',
-        description: 'Network connection kept dropping. Please tap Talk to Sophia again.',
+        description: `Network connection kept dropping. Please tap Talk to ${counselorName} again.`,
         variant: 'destructive',
       });
       return;
