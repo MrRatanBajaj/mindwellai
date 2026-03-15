@@ -72,6 +72,7 @@ const AIAudioCallPage: React.FC = () => {
   const { trialUsed, trialRemainingSeconds, FREE_TRIAL_LIMIT, loading: trialLoading, updateTrialDuration, markTrialUsed } = useFreeTrial();
   const [hasSubscription, setHasSubscription] = React.useState(false);
   const [subLoading, setSubLoading] = React.useState(true);
+  const [selectedCounselor, setSelectedCounselor] = React.useState<AudioCounselor>(AUDIO_COUNSELORS[0]);
 
   React.useEffect(() => {
     const checkSub = async () => {
