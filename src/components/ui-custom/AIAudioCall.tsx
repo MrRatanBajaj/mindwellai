@@ -47,6 +47,7 @@ interface Message {
 }
 
 const SOPHIA_AGENT_ID = "agent_4601kcc8ngyceh1vpfdm3vsrq1j0";
+const DEFAULT_COUNSELOR_NAME = 'Sophia';
 
 const formatDuration = (seconds: number) => {
   const h = Math.floor(seconds / 3600);
