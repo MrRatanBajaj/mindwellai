@@ -442,8 +442,8 @@ const AIAudioCallPage: React.FC = () => {
               transition={{ delay: 0.3 }}
             >
               <div className="text-center mb-8">
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">Start Your Session</h2>
-                <p className="text-muted-foreground">Click below to begin a private voice conversation with Sophia</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">Start Your Session with {selectedCounselor.name}</h2>
+                <p className="text-muted-foreground">Click below to begin a private voice conversation</p>
               </div>
               <AIAudioCall
                 onCallEnd={handleCallEnd}
@@ -451,6 +451,7 @@ const AIAudioCallPage: React.FC = () => {
                 maxDurationSeconds={isFreeTrial ? trialRemainingSeconds : undefined}
                 onTimeUp={handleTimeUp}
                 trialRemainingSeconds={isFreeTrial ? trialRemainingSeconds : undefined}
+                selectedCounselor={selectedCounselor}
               />
             </motion.div>
           </section>
