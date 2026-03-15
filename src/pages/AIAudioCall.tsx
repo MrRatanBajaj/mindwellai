@@ -198,7 +198,7 @@ const AIAudioCallPage: React.FC = () => {
               <Card className="p-8 text-center border border-amber-500/20 bg-amber-500/5">
                 <Lock className="h-12 w-12 text-amber-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Free Trial Completed</h2>
-                <p className="text-muted-foreground mb-6">Upgrade to continue unlimited counseling with Sophia.</p>
+                <p className="text-muted-foreground mb-6">Upgrade to continue unlimited counseling.</p>
                 <Button onClick={() => navigate('/plans')} size="lg" className="bg-gradient-to-r from-primary to-purple-500 text-primary-foreground gap-2">
                   <Sparkles className="h-5 w-5" /> View Plans & Upgrade
                 </Button>
