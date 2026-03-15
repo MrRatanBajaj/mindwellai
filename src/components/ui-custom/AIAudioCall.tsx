@@ -388,7 +388,7 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
     const newMuted = !isMuted;
     setIsMuted(newMuted);
     if (micStreamRef.current) micStreamRef.current.getAudioTracks().forEach(track => { track.enabled = !newMuted; });
-    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? "Sophia cannot hear you" : "Sophia can hear you now" });
+    toast({ title: newMuted ? "🔇 Muted" : "🎤 Unmuted", description: newMuted ? `${counselorName} cannot hear you` : `${counselorName} can hear you now` });
   }, [isMuted, toast]);
 
   const sendTextMessage = useCallback(() => {
