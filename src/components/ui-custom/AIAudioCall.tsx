@@ -57,7 +57,10 @@ const formatDuration = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds, onTimeUp, isFreeTrial, trialRemainingSeconds }) => {
+const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds, onTimeUp, isFreeTrial, trialRemainingSeconds, selectedCounselor }) => {
+  const counselorName = selectedCounselor?.name || DEFAULT_COUNSELOR_NAME;
+  const counselorDoctorType = selectedCounselor?.doctorType || 'mental_health';
+  const counselorAvatar = selectedCounselor?.avatarImage;
   const { toast } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
