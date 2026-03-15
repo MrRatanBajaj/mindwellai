@@ -647,8 +647,8 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
                             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
                               <Heart className="h-12 w-12 mb-3 text-rose-300" />
                             </motion.div>
-                            <p className="text-sm font-medium">Start a session with Sophia</p>
-                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. Sophia is here to listen.</p>
+                            <p className="text-sm font-medium">Start a session with {counselorName}</p>
+                            <p className="text-xs mt-1 max-w-[200px]">Speak naturally or type messages. {counselorName} is here to listen.</p>
                           </div>
                         ) : (
                           messages.map((msg) => (
