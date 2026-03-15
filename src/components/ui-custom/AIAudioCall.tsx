@@ -329,12 +329,29 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('ai_counseling_sessions').insert({
-          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: 'sophia-ai', session_type: 'audio_call', status: 'active',
-          metadata: { agent_id: SOPHIA_AGENT_ID, mood_score: moodScore } as any
+          session_id: `audio-${Date.now()}`, user_id: user.id, counselor_id: `${counselorDoctorType}-ai`, session_type: 'audio_call', status: 'active',
+          metadata: { agent_id: SOPHIA_AGENT_ID, mood_score: moodScore, counselor: counselorName } as any
         });
       }
-      await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
-      toast({ title: "🎤 Microphone Active", description: "Speak naturally — Sophia is listening" });
+
+      // Use Sophia's hardcoded agent for Sophia, or edge function for others
+      if (!selectedCounselor || selectedCounselor.doctorType === 'mental_health') {
+        await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
+      } else {
+        // Get signed URL from edge function for this doctor type
+        const { data: agentData, error: agentError } = await supabase.functions.invoke('elevenlabs-voice-agent', {
+          body: { action: 'get_signed_url', doctorType: counselorDoctorType }
+        });
+        if (agentError || (!agentData?.signed_url && !agentData?.agent_id)) {
+          throw new Error('Failed to create voice agent for ' + counselorName);
+        }
+        if (agentData.signed_url) {
+          await conversation.startSession({ signedUrl: agentData.signed_url });
+        } else {
+          await conversation.startSession({ agentId: agentData.agent_id });
+        }
+      }
+      toast({ title: "🎤 Microphone Active", description: `Speak naturally — ${counselorName} is listening` });
     } catch (error) {
       shouldReconnectRef.current = false;
       clearReconnectTimer();
