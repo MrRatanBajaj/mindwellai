@@ -1,30 +1,41 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const RequestSchema = z.object({
+  message: z.string().min(1).max(5000),
+  counselorId: z.string().max(50).default('emma'),
+  sessionId: z.string().max(200).optional(),
+  userId: z.string().uuid().optional(),
+  conversationHistory: z.array(z.object({
+    sender: z.string().max(20),
+    content: z.string().max(5000),
+  })).max(50).default([]),
+});
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { 
-      message, 
-      counselorId = 'emma', 
-      sessionId, 
-      userId,
-      conversationHistory = []
-    } = await req.json();
+    const rawBody = await req.json();
+    const parsed = RequestSchema.safeParse(rawBody);
 
-    if (!message) {
-      throw new Error('Message is required');
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    const { message, counselorId, sessionId, userId, conversationHistory } = parsed.data;
 
     // Initialize Supabase client
     const supabase = createClient(
@@ -67,7 +78,7 @@ serve(async (req) => {
     const selectedCounselor = counselors[counselorId as keyof typeof counselors] || counselors.emma;
 
     // Prepare conversation context
-    const conversationContext = conversationHistory.map((msg: any) => ({
+    const conversationContext = conversationHistory.map((msg) => ({
       role: msg.sender === 'user' ? 'user' : 'assistant',
       content: msg.content
     }));
@@ -82,15 +93,9 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          {
-            role: 'system',
-            content: selectedCounselor.systemPrompt
-          },
-          ...conversationContext.slice(-10), // Keep last 10 messages for context
-          {
-            role: 'user',
-            content: message
-          }
+          { role: 'system', content: selectedCounselor.systemPrompt },
+          ...conversationContext.slice(-10),
+          { role: 'user', content: message }
         ],
         max_tokens: 250,
         temperature: 0.7,
@@ -100,33 +105,28 @@ serve(async (req) => {
     });
 
     if (!openAIResponse.ok) {
-      const error = await openAIResponse.json();
-      throw new Error(error.error?.message || 'Failed to get AI response');
+      console.error('OpenAI API error:', await openAIResponse.text());
+      throw new Error('Failed to get AI response');
     }
 
     const aiData = await openAIResponse.json();
     const aiMessage = aiData.choices[0]?.message?.content || "I'm here to listen and support you. Could you share more about what's on your mind?";
 
-    // Analyze sentiment and detect keywords for mood tracking
+    // Analyze sentiment
     const lowerMessage = message.toLowerCase();
     let detectedMood = "neutral";
     let confidence = 0.7;
 
     if (lowerMessage.includes('anxious') || lowerMessage.includes('worry') || lowerMessage.includes('panic')) {
-      detectedMood = "anxious";
-      confidence = 0.9;
+      detectedMood = "anxious"; confidence = 0.9;
     } else if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('down')) {
-      detectedMood = "sad";
-      confidence = 0.9;
+      detectedMood = "sad"; confidence = 0.9;
     } else if (lowerMessage.includes('angry') || lowerMessage.includes('frustrated') || lowerMessage.includes('mad')) {
-      detectedMood = "angry";
-      confidence = 0.8;
+      detectedMood = "angry"; confidence = 0.8;
     } else if (lowerMessage.includes('stress') || lowerMessage.includes('overwhelmed')) {
-      detectedMood = "stressed";
-      confidence = 0.8;
+      detectedMood = "stressed"; confidence = 0.8;
     } else if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('better')) {
-      detectedMood = "positive";
-      confidence = 0.8;
+      detectedMood = "positive"; confidence = 0.8;
     }
 
     // Log session data if userId is provided
@@ -142,27 +142,12 @@ serve(async (req) => {
           mood_confidence: confidence
         });
 
-        // Store the conversation
         await supabase.from('ai_counseling_messages').insert([
-          {
-            session_id: sessionId,
-            content: message,
-            sender_type: 'user',
-            created_at: new Date().toISOString()
-          },
-          {
-            session_id: sessionId,
-            content: aiMessage,
-            sender_type: 'ai',
-            counselor_id: counselorId,
-            detected_mood: detectedMood,
-            mood_confidence: confidence,
-            created_at: new Date().toISOString()
-          }
+          { session_id: sessionId, content: message, sender_type: 'user', created_at: new Date().toISOString() },
+          { session_id: sessionId, content: aiMessage, sender_type: 'ai', counselor_id: counselorId, detected_mood: detectedMood, mood_confidence: confidence, created_at: new Date().toISOString() }
         ]);
       } catch (dbError) {
         console.error('Database error:', dbError);
-        // Continue even if DB operations fail
       }
     }
 
@@ -170,14 +155,12 @@ serve(async (req) => {
     let audioUrl = null;
     if (Deno.env.get('ELEVENLABS_API_KEY')) {
       try {
-        // Map counselors to voice IDs
         const voiceIds = {
-          emma: '9BWtsMINqrJLrRacOk9x', // Aria
-          marcus: 'CwhRBWXzGAHq8TQ4Fs17', // Roger
-          sophia: 'EXAVITQu4vr4xnSDxMaL', // Sarah
-          alex: 'IKne3meq5aSn9XLyUdCD' // Charlie
+          emma: '9BWtsMINqrJLrRacOk9x',
+          marcus: 'CwhRBWXzGAHq8TQ4Fs17',
+          sophia: 'EXAVITQu4vr4xnSDxMaL',
+          alex: 'IKne3meq5aSn9XLyUdCD'
         };
-
         const voiceId = voiceIds[counselorId as keyof typeof voiceIds] || voiceIds.emma;
 
         const voiceResponse = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voiceId, {
@@ -190,12 +173,7 @@ serve(async (req) => {
           body: JSON.stringify({
             text: aiMessage,
             model_id: 'eleven_multilingual_v2',
-            voice_settings: {
-              stability: 0.5,
-              similarity_boost: 0.8,
-              style: 0.3,
-              use_speaker_boost: true
-            }
+            voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true }
           }),
         });
 
@@ -206,7 +184,6 @@ serve(async (req) => {
         }
       } catch (voiceError) {
         console.error('Voice generation error:', voiceError);
-        // Continue without voice
       }
     }
 
@@ -226,14 +203,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in ai-counselor function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: 'An error occurred while processing your request. Please try again.',
-        details: error instanceof Error ? error.message : 'Unknown error' 
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'An error occurred while processing your request. Please try again.' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

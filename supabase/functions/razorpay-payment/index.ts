@@ -1,40 +1,53 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const RequestSchema = z.object({
+  amount: z.number().positive().max(10000000),
+  currency: z.string().max(10).default('INR'),
+  name: z.string().min(1).max(200),
+  email: z.string().email().max(255),
+  phone: z.string().max(20).optional(),
+  planId: z.string().max(100).optional(),
+  paymentMethod: z.string().max(50).optional(),
+});
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { amount, currency = 'INR', name, email, phone, planId, paymentMethod } = await req.json()
+    const rawBody = await req.json();
+    const parsed = RequestSchema.safeParse(rawBody);
 
-    if (!amount || !name || !email) {
-      throw new Error('Missing required fields: amount, name, email')
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Initialize Supabase client
+    const { amount, currency, name, email, phone, planId, paymentMethod } = parsed.data;
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get Razorpay credentials
     const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID')
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
 
     if (!razorpayKeyId || !razorpayKeySecret) {
-      throw new Error('Razorpay credentials not configured')
+      throw new Error('Payment service not configured')
     }
 
-    // Create Razorpay order
     const orderData = {
-      amount: amount * 100, // Convert to paise
+      amount: amount * 100,
       currency: currency,
       receipt: `receipt_${Date.now()}`,
       payment_capture: 1,
@@ -59,13 +72,12 @@ serve(async (req) => {
     })
 
     if (!razorpayResponse.ok) {
-      const errorText = await razorpayResponse.text()
-      throw new Error(`Razorpay API error: ${errorText}`)
+      console.error('Razorpay API error:', await razorpayResponse.text());
+      throw new Error('Payment order creation failed')
     }
 
     const razorpayOrder = await razorpayResponse.json()
 
-    // Get auth header to extract user id
     const authHeader = req.headers.get('authorization')
     let userId = null
     
@@ -75,7 +87,6 @@ serve(async (req) => {
       userId = user?.id
     }
 
-    // Store payment record in payments table
     if (userId) {
       await supabase
         .from('payments')
@@ -90,7 +101,6 @@ serve(async (req) => {
         })
     }
 
-    // Store consultation record for tracking (only if user is logged in)
     if (userId) {
       const consultationData = {
         user_id: userId,
@@ -99,7 +109,7 @@ serve(async (req) => {
         phone: phone,
         concerns: `Payment for ${planId || 'consultation'} plan`,
         status: 'payment_pending',
-        session_type: 'ai_counselor', // Valid session type
+        session_type: 'ai_counselor',
         scheduled_date: new Date().toISOString().split('T')[0],
         scheduled_time: '09:00:00',
         notes: JSON.stringify({
@@ -117,12 +127,9 @@ serve(async (req) => {
 
       if (dbError) {
         console.error('Database error:', dbError)
-        // Don't throw error here, payment can still proceed
-        console.log('Consultation record creation failed, but payment will continue')
       }
     }
 
-    // Return order details for frontend
     return new Response(
       JSON.stringify({
         orderId: razorpayOrder.id,
@@ -131,40 +138,19 @@ serve(async (req) => {
         keyId: razorpayKeyId,
         name: 'MindwellAI',
         description: `Payment for ${planId || 'consultation'} plan`,
-        prefill: {
-          name: name,
-          email: email,
-          contact: phone || ''
-        },
-        theme: {
-          color: '#10B981'
-        },
-        upiOptions: {
-          vpa: 'mindwellai@paytm',
-          flow: 'intent'
-        },
-        method: {
-          upi: true,
-          card: true,
-          netbanking: true,
-          wallet: true,
-          emi: false,
-          paylater: false
-        }
+        prefill: { name, email, contact: phone || '' },
+        theme: { color: '#10B981' },
+        upiOptions: { vpa: 'mindwellai@paytm', flow: 'intent' },
+        method: { upi: true, card: true, netbanking: true, wallet: true, emi: false, paylater: false }
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
     console.error('Payment creation error:', error)
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'Payment processing failed. Please try again.' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })

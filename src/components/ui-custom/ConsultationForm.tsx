@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,13 @@ const timeSlots = [
   "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
 ];
 
+interface SubscriptionData {
+  id: string;
+  sessions_remaining: number;
+  status: string;
+  plan_id: string;
+}
+
 const ConsultationForm = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -23,6 +29,7 @@ const ConsultationForm = () => {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,9 +37,9 @@ const ConsultationForm = () => {
     concerns: "",
   });
 
-  // Simulating a user with a free trial remaining (in a real app this would come from user account)
-  const [freeSessionsRemaining] = useState(3);
-  const hasFreeTrialActive = freeSessionsRemaining > 0;
+  // Derive free trial info from actual subscription data
+  const freeSessionsRemaining = subscription?.sessions_remaining ?? 0;
+  const hasFreeTrialActive = subscription !== null && subscription.status === 'active' && freeSessionsRemaining > 0;
 
   // Check authentication status
   useEffect(() => {
@@ -44,14 +51,41 @@ const ConsultationForm = () => {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => authSub.unsubscribe();
   }, []);
+
+  // Fetch real subscription data from database
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!user) {
+        setSubscription(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('id, sessions_remaining, status, plan_id')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        setSubscription(data);
+      } else {
+        setSubscription(null);
+      }
+    };
+
+    fetchSubscription();
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -87,6 +121,14 @@ const ConsultationForm = () => {
       navigate("/auth");
       return;
     }
+
+    // Check subscription server-side - the RLS/DB will enforce this,
+    // but we also check client-side for a better UX
+    if (!hasFreeTrialActive) {
+      toast.error("You don't have any sessions remaining. Please upgrade your plan.");
+      navigate("/plans");
+      return;
+    }
     
     try {
       // Parse date and time for database
@@ -112,6 +154,20 @@ const ConsultationForm = () => {
 
       if (error) throw error;
 
+      // Decrement sessions on the server side
+      if (subscription) {
+        await supabase
+          .from('subscriptions')
+          .update({ 
+            sessions_remaining: freeSessionsRemaining - 1 
+          })
+          .eq('id', subscription.id)
+          .eq('user_id', user.id);
+
+        // Update local state
+        setSubscription(prev => prev ? { ...prev, sessions_remaining: prev.sessions_remaining - 1 } : null);
+      }
+
       // Track analytics
       await supabase.from('analytics').insert({
         event_type: 'consultation_booked',
@@ -125,11 +181,7 @@ const ConsultationForm = () => {
         session_id: sessionStorage.getItem('session_id')
       });
 
-      if (hasFreeTrialActive) {
-        toast.success(`Consultation scheduled successfully! You have ${freeSessionsRemaining - 1} free sessions remaining.`);
-      } else {
-        toast.success("Consultation scheduled successfully!");
-      }
+      toast.success(`Consultation scheduled successfully! You have ${freeSessionsRemaining - 1} sessions remaining.`);
       
       // Reset form after submission
       setFormData({
@@ -190,8 +242,8 @@ const ConsultationForm = () => {
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start">
           <Info className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-green-800 font-medium">Free Trial Active</p>
-            <p className="text-green-700 text-sm">You have {freeSessionsRemaining} free counseling sessions remaining.</p>
+            <p className="text-green-800 font-medium">Active Plan</p>
+            <p className="text-green-700 text-sm">You have {freeSessionsRemaining} counseling sessions remaining.</p>
           </div>
         </div>
       )}
@@ -201,7 +253,7 @@ const ConsultationForm = () => {
           <Info className="w-5 h-5 text-amber-600 mr-2 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-amber-800 font-medium">No Active Plan</p>
-            <p className="text-amber-700 text-sm">You don't have an active subscription plan.</p>
+            <p className="text-amber-700 text-sm">You don't have an active subscription or sessions remaining.</p>
             <Button 
               variant="link" 
               className="text-mindwell-600 p-0 h-auto text-sm"
@@ -447,6 +499,7 @@ const ConsultationForm = () => {
             <Button 
               type="submit"
               className="bg-mindwell-500 hover:bg-mindwell-600 text-white"
+              disabled={!hasFreeTrialActive}
             >
               Confirm Consultation
             </Button>

@@ -1,10 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB max for Whisper
 
 // Process base64 in chunks to prevent memory issues
 function processBase64Chunks(base64String: string, chunkSize = 32768) {
@@ -48,81 +51,74 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    // Handle both JSON and FormData inputs
     let audioData: Uint8Array;
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
-      // Handle JSON input with base64 audio
-      const { audio } = await req.json();
-      
-      if (!audio) {
-        throw new Error('No audio data provided');
+      const rawBody = await req.json();
+      const JsonSchema = z.object({
+        audio: z.string().min(1).max(35_000_000), // ~25MB base64
+      });
+      const parsed = JsonSchema.safeParse(rawBody);
+      if (!parsed.success) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid audio data', success: false }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
-      console.log('Processing base64 audio data, length:', audio.length);
-      audioData = processBase64Chunks(audio);
+      audioData = processBase64Chunks(parsed.data.audio);
     } else {
-      // Handle FormData input
       const formData = await req.formData();
       const audioFile = formData.get('audio') as File;
       
       if (!audioFile) {
-        throw new Error('No audio file provided');
+        return new Response(
+          JSON.stringify({ error: 'No audio file provided', success: false }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (audioFile.size > MAX_AUDIO_SIZE) {
+        return new Response(
+          JSON.stringify({ error: 'Audio file too large (max 25MB)', success: false }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       const audioBuffer = await audioFile.arrayBuffer();
       audioData = new Uint8Array(audioBuffer);
     }
     
-    // Prepare form data for OpenAI Whisper API
     const formData = new FormData();
     const audioBlob = new Blob([audioData.buffer], { type: 'audio/webm' });
     formData.append('file', audioBlob, 'audio.webm');
     formData.append('model', 'whisper-1');
     formData.append('language', 'en');
 
-    console.log('Sending to OpenAI Whisper API, blob size:', audioBlob.size);
-
-    // Send to OpenAI Whisper API
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-      },
+      headers: { 'Authorization': `Bearer ${openAIApiKey}` },
       body: formData,
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      console.error('OpenAI API error:', await response.text());
+      throw new Error('Transcription failed');
     }
 
     const result = await response.json();
-    console.log('Transcription result:', result.text);
     
     return new Response(
-      JSON.stringify({ 
-        text: result.text || '',
-        success: true 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ text: result.text || '', success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Speech-to-text error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        success: false 
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'Speech transcription failed. Please try again.', success: false }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

@@ -1,10 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const RequestSchema = z.object({
+  prescriptionId: z.string().uuid(),
+  prescriptionImageUrl: z.string().min(1).max(1000),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +18,17 @@ serve(async (req) => {
   }
 
   try {
-    const { prescriptionId, prescriptionImageUrl } = await req.json();
+    const rawBody = await req.json();
+    const parsed = RequestSchema.safeParse(rawBody);
+
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { prescriptionId, prescriptionImageUrl } = parsed.data;
     console.log('Verifying prescription:', prescriptionId);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -21,7 +37,6 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch the prescription image from storage
     const { data: imageData, error: imageError } = await supabase
       .storage
       .from('prescriptions')
@@ -32,11 +47,9 @@ serve(async (req) => {
       throw new Error('Failed to fetch prescription image');
     }
 
-    // Convert image to base64
     const arrayBuffer = await imageData.arrayBuffer();
     const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
-    // Use OpenAI Vision API to analyze prescription
     const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -70,9 +83,7 @@ serve(async (req) => {
               },
               {
                 type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
-                }
+                image_url: { url: `data:image/jpeg;base64,${base64Image}` }
               }
             ]
           }
@@ -82,24 +93,19 @@ serve(async (req) => {
     });
 
     if (!visionResponse.ok) {
-      const errorText = await visionResponse.text();
-      console.error('OpenAI API error:', errorText);
+      console.error('OpenAI API error:', await visionResponse.text());
       throw new Error('Failed to analyze prescription');
     }
 
     const visionResult = await visionResponse.json();
     const analysisText = visionResult.choices[0].message.content;
     
-    // Parse the JSON response
     const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
     const analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : {
       isValid: false,
       concerns: ['Failed to parse prescription data']
     };
 
-    console.log('Prescription analysis result:', analysis);
-
-    // Update prescription in database
     const verificationStatus = analysis.isValid ? 'approved' : 'rejected';
     const { error: updateError } = await supabase
       .from('prescriptions')
@@ -119,27 +125,15 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        verification_status: verificationStatus,
-        analysis 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ success: true, verification_status: verificationStatus, analysis }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
     console.error('Prescription verification error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      JSON.stringify({ error: 'Prescription verification failed. Please try again.' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });
