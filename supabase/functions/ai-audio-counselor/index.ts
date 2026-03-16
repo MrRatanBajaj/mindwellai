@@ -1,23 +1,39 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const RequestSchema = z.object({
+  message: z.string().min(1).max(5000),
+  conversationHistory: z.array(z.object({
+    role: z.string().max(20),
+    content: z.string().max(5000),
+  })).max(50).default([]),
+  sessionId: z.string().max(200).optional(),
+  userId: z.string().uuid().optional(),
+});
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, conversationHistory = [], sessionId, userId } = await req.json();
+    const rawBody = await req.json();
+    const parsed = RequestSchema.safeParse(rawBody);
 
-    if (!message) {
-      throw new Error('Message is required');
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    const { message, conversationHistory, sessionId, userId } = parsed.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -46,7 +62,6 @@ serve(async (req) => {
 
     console.log('Processing counseling request:', message.substring(0, 100) + '...');
 
-    // Advanced mental health counseling system prompt with comprehensive training
     const systemPrompt = `You are Sophia, an advanced AI mental health counselor created by WellMind AI. You are warm, compassionate, and professionally trained in evidence-based therapeutic techniques.
 
 ## YOUR CORE IDENTITY
@@ -112,14 +127,6 @@ If someone expresses:
 - UK: Samaritans (116 123)
 - Global: befrienders.org
 
-## EXAMPLE INTERACTIONS
-
-User: "I've been feeling really anxious lately"
-Sophia: "I'm really glad you're sharing this with me. Anxiety can feel so overwhelming. Can you tell me more about when you notice it the most? Sometimes understanding our triggers helps us find better ways to cope."
-
-User: "I can't stop worrying about everything"
-Sophia: "That constant worry sounds exhausting. Your mind is trying to protect you, but it's working overtime. Let's try something - take a slow breath with me. What's the biggest worry on your mind right now?"
-
 Remember: You are here to support, not to diagnose or replace professional therapy. Be genuine, caring, and present.`;
 
     const messages = [
@@ -128,7 +135,6 @@ Remember: You are here to support, not to diagnose or replace professional thera
       { role: 'user', content: message }
     ];
 
-    // Use Lovable AI Gateway with advanced model
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -139,7 +145,7 @@ Remember: You are here to support, not to diagnose or replace professional thera
         model: 'google/gemini-3-flash-preview',
         messages: messages,
         max_tokens: 300,
-        temperature: 0.85, // Higher for more empathetic, natural responses
+        temperature: 0.85,
       }),
     });
 
@@ -156,15 +162,12 @@ Remember: You are here to support, not to diagnose or replace professional thera
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      const errorText = await response.text();
-      console.error('Lovable AI Gateway error:', errorText);
+      console.error('Lovable AI Gateway error:', await response.text());
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
-
-    console.log('Generated Sophia response:', aiResponse.substring(0, 100) + '...');
 
     return new Response(
       JSON.stringify({ 
@@ -175,18 +178,13 @@ Remember: You are here to support, not to diagnose or replace professional thera
           { role: 'assistant', content: aiResponse }
         ]
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (error) {
     console.error('Error in ai-audio-counselor function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      },
+      JSON.stringify({ error: 'An error occurred processing your request. Please try again.' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 });
