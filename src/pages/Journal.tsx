@@ -1,20 +1,14 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, Search, Filter, BookOpen, Star, Calendar as CalendarIcon, MoreHorizontal } from 'lucide-react';
+import { Edit3, Search, BookOpen, Star, Calendar as CalendarIcon, Flame, Lightbulb } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { JournalEntryCard } from '@/components/journal/JournalEntry';
 import { JournalEditor } from '@/components/journal/JournalEditor';
-import { JournalStats } from '@/components/journal/JournalStats';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface JournalEntry {
   id: string;
@@ -26,253 +20,209 @@ interface JournalEntry {
   favorite?: boolean;
 }
 
+const prompts = [
+  "What made you smile today?",
+  "Write about something you're grateful for.",
+  "How did you handle a challenge today?",
+  "Describe a moment of peace you experienced.",
+  "What's one thing you'd like to let go of?",
+  "Write a letter to your future self.",
+];
+
 const Journal = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isWriting, setIsWriting] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
-  const [currentEntry, setCurrentEntry] = useState<Partial<JournalEntry>>({
-    title: '',
-    content: '',
-    mood: 'neutral',
-    tags: []
-  });
+  const [currentEntry, setCurrentEntry] = useState<Partial<JournalEntry>>({ title: '', content: '', mood: 'neutral', tags: [] });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMoodFilter, setSelectedMoodFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'title' | 'mood'>('date');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-  // Load entries from localStorage on component mount
   useEffect(() => {
-    const savedEntries = localStorage.getItem('journalEntries');
-    if (savedEntries) {
-      setEntries(JSON.parse(savedEntries));
-    }
+    const saved = localStorage.getItem('journalEntries');
+    if (saved) setEntries(JSON.parse(saved));
   }, []);
 
-  // Save entries to localStorage whenever entries change
   useEffect(() => {
     localStorage.setItem('journalEntries', JSON.stringify(entries));
   }, [entries]);
 
   const saveEntry = (entryData: Partial<JournalEntry>) => {
     if (!entryData.title || !entryData.content) return;
-
     if (editingEntry) {
-      // Update existing entry
-      setEntries(prev => prev.map(entry => 
-        entry.id === editingEntry.id 
-          ? { ...entry, ...entryData }
-          : entry
-      ));
+      setEntries(prev => prev.map(e => e.id === editingEntry.id ? { ...e, ...entryData } : e));
       setEditingEntry(null);
     } else {
-      // Create new entry
       const newEntry: JournalEntry = {
-        id: Date.now().toString(),
-        title: entryData.title!,
-        content: entryData.content!,
-        mood: entryData.mood || 'neutral',
-        date: new Date().toISOString(),
-        tags: entryData.tags || [],
-        favorite: false
+        id: Date.now().toString(), title: entryData.title!, content: entryData.content!,
+        mood: entryData.mood || 'neutral', date: new Date().toISOString(),
+        tags: entryData.tags || [], favorite: false,
       };
       setEntries(prev => [newEntry, ...prev]);
     }
-
     setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [] });
     setIsWriting(false);
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries(prev => prev.filter(entry => entry.id !== id));
+  const deleteEntry = (id: string) => setEntries(prev => prev.filter(e => e.id !== id));
+  const toggleFavorite = (id: string) => setEntries(prev => prev.map(e => e.id === id ? { ...e, favorite: !e.favorite } : e));
+  const editEntry = (entry: JournalEntry) => { setEditingEntry(entry); setCurrentEntry(entry); setIsWriting(true); };
+  const closeEditor = () => { setIsWriting(false); setEditingEntry(null); setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [] }); };
+
+  // Streak calculation
+  const getStreak = () => {
+    if (entries.length === 0) return 0;
+    const sorted = [...entries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    let streak = 0;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today); checkDate.setDate(checkDate.getDate() - i);
+      const dateStr = checkDate.toISOString().split('T')[0];
+      if (sorted.some(e => e.date.startsWith(dateStr))) streak++;
+      else if (i > 0) break;
+    }
+    return streak;
   };
 
-  const toggleFavorite = (id: string) => {
-    setEntries(prev => prev.map(entry => 
-      entry.id === id ? { ...entry, favorite: !entry.favorite } : entry
-    ));
-  };
+  const totalWords = entries.reduce((s, e) => s + e.content.split(' ').length, 0);
+  const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
-  const editEntry = (entry: JournalEntry) => {
-    setEditingEntry(entry);
-    setCurrentEntry(entry);
-    setIsWriting(true);
-  };
-
-  const closeEditor = () => {
-    setIsWriting(false);
-    setEditingEntry(null);
-    setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [] });
-  };
-
-  const filteredEntries = entries
-    .filter(entry => {
-      const matchesSearch = entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           entry.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           entry.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesMood = selectedMoodFilter === 'all' || entry.mood === selectedMoodFilter;
-      const matchesFavorite = !showFavoritesOnly || entry.favorite;
-      return matchesSearch && matchesMood && matchesFavorite;
+  const filtered = entries
+    .filter(e => {
+      const matchSearch = e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchMood = selectedMoodFilter === 'all' || e.mood === selectedMoodFilter;
+      const matchFav = !showFavoritesOnly || e.favorite;
+      return matchSearch && matchMood && matchFav;
     })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'title':
-          return a.title.localeCompare(b.title);
-        case 'mood':
-          return a.mood.localeCompare(b.mood);
-        case 'date':
-        default:
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-      }
-    });
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center"
-        >
-          <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-            My Journal
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Capture your thoughts, track your emotions, and reflect on your journey through life
-          </p>
-        </motion.div>
+      <main className="flex-1 pt-28 pb-16 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Hero */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-lavender-light/60 text-calm-lavender mb-4">
+              <BookOpen className="w-4 h-4" /> Wellness Journal
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">Your Reflective Space</h1>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Capture your thoughts, track your moods, and discover patterns in your emotional well-being.
+            </p>
+          </motion.div>
 
-        <JournalStats entries={entries} />
+          {/* Stats Row */}
+          {entries.length > 0 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+              {[
+                { label: "Entries", value: entries.length, icon: BookOpen, color: "bg-calm-sky-light/60 text-calm-sky" },
+                { label: "Words", value: totalWords.toLocaleString(), icon: Edit3, color: "bg-calm-sage-light/60 text-calm-sage" },
+                { label: "Streak", value: `${getStreak()}d`, icon: Flame, color: "bg-amber-100 text-amber-600" },
+                { label: "Favorites", value: entries.filter(e => e.favorite).length, icon: Star, color: "bg-rose-100 text-rose-500" },
+              ].map((stat, i) => (
+                <Card key={i} className="border-border/40">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${stat.color}`}>
+                      <stat.icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-foreground">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </motion.div>
+          )}
 
-        {/* Enhanced Action Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8 space-y-4"
-        >
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <Button
-              onClick={() => setIsWriting(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
-            >
-              <Edit3 className="w-5 h-5" />
-              New Entry
+          {/* Writing Prompt */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+            className="mb-6 p-4 rounded-xl bg-calm-lavender-light/30 border border-calm-lavender/10 flex items-center gap-3">
+            <Lightbulb className="w-5 h-5 text-calm-lavender shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Today's writing prompt</p>
+              <p className="text-sm text-muted-foreground italic">"{randomPrompt}"</p>
+            </div>
+            <Button size="sm" onClick={() => { setCurrentEntry(prev => ({ ...prev, content: randomPrompt + '\n\n' })); setIsWriting(true); }}
+              className="bg-calm-lavender hover:bg-calm-lavender/90 text-white rounded-lg shrink-0">
+              Write
             </Button>
+          </motion.div>
 
-            <div className="flex flex-col md:flex-row gap-4 items-center w-full md:w-auto">
+          {/* Actions Bar */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6">
+            <Button onClick={() => setIsWriting(true)}
+              className="bg-calm-sage hover:bg-calm-sage/90 text-white rounded-xl gap-2 shadow-soft">
+              <Edit3 className="w-4 h-4" /> New Entry
+            </Button>
+            <div className="flex items-center gap-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Search entries, tags..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64 bg-white/80 backdrop-blur-sm"
-                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Search entries..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                  className="pl-9 w-56 h-9 bg-card border-border/50 rounded-lg text-sm" />
               </div>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="bg-white/80 backdrop-blur-sm">
-                    <MoreHorizontal className="w-4 h-4 mr-2" />
-                    Options
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-white/95 backdrop-blur-sm">
-                  <DropdownMenuItem onClick={() => setSortBy('date')}>
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    Sort by Date
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('title')}>
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Sort by Title
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}>
-                    <Star className="w-4 h-4 mr-2" />
-                    {showFavoritesOnly ? 'Show All' : 'Favorites Only'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button size="sm" variant={showFavoritesOnly ? "default" : "outline"} onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`rounded-lg gap-1 ${showFavoritesOnly ? 'bg-rose-500 text-white' : ''}`}>
+                <Star className="w-3.5 h-3.5" /> Favorites
+              </Button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 justify-center">
+          {/* Mood Filter */}
+          <div className="flex flex-wrap gap-2 mb-8">
             {[
-              { value: 'all', label: 'All Moods', emoji: '🌟' },
+              { value: 'all', label: 'All', emoji: '✨' },
               { value: 'happy', label: 'Happy', emoji: '😊' },
               { value: 'neutral', label: 'Neutral', emoji: '😐' },
-              { value: 'sad', label: 'Sad', emoji: '😔' }
-            ].map(({ value, label, emoji }) => (
-              <Button
-                key={value}
-                variant={selectedMoodFilter === value ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedMoodFilter(value)}
-                className="flex items-center gap-2 bg-white/80 backdrop-blur-sm hover:bg-white/90"
-              >
-                <span>{emoji}</span>
-                {label}
+              { value: 'sad', label: 'Sad', emoji: '😔' },
+            ].map(m => (
+              <Button key={m.value} size="sm" variant={selectedMoodFilter === m.value ? "default" : "outline"}
+                onClick={() => setSelectedMoodFilter(m.value)}
+                className={`rounded-full gap-1.5 ${selectedMoodFilter === m.value ? 'bg-calm-sage text-white' : 'bg-card'}`}>
+                {m.emoji} {m.label}
               </Button>
             ))}
           </div>
-        </motion.div>
 
-        <JournalEditor
-          isOpen={isWriting}
-          entry={currentEntry}
-          onClose={closeEditor}
-          onSave={saveEntry}
-          isEditing={!!editingEntry}
-        />
+          {/* Editor */}
+          <JournalEditor isOpen={isWriting} entry={currentEntry} onClose={closeEditor} onSave={saveEntry} isEditing={!!editingEntry} />
 
-        {/* Enhanced Entries Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence mode="popLayout">
-            {filteredEntries.map((entry, index) => (
-              <JournalEntryCard
-                key={entry.id}
-                entry={entry}
-                index={index}
-                onEdit={editEntry}
-                onDelete={deleteEntry}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))}
-          </AnimatePresence>
+          {/* Entries Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((entry, index) => (
+                <JournalEntryCard key={entry.id} entry={entry} index={index} onEdit={editEntry} onDelete={deleteEntry} onToggleFavorite={toggleFavorite} />
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Empty State */}
+          {filtered.length === 0 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
+              <div className="w-16 h-16 bg-calm-lavender-light/60 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-8 h-8 text-calm-lavender" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
+                {entries.length === 0 ? "Begin Your Journey" : "No entries found"}
+              </h3>
+              <p className="text-muted-foreground max-w-sm mx-auto text-sm">
+                {entries.length === 0
+                  ? "Writing helps process emotions and build self-awareness. Start with today's prompt!"
+                  : "Try adjusting your search or mood filter."}
+              </p>
+              {entries.length === 0 && (
+                <Button onClick={() => setIsWriting(true)} className="mt-4 bg-calm-sage hover:bg-calm-sage/90 text-white rounded-xl">
+                  Write Your First Entry
+                </Button>
+              )}
+            </motion.div>
+          )}
         </div>
-
-        {filteredEntries.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <BookOpen className="w-12 h-12 text-blue-500" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
-              {entries.length === 0 ? "Begin Your Journey" : "No entries found"}
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              {entries.length === 0 
-                ? "Start documenting your thoughts, experiences, and emotions. Every great story begins with a single entry."
-                : "Try adjusting your search or filters to find what you're looking for."
-              }
-            </p>
-            {entries.length === 0 && (
-              <Button
-                onClick={() => setIsWriting(true)}
-                className="mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg"
-              >
-                Write Your First Entry
-              </Button>
-            )}
-          </motion.div>
-        )}
       </main>
-
       <Footer />
     </div>
   );
