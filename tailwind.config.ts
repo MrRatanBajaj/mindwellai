@@ -53,6 +53,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				calm: {
+					sage: 'hsl(var(--calm-sage))',
+					'sage-light': 'hsl(var(--calm-sage-light))',
+					sky: 'hsl(var(--calm-sky))',
+					lavender: 'hsl(var(--calm-lavender))',
+					sand: 'hsl(var(--calm-sand))',
+					warm: 'hsl(var(--calm-warm))',
+				},
 				mindwell: {
 				  50: '#f0f7ff',
 				  100: '#e0f0fe',
@@ -65,18 +73,6 @@ export default {
 				  800: '#064a89',
 				  900: '#0c3f72',
 				  950: '#08274e',
-				},
-				stone: {
-				  50: '#f8f8f6',
-				  100: '#f2f1ee',
-				  200: '#e8e6e1',
-				  300: '#d7d3cb',
-				  400: '#bdb6aa',
-				  500: '#a39a8a',
-				  600: '#8a8071',
-				  700: '#72695c',
-				  800: '#5e574e',
-				  900: '#4c4640',
 				},
 			},
 			borderRadius: {
@@ -113,14 +109,6 @@ export default {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' }
 				},
-				'gradient-x': {
-					'0%, 100%': {
-					  'background-position': '0% 50%'
-					},
-					'50%': {
-					  'background-position': '100% 50%'
-					}
-				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -130,19 +118,19 @@ export default {
 				'zoom-in': 'zoom-in 0.3s ease-out',
 				'pulse-subtle': 'pulse-subtle 3s infinite ease-in-out',
 				'float': 'float 6s infinite ease-in-out',
-				'gradient-x': 'gradient-x 15s ease infinite'
 			},
 			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-				display: ['SF Pro Display', 'Inter', 'sans-serif'],
+				sans: ['DM Sans', 'sans-serif'],
+				display: ['DM Serif Display', 'serif'],
 			},
 			backdropBlur: {
 				xs: '2px',
 			},
 			boxShadow: {
-				'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
-				'glass-strong': '0 8px 32px rgba(0, 0, 0, 0.08)',
-				'neobrut': '0.5rem 0.5rem 0px 0px rgba(0, 0, 0, 0.1)',
+				'glass': '0 4px 30px rgba(0, 0, 0, 0.06)',
+				'glass-strong': '0 8px 32px rgba(0, 0, 0, 0.05)',
+				'soft': '0 2px 20px rgba(0, 0, 0, 0.04)',
+				'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03)',
 			},
 		}
 	},

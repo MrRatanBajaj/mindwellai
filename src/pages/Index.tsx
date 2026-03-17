@@ -1,368 +1,129 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
-import SmartNotification from "@/components/ui-custom/SmartNotification";
-import { PushNotificationBanner } from "@/components/ui-custom/PushNotificationBanner";
-import HowItWorks from "@/components/ui-custom/HowItWorks";
-import MentalHealthStats from "@/components/ui-custom/MentalHealthStats";
-import MindAnimation from "@/components/ui-custom/MindAnimation";
-import mindAnimationGif from "@/assets/mind-animation.gif";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
 import { 
-  Brain, Shield, Clock, Heart, 
-  ArrowRight, CheckCircle, Play,
-  Video, Phone, MessageCircle, Sparkles, Flag
+  BookOpen, Calendar, Leaf, Briefcase,
+  ArrowRight, Shield, Clock, Heart, Sparkles
 } from "lucide-react";
 
 const Index = () => {
-  const [isRepublicDay, setIsRepublicDay] = useState(false);
-
-  useEffect(() => {
-    const checkRepublicDay = () => {
-      const now = new Date();
-      const istOffset = 5.5 * 60 * 60 * 1000;
-      const istNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + istOffset);
-      
-      // Check if it's 26th January
-      const isJan26 = istNow.getMonth() === 0 && istNow.getDate() === 26;
-      setIsRepublicDay(isJan26);
-    };
-
-    checkRepublicDay();
-    const interval = setInterval(checkRepublicDay, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   const features = [
     {
-      icon: Shield,
-      title: "HIPAA Compliant",
-      description: "Bank-level encryption for your privacy",
+      icon: Leaf,
+      title: "Self Help",
+      description: "Curated guides, breathing exercises, and evidence-based techniques for everyday wellness.",
+      path: "/self-help",
+      bg: "bg-calm-sage-light",
+      iconColor: "text-primary",
     },
     {
-      icon: Clock,
-      title: "24/7 Available",
-      description: "Support whenever you need it",
+      icon: BookOpen,
+      title: "Journaling",
+      description: "Track your thoughts and moods with our private, guided journaling experience.",
+      path: "/journal",
+      bg: "bg-calm-lavender",
+      iconColor: "text-accent-foreground",
     },
     {
-      icon: Brain,
-      title: "AI-Powered",
-      description: "Evidence-based therapeutic techniques",
+      icon: Calendar,
+      title: "Book a Counselor",
+      description: "Schedule a session with our AI-powered counselors specialized in various areas.",
+      path: "/consultation",
+      bg: "bg-calm-sky",
+      iconColor: "text-primary",
     },
     {
-      icon: Heart,
-      title: "Judgment-Free",
-      description: "Safe space for your thoughts",
+      icon: Briefcase,
+      title: "Careers",
+      description: "Join our mission to make mental health support accessible to everyone.",
+      path: "/careers",
+      bg: "bg-calm-sand",
+      iconColor: "text-accent-foreground",
     },
   ];
 
-  const services = [
-    {
-      icon: Video,
-      title: "Video Therapy",
-      description: "Face-to-face AI counseling",
-      path: "/consultation",
-      color: "bg-violet-500",
-    },
-    {
-      icon: Phone,
-      title: "Voice Calls",
-      description: "Natural voice conversations",
-      path: "/ai-voice-therapy",
-      color: "bg-blue-500",
-    },
-    {
-      icon: MessageCircle,
-      title: "Text Chat",
-      description: "Type at your own pace",
-      path: "/ai-therapist",
-      color: "bg-emerald-500",
-    },
+  const trustSignals = [
+    { icon: Shield, label: "Private & Secure" },
+    { icon: Clock, label: "Available 24/7" },
+    { icon: Heart, label: "Evidence-Based" },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <SmartNotification />
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      {/* Hero Section - Clean & Professional */}
-      <section className="relative pt-20 pb-24 overflow-hidden">
-        {/* Subtle gradient background */}
-        <div className={`absolute inset-0 ${isRepublicDay ? 'bg-gradient-to-br from-orange-50 via-white to-green-50' : 'bg-gradient-to-br from-slate-50 via-white to-violet-50/30'}`} />
+      {/* Hero */}
+      <section className="relative pt-28 pb-20 md:pt-36 md:pb-28">
+        <div className="absolute inset-0 bg-gradient-to-b from-calm-sage-light/50 via-background to-background" />
         
-        {/* Mind Animation GIF - Top Right - Professional Design */}
-        <motion.div
-          initial={{ opacity: 0, x: 50, y: -30 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 100 }}
-          className="absolute top-20 right-0 md:right-4 lg:right-12 xl:right-20 hidden lg:block z-10"
-        >
-          <div className="relative">
-            {/* Outer glowing ring */}
-            <motion.div
-              className="absolute -inset-8 rounded-full"
-              style={{
-                background: "radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 50%, transparent 70%)",
-              }}
-              animate={{
-                scale: [1, 1.15, 1],
-                opacity: [0.6, 1, 0.6],
-              }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            />
+        <div className="relative max-w-3xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-accent-foreground text-sm font-medium mb-8">
+              <Sparkles className="w-4 h-4" />
+              Your Mental Wellness Companion
+            </div>
             
-            {/* Floating particles around the GIF */}
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  background: i % 2 === 0 ? "#8B5CF6" : "#06B6D4",
-                  top: `${15 + Math.sin(i * 45 * Math.PI / 180) * 45}%`,
-                  left: `${50 + Math.cos(i * 45 * Math.PI / 180) * 55}%`,
-                }}
-                animate={{
-                  y: [0, -8, 0],
-                  x: [0, i % 2 === 0 ? 4 : -4, 0],
-                  opacity: [0.4, 1, 0.4],
-                  scale: [1, 1.3, 1],
-                }}
-                transition={{
-                  duration: 2.5 + i * 0.3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-foreground leading-tight mb-6">
+              A calmer mind starts{" "}
+              <span className="text-primary">here</span>
+            </h1>
             
-            {/* Subtle rotating border */}
-            <motion.div
-              className="absolute -inset-4 rounded-3xl border-2 border-dashed"
-              style={{ borderColor: "rgba(139, 92, 246, 0.2)" }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            />
-            
-            {/* Inner glow effect */}
-            <motion.div
-              className="absolute inset-0 rounded-2xl"
-              style={{
-                background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(6, 182, 212, 0.2) 100%)",
-                filter: "blur(20px)",
-              }}
-              animate={{
-                opacity: [0.5, 0.8, 0.5],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            
-            {/* The GIF itself with professional styling */}
-            <motion.img 
-              src={mindAnimationGif}
-              alt="Mental wellness illustration - Understanding your mind"
-              className="w-56 md:w-64 lg:w-72 xl:w-80 h-auto relative z-10 rounded-2xl"
-              style={{
-                filter: "drop-shadow(0 20px 40px rgba(139, 92, 246, 0.3))",
-              }}
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-            
-            {/* Psychology-themed caption */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.6 }}
-              className="absolute -bottom-12 left-1/2 -translate-x-1/2 whitespace-nowrap"
-            >
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-violet-100">
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Brain className="w-4 h-4 text-violet-600" />
-                </motion.div>
-                <span className="text-sm font-medium text-slate-700">Understanding Your Mind</span>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-        
-        <div className="relative max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* Republic Day Special Banner */}
-              <AnimatePresence>
-                {isRepublicDay && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -20, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                    transition={{ type: "spring", bounce: 0.4 }}
-                    className="mb-6"
-                  >
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF9933] via-white to-[#138808] p-[2px]">
-                      <div className="bg-slate-900 rounded-2xl px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <motion.div
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
-                            <span className="text-3xl">🇮🇳</span>
-                          </motion.div>
-                          <div className="flex-1">
-                            <h3 className="text-white font-bold text-lg">
-                              Happy 76th Republic Day!
-                            </h3>
-                            <p className="text-slate-300 text-sm">
-                              Celebrating the spirit of our Constitution • Jai Hind! 🪷
-                            </p>
-                          </div>
-                          <motion.div
-                            animate={{ scale: [1, 1.1, 1] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          >
-                            <Flag className="w-8 h-8 text-[#FF9933]" />
-                          </motion.div>
-                        </div>
-                        
-                        {/* Animated Ashoka Chakra */}
-                        <div className="flex justify-center mt-4">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                            className="w-12 h-12 rounded-full border-4 border-[#000080] flex items-center justify-center"
-                          >
-                            <div className="relative w-full h-full">
-                              {[...Array(24)].map((_, i) => (
-                                <div
-                                  key={i}
-                                  className="absolute w-0.5 h-2 bg-[#000080] left-1/2 top-1/2 origin-bottom"
-                                  style={{ 
-                                    transform: `translateX(-50%) translateY(-100%) rotate(${i * 15}deg)` 
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          </motion.div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+              Journal your thoughts, explore self-help resources, and connect with counselors — all in one peaceful space.
+            </p>
 
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${isRepublicDay ? 'bg-gradient-to-r from-orange-100 via-white to-green-100 text-slate-700 border border-slate-200' : 'bg-violet-100 text-violet-700'} text-sm font-medium mb-6`}>
-                <Sparkles className="w-4 h-4" />
-                AI-Powered Mental Wellness
-              </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight mb-6">
-                Your Personal
-                <span className="block text-violet-600">AI Therapist</span>
-              </h1>
-              
-              <p className="text-lg text-slate-600 mb-8 max-w-md">
-                Professional mental health support, available 24/7. Evidence-based therapy techniques delivered through advanced AI.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <NavLink to="/ai-voice-therapy">
-                  <Button size="lg" className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 text-base font-semibold shadow-lg shadow-violet-200">
-                    Start Free Session
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </NavLink>
-                <Button size="lg" variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 px-6 py-6">
-                  <Play className="w-4 h-4 mr-2" />
-                  Watch Demo
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+              <NavLink to="/auth">
+                <Button size="lg" className="w-full sm:w-auto px-8 py-6 text-base font-medium">
+                  Get Started Free
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
-              </div>
+              </NavLink>
+              <NavLink to="/about">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 py-6 text-base">
+                  Learn More
+                </Button>
+              </NavLink>
+            </div>
 
-              <div className="flex items-center gap-6 text-sm text-slate-500">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Free to start</span>
+            {/* Trust Signals */}
+            <div className="flex items-center justify-center gap-6 flex-wrap">
+              {trustSignals.map((signal) => (
+                <div key={signal.label} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <signal.icon className="w-4 h-4 text-primary" />
+                  {signal.label}
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>No credit card</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Right - Service Cards */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="space-y-4"
-            >
-              {services.map((service, index) => (
-                <NavLink key={service.title} to={service.path}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    whileHover={{ x: 8, scale: 1.02 }}
-                    className="flex items-center gap-5 p-5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:border-violet-200 transition-all cursor-pointer"
-                  >
-                    <div className={`w-14 h-14 ${service.color} rounded-xl flex items-center justify-center shrink-0`}>
-                      <service.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900 text-lg">{service.title}</h3>
-                      <p className="text-slate-500 text-sm">{service.description}</p>
-                    </div>
-                    <ArrowRight className="w-5 h-5 text-slate-400" />
-                  </motion.div>
-                </NavLink>
               ))}
-
-              {/* Stats Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-r from-violet-600 to-blue-600 rounded-2xl text-white mt-6"
-              >
-                <div className="text-center">
-                  <div className="text-2xl font-bold">2M+</div>
-                  <div className="text-white/70 text-xs">Sessions</div>
-                </div>
-                <div className="text-center border-x border-white/20">
-                  <div className="text-2xl font-bold">4.9</div>
-                  <div className="text-white/70 text-xs">Rating</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">24/7</div>
-                  <div className="text-white/70 text-xs">Available</div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Features Section - Minimal */}
-      <section className="py-20 bg-white border-y border-slate-100">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Features */}
+      <section className="py-20 md:py-28">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-display text-foreground mb-4">
+              Everything you need
+            </h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Simple tools designed to support your mental health journey, one step at a time.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-6">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -370,43 +131,46 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center"
               >
-                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-slate-700" />
-                </div>
-                <h3 className="font-semibold text-slate-900 mb-1">{feature.title}</h3>
-                <p className="text-slate-500 text-sm">{feature.description}</p>
+                <NavLink to={feature.path}>
+                  <div className="group p-8 rounded-2xl border border-border bg-card hover:shadow-card transition-all duration-300 h-full">
+                    <div className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center mb-5`}>
+                      <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                      {feature.description}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                      Explore <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </NavLink>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <HowItWorks />
-
-      {/* Mental Health Statistics */}
-      <MentalHealthStats />
-
-      {/* CTA Section */}
-      <section className="py-20 bg-slate-900">
-        <div className="max-w-4xl mx-auto px-6 text-center">
+      {/* CTA */}
+      <section className="py-20 bg-gradient-to-b from-calm-sage-light/30 to-background">
+        <div className="max-w-3xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Start Your Wellness Journey
+            <h2 className="text-3xl md:text-4xl font-display text-foreground mb-4">
+              Start your wellness journey
             </h2>
-            <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-              Join thousands who have found support through our AI-powered platform. 
-              Your first session is completely free.
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Take the first step towards a calmer, more balanced life. It's free to get started.
             </p>
-            <NavLink to="/ai-voice-therapy">
-              <Button size="lg" className="bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 text-base font-semibold">
-                Get Started Free
+            <NavLink to="/auth">
+              <Button size="lg" className="px-8 py-6 text-base font-medium">
+                Create Free Account
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </NavLink>
@@ -414,64 +178,27 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Enhanced Feedback Form Section */}
-      <section className="py-20 bg-gradient-to-b from-violet-50/50 to-white relative overflow-hidden">
-        {/* Animated background elements */}
-        <motion.div
-          className="absolute top-20 left-10 w-72 h-72 bg-violet-200/30 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-        />
-        
-        <div className="relative max-w-2xl mx-auto px-6">
+      {/* Feedback */}
+      <section className="py-20">
+        <div className="max-w-2xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-10"
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ type: "spring", bounce: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium mb-4"
-            >
-              <MessageCircle className="w-4 h-4" />
-              Beta Feedback
-            </motion.div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">
+            <h2 className="text-2xl font-display text-foreground mb-2">
               Help Us Improve
             </h2>
-            <p className="text-slate-600">
-              Your feedback shapes the future of mental wellness technology
+            <p className="text-muted-foreground text-sm">
+              Your feedback shapes the future of WellMind
             </p>
           </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            <FeedbackForm />
-          </motion.div>
+          <FeedbackForm />
         </div>
       </section>
 
       <Footer />
-      <PushNotificationBanner />
     </div>
   );
 };

@@ -1,48 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  Brain, 
-  Menu, 
-  X, 
-  Heart, 
-  LogOut, 
-  Pill,
-  Sparkles,
-  BookOpen,
-  Calendar,
-  Phone,
-  Users,
-  AlertCircle,
-  ShieldCheck,
-  ChevronDown
-} from "lucide-react";
+import { Menu, X, LogOut, BookOpen, Calendar, Leaf, Briefcase } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
-import { useSessionManagement } from "@/hooks/useSessionManagement";
 import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import wellmindLogo from "@/assets/wellmind-logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { logLogout } = useSecurityMonitoring();
-  const { terminateSession } = useSessionManagement();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
-      await terminateSession();
       await signOut();
-      logLogout();
       toast.success("Signed out successfully");
       navigate("/");
     } catch (error) {
@@ -50,214 +21,75 @@ const Header = () => {
     }
   };
 
+  const navLinks = [
+    { to: "/self-help", label: "Self Help", icon: Leaf },
+    { to: "/journal", label: "Journal", icon: BookOpen },
+    { to: "/consultation", label: "Book Counselor", icon: Calendar },
+    { to: "/careers", label: "Careers", icon: Briefcase },
+  ];
+
   return (
-    <header className="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-6xl mt-3 rounded-2xl bg-white/40 dark:bg-black/30 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-lg">
-      <div className="px-4 md:px-6 py-2">
-        <div className="flex items-center justify-between gap-4">
-          {/* Logo Section */}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      <div className="max-w-5xl mx-auto px-6 py-3">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
           <NavLink to="/" className="flex items-center group flex-shrink-0">
             <img 
               src={wellmindLogo} 
               alt="WellMind AI" 
-              className="h-10 md:h-12 w-auto transition-all duration-300 group-hover:scale-110 group-hover:rotate-2 group-hover:drop-shadow-[0_0_12px_rgba(139,92,246,0.5)] drop-shadow-md"
+              className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
             />
           </NavLink>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {/* AI Services Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-1 text-sm">
-                  <Sparkles className="w-4 h-4" />
-                  AI Services
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel className="text-xs text-muted-foreground">Talk with AI</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/ai-audio-call" className="flex items-center gap-2 cursor-pointer">
-                    <Phone className="w-4 h-4 text-emerald-500" />
-                    <div>
-                      <div className="font-medium">Talk to Juli</div>
-                      <div className="text-xs text-muted-foreground">AI Audio Counselor</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/ai-voice-therapy" className="flex items-center gap-2 cursor-pointer">
-                    <Brain className="w-4 h-4 text-purple-500" />
-                    <div>
-                      <div className="font-medium">Voice Therapy</div>
-                      <div className="text-xs text-muted-foreground">Natural conversation</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/memorial-chat" className="flex items-center gap-2 cursor-pointer">
-                    <Heart className="w-4 h-4 text-rose-500" />
-                    <div>
-                      <div className="font-medium">Memorial Chat</div>
-                      <div className="text-xs text-muted-foreground">Remember loved ones</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Resources Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-1 text-sm">
-                  <BookOpen className="w-4 h-4" />
-                  Resources
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel className="text-xs text-muted-foreground">Self-Care Tools</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/self-help" className="flex items-center gap-2 cursor-pointer">
-                    <BookOpen className="w-4 h-4 text-blue-500" />
-                    <div>
-                      <div className="font-medium">Self Help</div>
-                      <div className="text-xs text-muted-foreground">Guides & exercises</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/journal" className="flex items-center gap-2 cursor-pointer">
-                    <BookOpen className="w-4 h-4 text-amber-500" />
-                    <div>
-                      <div className="font-medium">Journal</div>
-                      <div className="text-xs text-muted-foreground">Track your thoughts</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/medicine-store" className="flex items-center gap-2 cursor-pointer">
-                    <Pill className="w-4 h-4 text-green-500" />
-                    <div>
-                      <div className="font-medium">Medicine Store</div>
-                      <div className="text-xs text-muted-foreground">Order prescriptions</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Professional Care */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-1 text-sm">
-                  <Calendar className="w-4 h-4" />
-                  Professional
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel className="text-xs text-muted-foreground">Connect with Experts</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/consultation" className="flex items-center gap-2 cursor-pointer">
-                    <Phone className="w-4 h-4 text-blue-500" />
-                    <div>
-                      <div className="font-medium">Book Consultation</div>
-                      <div className="text-xs text-muted-foreground">Schedule with therapist</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/sessions" className="flex items-center gap-2 cursor-pointer">
-                    <Calendar className="w-4 h-4 text-purple-500" />
-                    <div>
-                      <div className="font-medium">My Sessions</div>
-                      <div className="text-xs text-muted-foreground">View history</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Support */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-1 text-sm">
-                  <Users className="w-4 h-4" />
-                  Support
-                  <ChevronDown className="w-3 h-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel className="text-xs text-muted-foreground">Community & Help</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/peer-connect" className="flex items-center gap-2 cursor-pointer">
-                    <Users className="w-4 h-4 text-blue-500" />
-                    <div>
-                      <div className="font-medium">Peer Connect</div>
-                      <div className="text-xs text-muted-foreground">Support groups</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <NavLink to="/emergency" className="flex items-center gap-2 cursor-pointer text-rose-600">
-                    <AlertCircle className="w-4 h-4" />
-                    <div>
-                      <div className="font-semibold">🚨 Emergency</div>
-                      <div className="text-xs">Crisis hotline</div>
-                    </div>
-                  </NavLink>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button variant="ghost" size="sm" asChild className="text-sm">
-              <NavLink to="/about">About</NavLink>
-            </Button>
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`
+                }
+              >
+                <link.icon className="w-4 h-4" />
+                {link.label}
+              </NavLink>
+            ))}
           </nav>
 
-          {/* User Section */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Auth */}
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-sm font-medium">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </div>
-                    <span className="text-sm max-w-[120px] truncate">{user.email}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <NavLink to="/audit-logs" className="flex items-center gap-2 cursor-pointer">
-                      <ShieldCheck className="w-4 h-4" />
-                      Security Logs
-                    </NavLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-rose-600 cursor-pointer">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground max-w-[140px] truncate">
+                  {user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild>
                   <NavLink to="/auth">Sign In</NavLink>
                 </Button>
-                <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" asChild>
-                  <NavLink to="/consultation">Get Started</NavLink>
+                <Button size="sm" asChild>
+                  <NavLink to="/auth">Get Started</NavLink>
                 </Button>
-              </>
+              </div>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Toggle */}
           <button
             className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -269,95 +101,40 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t pt-4">
-            <nav className="flex flex-col gap-2">
-              <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">AI Services</div>
-              <NavLink to="/ai-audio-call" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Phone className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm">Talk to Juli</span>
-              </NavLink>
-              <NavLink to="/ai-voice-therapy" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Brain className="w-4 h-4 text-purple-500" />
-                <span className="text-sm">Voice Therapy</span>
-              </NavLink>
-              <NavLink to="/memorial-chat" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Heart className="w-4 h-4 text-rose-500" />
-                <span className="text-sm">Memorial Chat</span>
-              </NavLink>
-
-              <div className="text-xs font-semibold text-muted-foreground mb-2 mt-3 px-2">Resources</div>
-              <NavLink to="/self-help" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <BookOpen className="w-4 h-4 text-blue-500" />
-                <span className="text-sm">Self Help</span>
-              </NavLink>
-              <NavLink to="/journal" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <BookOpen className="w-4 h-4 text-amber-500" />
-                <span className="text-sm">Journal</span>
-              </NavLink>
-              <NavLink to="/medicine-store" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Pill className="w-4 h-4 text-green-500" />
-                <span className="text-sm">Medicine Store</span>
-              </NavLink>
-
-              <div className="text-xs font-semibold text-muted-foreground mb-2 mt-3 px-2">Professional</div>
-              <NavLink to="/consultation" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Phone className="w-4 h-4 text-blue-500" />
-                <span className="text-sm">Book Consultation</span>
-              </NavLink>
-              <NavLink to="/sessions" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Calendar className="w-4 h-4 text-purple-500" />
-                <span className="text-sm">My Sessions</span>
-              </NavLink>
-
-              <div className="text-xs font-semibold text-muted-foreground mb-2 mt-3 px-2">Support</div>
-              <NavLink to="/peer-connect" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <Users className="w-4 h-4 text-blue-500" />
-                <span className="text-sm">Peer Connect</span>
-              </NavLink>
-              <NavLink to="/emergency" className="flex items-center gap-3 px-2 py-2 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-rose-600">
-                <AlertCircle className="w-4 h-4" />
-                <span className="text-sm font-semibold">🚨 Emergency</span>
-              </NavLink>
-              
-              <div className="border-t my-3"></div>
-              <NavLink to="/about" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                <span className="text-sm">About</span>
-              </NavLink>
-              
-              {user && (
-                <NavLink to="/audit-logs" className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span className="text-sm">Security Logs</span>
+          <div className="md:hidden mt-4 pb-4 border-t border-border pt-4">
+            <nav className="flex flex-col gap-1">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm"
+                >
+                  <link.icon className="w-4 h-4 text-primary" />
+                  {link.label}
                 </NavLink>
+              ))}
+              <div className="border-t border-border my-3" />
+              {user ? (
+                <>
+                  <div className="text-xs text-muted-foreground px-3 mb-2">
+                    {user.email}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2 px-3">
+                  <Button variant="outline" size="sm" asChild>
+                    <NavLink to="/auth">Sign In</NavLink>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <NavLink to="/auth">Get Started</NavLink>
+                  </Button>
+                </div>
               )}
-
-              <div className="flex flex-col gap-2 mt-4">
-                {user ? (
-                  <>
-                    <div className="text-xs text-muted-foreground px-2">
-                      Signed in as {user.email}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSignOut}
-                      className="w-full"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" size="sm" className="w-full" asChild>
-                      <NavLink to="/auth">Sign In</NavLink>
-                    </Button>
-                    <Button size="sm" className="w-full bg-gradient-to-r from-purple-600 to-blue-600" asChild>
-                      <NavLink to="/consultation">Get Started</NavLink>
-                    </Button>
-                  </>
-                )}
-              </div>
             </nav>
           </div>
         )}
