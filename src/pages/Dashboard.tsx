@@ -94,7 +94,7 @@ const Dashboard = () => {
                 <Button variant="outline" size="sm" onClick={() => setEditingProfile(!editingProfile)} className="rounded-lg gap-1.5">
                   <Settings className="w-3.5 h-3.5" /> Profile
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleSignOut} className="rounded-lg gap-1.5 text-red-500 hover:text-red-600">
+                <Button variant="outline" size="sm" onClick={handleSignOut} className="rounded-lg gap-1.5 text-destructive hover:text-destructive">
                   <LogOut className="w-3.5 h-3.5" /> Sign Out
                 </Button>
               </div>
@@ -191,7 +191,7 @@ const Dashboard = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Plan</span><Badge>{subscription.plan_id}</Badge></div>
                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Sessions Left</span><span className="font-semibold">{subscription.sessions_remaining}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant="outline" className="border-green-500 text-green-600">Active</Badge></div>
+                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant="outline" className="border-calm-sage text-calm-sage">Active</Badge></div>
                   </div>
                 ) : (
                   <div>
