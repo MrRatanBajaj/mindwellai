@@ -1,33 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, Search, BookOpen, Star, Calendar as CalendarIcon, Flame, Lightbulb } from 'lucide-react';
+import { Edit3, Search, BookOpen, Star, Flame, Lightbulb, BatteryCharging, Sparkles, TrendingUp } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { JournalEntryCard } from '@/components/journal/JournalEntry';
 import { JournalEditor } from '@/components/journal/JournalEditor';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-
-interface JournalEntry {
-  id: string;
-  title: string;
-  content: string;
-  mood: 'happy' | 'neutral' | 'sad';
-  date: string;
-  tags: string[];
-  favorite?: boolean;
-}
-
-const prompts = [
-  "What made you smile today?",
-  "Write about something you're grateful for.",
-  "How did you handle a challenge today?",
-  "Describe a moment of peace you experienced.",
-  "What's one thing you'd like to let go of?",
-  "Write a letter to your future self.",
-];
+import { JOURNAL_PROMPTS, JOURNAL_STORAGE_KEY } from '@/components/journal/types';
+import type { JournalEntry } from '@/components/journal/types';
 
 const Journal = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -39,12 +21,12 @@ const Journal = () => {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('journalEntries');
+    const saved = localStorage.getItem(JOURNAL_STORAGE_KEY);
     if (saved) setEntries(JSON.parse(saved));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('journalEntries', JSON.stringify(entries));
+    localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(entries));
   }, [entries]);
 
   const saveEntry = (entryData: Partial<JournalEntry>) => {
@@ -60,14 +42,14 @@ const Journal = () => {
       };
       setEntries(prev => [newEntry, ...prev]);
     }
-    setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [] });
+     setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [], energy: 5, gratitude: '' });
     setIsWriting(false);
   };
 
   const deleteEntry = (id: string) => setEntries(prev => prev.filter(e => e.id !== id));
   const toggleFavorite = (id: string) => setEntries(prev => prev.map(e => e.id === id ? { ...e, favorite: !e.favorite } : e));
   const editEntry = (entry: JournalEntry) => { setEditingEntry(entry); setCurrentEntry(entry); setIsWriting(true); };
-  const closeEditor = () => { setIsWriting(false); setEditingEntry(null); setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [] }); };
+  const closeEditor = () => { setIsWriting(false); setEditingEntry(null); setCurrentEntry({ title: '', content: '', mood: 'neutral', tags: [], energy: 5, gratitude: '' }); };
 
   // Streak calculation
   const getStreak = () => {
@@ -85,7 +67,15 @@ const Journal = () => {
   };
 
   const totalWords = entries.reduce((s, e) => s + e.content.split(' ').length, 0);
-  const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  const favoriteCount = entries.filter(e => e.favorite).length;
+  const averageEnergy = entries.length ? Math.round(entries.reduce((sum, entry) => sum + (entry.energy ?? 5), 0) / entries.length) : 0;
+  const gratitudeCount = entries.filter(entry => entry.gratitude?.trim()).length;
+  const moodSummary = entries.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.mood] = (acc[entry.mood] || 0) + 1;
+    return acc;
+  }, {});
+  const strongestMood = Object.entries(moodSummary).sort((a, b) => b[1] - a[1])[0]?.[0] || 'neutral';
+  const randomPrompt = JOURNAL_PROMPTS[Math.floor(Math.random() * JOURNAL_PROMPTS.length)];
 
   const filtered = entries
     .filter(e => {
@@ -103,15 +93,40 @@ const Journal = () => {
       <Header />
       <main className="flex-1 pt-28 pb-16 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
-          {/* Hero */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-lavender-light/60 text-calm-lavender mb-4">
-              <BookOpen className="w-4 h-4" /> Wellness Journal
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 rounded-[2rem] border border-border/40 bg-gradient-to-br from-calm-lavender-light/40 via-background to-calm-sage-light/30 p-6 md:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr] lg:items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-lavender-light/60 text-calm-lavender mb-4">
+                  <BookOpen className="w-4 h-4" /> Wellness Journal
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">Your reflective space for healing and clarity</h1>
+                <p className="text-muted-foreground text-lg max-w-2xl">
+                  Capture emotions, energy, gratitude, and patterns that matter — all inside your own private mental wellness record.
+                </p>
+              </div>
+              <Card className="border-border/40 bg-card/80 shadow-soft">
+                <CardContent className="p-5 space-y-3">
+                  <div className="text-sm font-medium text-foreground">This week&apos;s emotional snapshot</div>
+                  <div className="flex items-center justify-between rounded-2xl bg-muted/40 px-4 py-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Most frequent mood</p>
+                      <p className="text-lg font-semibold text-foreground capitalize">{strongestMood}</p>
+                    </div>
+                    <TrendingUp className="w-5 h-5 text-calm-sage" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-2xl bg-muted/40 p-3">
+                      <p className="text-xs text-muted-foreground">Avg. energy</p>
+                      <p className="mt-1 font-semibold text-foreground">{averageEnergy || 0}/10</p>
+                    </div>
+                    <div className="rounded-2xl bg-muted/40 p-3">
+                      <p className="text-xs text-muted-foreground">Gratitude notes</p>
+                      <p className="mt-1 font-semibold text-foreground">{gratitudeCount}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">Your Reflective Space</h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Capture your thoughts, track your moods, and discover patterns in your emotional well-being.
-            </p>
           </motion.div>
 
           {/* Stats Row */}
@@ -122,7 +137,7 @@ const Journal = () => {
                 { label: "Entries", value: entries.length, icon: BookOpen, color: "bg-calm-sky-light/60 text-calm-sky" },
                 { label: "Words", value: totalWords.toLocaleString(), icon: Edit3, color: "bg-calm-sage-light/60 text-calm-sage" },
                 { label: "Streak", value: `${getStreak()}d`, icon: Flame, color: "bg-amber-100 text-amber-600" },
-                { label: "Favorites", value: entries.filter(e => e.favorite).length, icon: Star, color: "bg-rose-100 text-rose-500" },
+                 { label: "Favorites", value: favoriteCount, icon: Star, color: "bg-calm-lavender-light/60 text-calm-lavender" },
               ].map((stat, i) => (
                 <Card key={i} className="border-border/40">
                   <CardContent className="p-3 flex items-center gap-3">
@@ -139,19 +154,45 @@ const Journal = () => {
             </motion.div>
           )}
 
-          {/* Writing Prompt */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-            className="mb-6 p-4 rounded-xl bg-calm-lavender-light/30 border border-calm-lavender/10 flex items-center gap-3">
-            <Lightbulb className="w-5 h-5 text-calm-lavender shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Today's writing prompt</p>
-              <p className="text-sm text-muted-foreground italic">"{randomPrompt}"</p>
-            </div>
-            <Button size="sm" onClick={() => { setCurrentEntry(prev => ({ ...prev, content: randomPrompt + '\n\n' })); setIsWriting(true); }}
-              className="bg-calm-lavender hover:bg-calm-lavender/90 text-white rounded-lg shrink-0">
-              Write
-            </Button>
-          </motion.div>
+          <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr] mb-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+              className="p-5 rounded-2xl bg-calm-lavender-light/30 border border-border/30 flex items-start gap-3">
+              <Lightbulb className="w-5 h-5 text-calm-lavender shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Therapist-inspired writing prompt</p>
+                <p className="text-sm text-muted-foreground italic mt-1">"{randomPrompt}"</p>
+                <Button size="sm" onClick={() => { setCurrentEntry(prev => ({ ...prev, content: randomPrompt + '\n\n' })); setIsWriting(true); }}
+                  className="mt-3 bg-calm-lavender hover:bg-calm-lavender/90 text-primary-foreground rounded-lg shrink-0">
+                  Write from prompt
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <Card className="border-border/40">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-calm-sky-light/50 flex items-center justify-center">
+                    <BatteryCharging className="w-5 h-5 text-calm-sky" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Average energy</p>
+                    <p className="font-semibold text-foreground">{averageEnergy || 0}/10 across entries</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/40">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-calm-sage-light/50 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-calm-sage" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Gratitude practice</p>
+                    <p className="font-semibold text-foreground">{gratitudeCount} entries include gratitude</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
 
           {/* Actions Bar */}
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6">

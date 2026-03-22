@@ -11,6 +11,11 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { motion, AnimatePresence } from "framer-motion";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
+const authMessages = {
+  emailOtp: "A secure WellMindAI verification code is on its way to your inbox from the WellMindAI team.",
+  phoneOtp: "A secure WellMindAI verification code is on its way by SMS on behalf of the WellMindAI team.",
+};
+
 type AuthMode = "login" | "signup" | "otp-verify";
 type OtpChannel = "email" | "phone";
 
@@ -78,7 +83,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithOtp({ phone: otpTarget });
         if (error) { toast.error(error.message); return; }
       }
-      toast.success(`OTP sent to your ${otpChannel}! Check ${otpChannel === 'email' ? 'your inbox' : 'your messages'}.`);
+      toast.success(otpChannel === "email" ? authMessages.emailOtp : authMessages.phoneOtp);
       setMode("otp-verify");
     } catch { toast.error("Failed to send OTP"); }
     finally { setIsLoading(false); }
@@ -164,6 +169,9 @@ const Auth = () => {
                     <p className="text-sm text-muted-foreground">
                       Enter the 6-digit code sent to<br /><span className="font-medium text-foreground">{otpTarget}</span>
                     </p>
+                    <p className="text-xs text-muted-foreground mt-3 rounded-xl bg-muted/40 px-3 py-2 border border-border/40">
+                      This one-time code is sent securely on behalf of the <span className="text-foreground font-medium">WellMindAI team</span>.
+                    </p>
                   </div>
                   <div className="flex justify-center">
                     <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
@@ -233,8 +241,8 @@ const Auth = () => {
                               {otpChannel === "email" ? <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> : <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground text-center">
-                            We'll send a 6-digit verification code to your {otpChannel}.
+                          <p className="text-xs text-muted-foreground text-center rounded-xl bg-muted/40 border border-border/40 px-3 py-2">
+                            We&apos;ll send a secure 6-digit WellMindAI code to your {otpChannel === "email" ? "email inbox" : "phone"}. For phone OTP, enable the <span className="text-foreground font-medium">Phone provider</span> in Supabase and connect an SMS provider such as Twilio.
                           </p>
                           <Button onClick={handleSendOtp} disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
                             {isLoading ? "Sending..." : <>Send OTP <ArrowRight className="ml-2 h-4 w-4" /></>}
@@ -317,6 +325,9 @@ const Auth = () => {
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           </div>
                         </div>
+                      </div>
+                      <div className="rounded-xl bg-muted/40 border border-border/40 px-3 py-2 text-xs text-muted-foreground">
+                        Signup creates your private wellness space, and your personal dashboard/profile stays separate from every other user.
                       </div>
                       <Button type="submit" disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
                         {isLoading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}

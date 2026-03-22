@@ -1,18 +1,9 @@
 import { motion } from 'framer-motion';
-import { Calendar, Edit3, Trash2, Heart, MessageCircle, Tag } from 'lucide-react';
+import { Calendar, Edit3, Trash2, Heart, MessageCircle, BatteryCharging, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-interface JournalEntry {
-  id: string;
-  title: string;
-  content: string;
-  mood: 'happy' | 'neutral' | 'sad';
-  date: string;
-  tags: string[];
-  favorite?: boolean;
-}
+import type { JournalEntry } from '@/components/journal/types';
 
 interface JournalEntryCardProps {
   entry: JournalEntry;
@@ -24,9 +15,9 @@ interface JournalEntryCardProps {
 
 const getMoodIcon = (mood: string) => {
   const icons = {
-    happy: { icon: '😊', bg: 'bg-green-50' },
-    neutral: { icon: '😐', bg: 'bg-amber-50' },
-    sad: { icon: '😔', bg: 'bg-rose-50' }
+    happy: { icon: '😊', bg: 'bg-calm-sage-light/50' },
+    neutral: { icon: '😐', bg: 'bg-calm-sky-light/50' },
+    sad: { icon: '😔', bg: 'bg-calm-lavender-light/50' }
   };
   return icons[mood as keyof typeof icons] || icons.neutral;
 };
@@ -43,7 +34,7 @@ export const JournalEntryCard = ({ entry, index, onEdit, onDelete, onToggleFavor
       whileHover={{ y: -2 }}
       className="group h-full"
     >
-      <Card className="h-full border-border/40 bg-card hover:shadow-soft transition-all duration-300">
+      <Card className="h-full border-border/40 bg-card hover:shadow-soft transition-all duration-300 overflow-hidden">
         <CardHeader className="pb-2 pt-4 px-4">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
@@ -65,6 +56,19 @@ export const JournalEntryCard = ({ entry, index, onEdit, onDelete, onToggleFavor
           </div>
         </CardHeader>
         <CardContent className="px-4 pb-4">
+          <div className="mb-3 flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+            {typeof entry.energy === 'number' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                <BatteryCharging className="w-3 h-3" /> Energy {entry.energy}/10
+              </span>
+            )}
+            {entry.gratitude && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                <Sparkles className="w-3 h-3" /> Gratitude added
+              </span>
+            )}
+          </div>
+
           <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-3">{entry.content}</p>
 
           {entry.tags.length > 0 && (
