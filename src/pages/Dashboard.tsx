@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { JOURNAL_STORAGE_KEY } from '@/components/journal/types';
 import {
   User, Calendar, Clock, Brain, Heart, BookOpen,
   ArrowRight, Star, Edit3, Flame, Activity,
@@ -31,8 +32,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     // Load journal from localStorage
-    const saved = localStorage.getItem('journalEntries');
+    const saved = localStorage.getItem(`${JOURNAL_STORAGE_KEY}:${user.id}`);
     if (saved) setJournalEntries(JSON.parse(saved));
+    else setJournalEntries([]);
 
     const fetchData = async () => {
       const [profileRes, sessionRes, subRes, consultRes] = await Promise.all([

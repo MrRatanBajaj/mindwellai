@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 import { JournalEntryCard } from '@/components/journal/JournalEntry';
 import { JournalEditor } from '@/components/journal/JournalEditor';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { JOURNAL_PROMPTS, JOURNAL_STORAGE_KEY } from '@/components/journal/types';
 import type { JournalEntry } from '@/components/journal/types';
 
 const Journal = () => {
+  const { user } = useAuth();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isWriting, setIsWriting] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
@@ -19,15 +21,17 @@ const Journal = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMoodFilter, setSelectedMoodFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const scopedStorageKey = user ? `${JOURNAL_STORAGE_KEY}:${user.id}` : `${JOURNAL_STORAGE_KEY}:guest`;
 
   useEffect(() => {
-    const saved = localStorage.getItem(JOURNAL_STORAGE_KEY);
+    const saved = localStorage.getItem(scopedStorageKey);
     if (saved) setEntries(JSON.parse(saved));
-  }, []);
+    else setEntries([]);
+  }, [scopedStorageKey]);
 
   useEffect(() => {
-    localStorage.setItem(JOURNAL_STORAGE_KEY, JSON.stringify(entries));
-  }, [entries]);
+    localStorage.setItem(scopedStorageKey, JSON.stringify(entries));
+  }, [entries, scopedStorageKey]);
 
   const saveEntry = (entryData: Partial<JournalEntry>) => {
     if (!entryData.title || !entryData.content) return;
