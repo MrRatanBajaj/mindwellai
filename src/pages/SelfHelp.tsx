@@ -1,330 +1,267 @@
-import { useState } from "react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
 import {
-  BookOpen, Play, Clock, Heart, Search, Wind, Brain,
-  Sun, Moon, Sparkles, Leaf, Users, ArrowRight, Star,
-  Headphones, BookmarkPlus, CheckCircle, Timer
-} from "lucide-react";
-import { toast } from "sonner";
-import { motion } from "framer-motion";
+  ArrowRight,
+  BookOpen,
+  Brain,
+  CheckCircle,
+  Clock,
+  Heart,
+  Leaf,
+  Moon,
+  Search,
+  Sparkles,
+  Sun,
+  Wind,
+} from 'lucide-react';
 
 const categories = [
-  { id: "all", label: "All", icon: Sparkles },
-  { id: "anxiety", label: "Anxiety", icon: Wind },
-  { id: "depression", label: "Depression", icon: Moon },
-  { id: "stress", label: "Stress", icon: Brain },
-  { id: "sleep", label: "Sleep", icon: Moon },
-  { id: "mindfulness", label: "Mindfulness", icon: Leaf },
-  { id: "relationships", label: "Relationships", icon: Users },
+  { id: 'all', label: 'All support', icon: Sparkles },
+  { id: 'anxiety', label: 'Anxiety', icon: Wind },
+  { id: 'stress', label: 'Stress', icon: Brain },
+  { id: 'sleep', label: 'Sleep', icon: Moon },
+  { id: 'mindfulness', label: 'Mindfulness', icon: Leaf },
+  { id: 'mood', label: 'Mood care', icon: Sun },
 ];
 
 const exercises = [
-  {
-    id: "e1", title: "4-7-8 Breathing", description: "Calm anxiety with this powerful breathing pattern",
-    duration: "5 min", category: "anxiety", difficulty: "Beginner", type: "exercise",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80",
-  },
-  {
-    id: "e2", title: "Body Scan Meditation", description: "Release tension through mindful body awareness",
-    duration: "15 min", category: "mindfulness", difficulty: "Beginner", type: "exercise",
-    image: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&q=80",
-  },
-  {
-    id: "e3", title: "Progressive Muscle Relaxation", description: "Systematically release physical stress",
-    duration: "12 min", category: "stress", difficulty: "Beginner", type: "exercise",
-    image: "https://images.unsplash.com/photo-1474418397713-2f1091553e69?w=400&q=80",
-  },
-  {
-    id: "e4", title: "Gratitude Journaling Prompt", description: "Write about 3 things you're grateful for today",
-    duration: "10 min", category: "depression", difficulty: "Beginner", type: "exercise",
-    image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=80",
-  },
-  {
-    id: "e5", title: "Sleep Hygiene Routine", description: "Build a calming pre-sleep wind-down ritual",
-    duration: "20 min", category: "sleep", difficulty: "Beginner", type: "exercise",
-    image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&q=80",
-  },
-  {
-    id: "e6", title: "Loving-Kindness Meditation", description: "Cultivate compassion for yourself and others",
-    duration: "15 min", category: "mindfulness", difficulty: "Intermediate", type: "exercise",
-    image: "https://images.unsplash.com/photo-1602192509154-0b900ee1f851?w=400&q=80",
-  },
+  { id: 'ex-1', title: '4-6 Grounding Breath', category: 'anxiety', duration: '4 min', description: 'Slow your nervous system with a therapist-approved breath rhythm.', steps: ['Inhale for 4', 'Exhale for 6', 'Repeat for 10 rounds'] },
+  { id: 'ex-2', title: 'Worry Reset Sheet', category: 'stress', duration: '8 min', description: 'Separate facts, fears, and the next helpful action.', steps: ['Name the worry', 'List evidence', 'Choose one next step'] },
+  { id: 'ex-3', title: 'Gentle Sleep Wind-down', category: 'sleep', duration: '12 min', description: 'A quiet evening routine to reduce racing thoughts before bed.', steps: ['Dim light', 'No scrolling', 'Body scan for 5 minutes'] },
+  { id: 'ex-4', title: 'Self-Compassion Pause', category: 'mood', duration: '5 min', description: 'Use kind internal language during hard emotional moments.', steps: ['Notice the pain', 'Name it kindly', 'Offer yourself support'] },
+  { id: 'ex-5', title: '5 Senses Reset', category: 'mindfulness', duration: '3 min', description: 'Return to the present when your mind feels overloaded.', steps: ['5 things you see', '4 you feel', '3 you hear'] },
+  { id: 'ex-6', title: 'Boundary Rehearsal', category: 'stress', duration: '6 min', description: 'Practice a calm sentence for saying no without guilt.', steps: ['Write your boundary', 'Say it aloud', 'Keep it short and warm'] },
 ];
 
-const courses = [
-  {
-    id: "c1", title: "Understanding Anxiety", description: "Evidence-based techniques for managing anxiety disorders and panic attacks",
-    lessons: 12, duration: "4 weeks", category: "anxiety", rating: 4.9, enrolled: 25420, creator: "Dr. Sarah Johnson",
-    image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400&q=80",
-  },
-  {
-    id: "c2", title: "Mindfulness-Based Stress Reduction", description: "8-week MBSR program for stress management and emotional regulation",
-    lessons: 24, duration: "8 weeks", category: "mindfulness", rating: 4.8, enrolled: 38650, creator: "Dr. Jon Kabat-Zinn",
-    image: "https://images.unsplash.com/photo-1484627147104-f5197bcd6651?w=400&q=80",
-  },
-  {
-    id: "c3", title: "CBT for Depression", description: "Challenge negative thought patterns and build healthier thinking habits",
-    lessons: 18, duration: "6 weeks", category: "depression", rating: 4.9, enrolled: 29340, creator: "Dr. David Burns",
-    image: "https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?w=400&q=80",
-  },
-  {
-    id: "c4", title: "Better Sleep Science", description: "Understand circadian rhythms and optimize your sleep quality naturally",
-    lessons: 10, duration: "3 weeks", category: "sleep", rating: 4.8, enrolled: 41250, creator: "Dr. Matthew Walker",
-    image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=400&q=80",
-  },
-  {
-    id: "c5", title: "Building Healthy Relationships", description: "Communication skills, boundary-setting, and conflict resolution",
-    lessons: 15, duration: "5 weeks", category: "relationships", rating: 4.7, enrolled: 19890, creator: "Dr. John Gottman",
-    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80",
-  },
-  {
-    id: "c6", title: "Stress Resilience Training", description: "Build psychological resilience for high-pressure situations",
-    lessons: 14, duration: "4 weeks", category: "stress", rating: 4.7, enrolled: 32150, creator: "Dr. Kelly McGonigal",
-    image: "https://images.unsplash.com/photo-1552693673-1bf958298935?w=400&q=80",
-  },
+const resources = [
+  { id: 're-1', title: 'NIMH: Caring for Your Mental Health', category: 'mood', type: 'Guide', url: 'https://www.nimh.nih.gov/health/topics/caring-for-your-mental-health', source: 'NIMH', description: 'Foundational mental health habits from a trusted clinical source.' },
+  { id: 're-2', title: 'WHO: Mental Health Strengthening Tips', category: 'mindfulness', type: 'Guide', url: 'https://www.who.int/news-room/feature-stories/mental-well-being-resources-for-the-public', source: 'WHO', description: 'Simple, evidence-informed ways to support daily wellbeing.' },
+  { id: 're-3', title: 'Mind: Managing Anxiety', category: 'anxiety', type: 'Article', url: 'https://www.mind.org.uk/information-support/types-of-mental-health-problems/anxiety-and-panic-attacks/', source: 'Mind', description: 'Practical strategies for panic, anxiety, and overwhelm.' },
+  { id: 're-4', title: 'NHS: Stress Management', category: 'stress', type: 'Toolkit', url: 'https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/how-to-manage-stress/', source: 'NHS', description: 'Grounded techniques for work pressure and emotional fatigue.' },
+  { id: 're-5', title: 'Sleep Foundation: Healthy Sleep Tips', category: 'sleep', type: 'Checklist', url: 'https://www.sleepfoundation.org/sleep-hygiene', source: 'Sleep Foundation', description: 'Create a sleep environment that supports emotional recovery.' },
+  { id: 're-6', title: 'Mindful: Meditation Basics', category: 'mindfulness', type: 'Practice', url: 'https://www.mindful.org/how-to-meditate/', source: 'Mindful', description: 'A gentle beginner-friendly path into mindful awareness.' },
+  { id: 're-7', title: 'Psychology Tools: CBT Thought Record', category: 'mood', type: 'Worksheet', url: 'https://www.psychologytools.com/', source: 'Psychology Tools', description: 'A classic CBT exercise for reframing negative thoughts.' },
+  { id: 're-8', title: 'HelpGuide: Emotional Resilience', category: 'stress', type: 'Article', url: 'https://www.helpguide.org/mental-health/wellbeing/building-better-mental-health', source: 'HelpGuide', description: 'Build resilience habits when life feels emotionally heavy.' },
 ];
 
-const articles = [
-  { id: "a1", title: "10 Signs You May Be Experiencing Burnout", readTime: "5 min", category: "stress", saves: 1240 },
-  { id: "a2", title: "How to Practice Self-Compassion Daily", readTime: "4 min", category: "mindfulness", saves: 980 },
-  { id: "a3", title: "Understanding Your Attachment Style", readTime: "7 min", category: "relationships", saves: 2100 },
-  { id: "a4", title: "The Science Behind Deep Breathing", readTime: "3 min", category: "anxiety", saves: 1560 },
-  { id: "a5", title: "Creating a Mental Health Morning Routine", readTime: "6 min", category: "depression", saves: 1870 },
-  { id: "a6", title: "Digital Detox: Reclaiming Your Peace", readTime: "5 min", category: "stress", saves: 890 },
+const therapistTracks = [
+  { title: 'For anxious mornings', description: 'Breathwork + grounding + one calming article.', category: 'anxiety' },
+  { title: 'For burnout after work', description: 'Boundary reflection + stress toolkit + sleep reset.', category: 'stress' },
+  { title: 'For low mood days', description: 'Self-compassion + gratitude + mood-care reading.', category: 'mood' },
 ];
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 20 } },
-};
 
 const SelfHelp = () => {
+  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [completedExercises, setCompletedExercises] = useState<string[]>([]);
   const [savedResources, setSavedResources] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [activeSection, setActiveSection] = useState<"exercises" | "courses" | "articles">("exercises");
 
-  const toggleSave = (id: string) => {
-    setSavedResources(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-    toast.success(savedResources.includes(id) ? "Removed from saved" : "Saved for later");
+  const storageKey = user ? `saved-self-help:${user.id}` : 'saved-self-help:guest';
+  const completedKey = user ? `completed-self-help:${user.id}` : 'completed-self-help:guest';
+
+  useEffect(() => {
+    setSavedResources(JSON.parse(localStorage.getItem(storageKey) || '[]'));
+    setCompletedExercises(JSON.parse(localStorage.getItem(completedKey) || '[]'));
+  }, [storageKey, completedKey]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(savedResources));
+  }, [savedResources, storageKey]);
+
+  useEffect(() => {
+    localStorage.setItem(completedKey, JSON.stringify(completedExercises));
+  }, [completedExercises, completedKey]);
+
+  const matches = (text: string) => text.toLowerCase().includes(searchQuery.toLowerCase());
+
+  const filteredExercises = useMemo(() => exercises.filter((item) => {
+    const categoryMatch = activeCategory === 'all' || item.category === activeCategory;
+    return categoryMatch && (!searchQuery || matches(item.title) || matches(item.description));
+  }), [activeCategory, searchQuery]);
+
+  const filteredResources = useMemo(() => resources.filter((item) => {
+    const categoryMatch = activeCategory === 'all' || item.category === activeCategory;
+    return categoryMatch && (!searchQuery || matches(item.title) || matches(item.description) || matches(item.source));
+  }), [activeCategory, searchQuery]);
+
+  const toggleSaved = (id: string) => {
+    setSavedResources((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
   };
 
-  const filterByCategory = <T extends { category: string; title: string; description?: string }>(items: T[]) =>
-    items.filter(item => {
-      const matchesCat = activeCategory === "all" || item.category === activeCategory;
-      const matchesSearch = !searchQuery ||
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCat && matchesSearch;
-    });
+  const toggleCompleted = (id: string) => {
+    setCompletedExercises((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1 pt-28 pb-16 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Hero */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-sage-light/60 text-calm-sage mb-4">
-              <Leaf className="w-4 h-4" /> Self-Care Resources
-            </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
-              Nurture Your Mind
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Guided exercises, expert courses, and curated articles to support your mental wellness journey.
-            </p>
-          </motion.div>
-
-          {/* Awareness Banner */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-calm-sage-light/40 via-calm-sky-light/40 to-calm-lavender-light/40 border border-border/30">
-            <div className="flex items-start gap-3">
-              <Heart className="w-5 h-5 text-calm-sage mt-0.5 shrink-0" />
+        <div className="max-w-6xl mx-auto space-y-8">
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-[2rem] border border-border/40 bg-gradient-to-br from-calm-sage-light/40 via-background to-calm-sky-light/30 p-6 md:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
               <div>
-                <p className="text-sm font-medium text-foreground mb-1">Mental health is just as important as physical health</p>
-                <p className="text-xs text-muted-foreground">
-                  1 in 4 people will experience a mental health condition. You're not alone — these resources are here to help you build resilience, self-awareness, and inner peace. Take it one step at a time. 💚
+                <div className="inline-flex items-center gap-2 rounded-full bg-calm-sage-light/70 px-4 py-1.5 text-calm-sage mb-4">
+                  <Leaf className="w-4 h-4" /> Therapist-guided self help
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl text-foreground font-bold mb-3">Support your mind with calm, practical tools</h1>
+                <p className="text-lg text-muted-foreground max-w-2xl">
+                  Explore exercises, trusted therapy resources, and gentle routines designed to help with anxiety, stress, sleep, and emotional recovery.
                 </p>
               </div>
-            </div>
-          </motion.div>
-
-          {/* Search */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search resources..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 h-11 bg-card border-border/50 rounded-xl"
-              />
-            </div>
-          </motion.div>
-
-          {/* Category pills */}
-          <div className="flex flex-wrap gap-2 justify-center mb-8">
-            {categories.map(cat => (
-              <Button
-                key={cat.id}
-                variant={activeCategory === cat.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setActiveCategory(cat.id)}
-                className={`rounded-full gap-1.5 ${activeCategory === cat.id ? "bg-calm-sage text-white hover:bg-calm-sage/90" : "bg-card hover:bg-muted"}`}
-              >
-                <cat.icon className="w-3.5 h-3.5" />
-                {cat.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* Section tabs */}
-          <div className="flex gap-1 justify-center mb-8 bg-muted/50 rounded-xl p-1 max-w-sm mx-auto">
-            {([
-              { key: "exercises", label: "Exercises", icon: Play },
-              { key: "courses", label: "Courses", icon: BookOpen },
-              { key: "articles", label: "Articles", icon: BookmarkPlus },
-            ] as const).map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveSection(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeSection === tab.key
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <tab.icon className="w-3.5 h-3.5" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Exercises */}
-          {activeSection === "exercises" && (
-            <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filterByCategory(exercises).map(ex => (
-                <motion.div key={ex.id} variants={itemVariants}>
-                  <Card className="overflow-hidden border-border/40 hover:shadow-soft transition-all group cursor-pointer">
-                    <div className="relative h-40 overflow-hidden">
-                      <img src={ex.image} alt={ex.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                      <Badge className="absolute top-3 left-3 bg-white/90 text-foreground text-xs">{ex.difficulty}</Badge>
-                      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white text-sm">
-                        <Timer className="w-3.5 h-3.5" /> {ex.duration}
-                      </div>
-                      <button onClick={() => toggleSave(ex.id)}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white transition">
-                        <Heart className={`w-4 h-4 ${savedResources.includes(ex.id) ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
-                      </button>
+              <Card className="border-border/40 bg-card/80 shadow-soft">
+                <CardContent className="p-5 space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Your support summary</p>
+                    <p className="text-2xl font-semibold text-foreground mt-1">{completedExercises.length} practices completed</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-muted/40 p-3">
+                      <p className="text-xs text-muted-foreground">Saved links</p>
+                      <p className="mt-1 font-semibold text-foreground">{savedResources.length}</p>
                     </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-foreground mb-1">{ex.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{ex.description}</p>
-                      <Button size="sm" className="mt-3 w-full bg-calm-sage hover:bg-calm-sage/90 text-white rounded-lg gap-1.5">
-                        <Play className="w-3.5 h-3.5" /> Start Exercise
+                    <div className="rounded-2xl bg-muted/40 p-3">
+                      <p className="text-xs text-muted-foreground">Focus areas</p>
+                      <p className="mt-1 font-semibold text-foreground">{categories.length - 1}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-muted/40 p-4 text-sm text-muted-foreground">
+                    Healing doesn&apos;t need to be dramatic — small, repeated acts of care build real emotional strength.
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.section>
+
+          <section className="grid gap-4 lg:grid-cols-3">
+            {therapistTracks.map((track, index) => (
+              <motion.div key={track.title} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.06 }}>
+                <Card className="h-full border-border/40">
+                  <CardContent className="p-5 space-y-3">
+                    <Badge variant="secondary" className="rounded-full">{track.category}</Badge>
+                    <h2 className="text-lg font-semibold text-foreground">{track.title}</h2>
+                    <p className="text-sm text-muted-foreground">{track.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </section>
+
+          <section className="space-y-4">
+            <div className="relative max-w-xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search exercises, guides, and therapy resources" className="pl-10 h-11 rounded-xl border-border/50 bg-card" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={activeCategory === category.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`rounded-full gap-1.5 ${activeCategory === category.id ? 'bg-calm-sage text-primary-foreground' : ''}`}
+                >
+                  <category.icon className="w-3.5 h-3.5" />
+                  {category.label}
+                </Button>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-display text-2xl font-bold text-foreground">Daily practices</h2>
+                <p className="text-sm text-muted-foreground">Short, structured exercises you can start immediately.</p>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredExercises.map((exercise) => {
+                const completed = completedExercises.includes(exercise.id);
+                return (
+                  <Card key={exercise.id} className="border-border/40 h-full">
+                    <CardContent className="p-5 h-full flex flex-col">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <Badge variant="secondary" className="rounded-full">{exercise.category}</Badge>
+                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1"><Clock className="w-3 h-3" /> {exercise.duration}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{exercise.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">{exercise.description}</p>
+                      <div className="space-y-2 mb-5">
+                        {exercise.steps.map((step) => (
+                          <div key={step} className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <CheckCircle className="w-4 h-4 text-calm-sage mt-0.5 shrink-0" />
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <Button onClick={() => toggleCompleted(exercise.id)} className={`mt-auto rounded-xl ${completed ? 'bg-calm-sky text-primary-foreground hover:bg-calm-sky/90' : 'bg-calm-sage text-primary-foreground hover:bg-calm-sage/90'}`}>
+                        {completed ? 'Completed today' : 'Mark as completed'}
                       </Button>
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+                );
+              })}
+            </div>
+          </section>
 
-          {/* Courses */}
-          {activeSection === "courses" && (
-            <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filterByCategory(courses).map(course => (
-                <motion.div key={course.id} variants={itemVariants}>
-                  <Card className="overflow-hidden border-border/40 hover:shadow-soft transition-all group cursor-pointer">
-                    <div className="relative h-40 overflow-hidden">
-                      <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                      <div className="absolute bottom-3 left-3 flex items-center gap-2 text-white text-sm">
-                        <Clock className="w-3.5 h-3.5" /> {course.duration}
-                        <span className="w-1 h-1 bg-white/60 rounded-full" />
-                        {course.lessons} lessons
-                      </div>
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-foreground mb-1">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{course.description}</p>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> {course.rating}</span>
-                        <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {(course.enrolled / 1000).toFixed(1)}k enrolled</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">by {course.creator}</p>
-                      <Button size="sm" variant="outline" className="mt-3 w-full rounded-lg gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5" /> Start Course
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Articles */}
-          {activeSection === "articles" && (
-            <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-              className="grid gap-3 max-w-2xl mx-auto">
-              {filterByCategory(articles.map(a => ({ ...a, description: a.title }))).map(article => (
-                <motion.div key={article.id} variants={itemVariants}>
-                  <Card className="border-border/40 hover:shadow-soft transition-all cursor-pointer">
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-calm-lavender-light/60 flex items-center justify-center shrink-0">
-                        <BookOpen className="w-5 h-5 text-calm-lavender" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-foreground text-sm">{article.title}</h3>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {article.readTime}</span>
-                          <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {article.saves}</span>
+          <section className="space-y-4">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-foreground">Trusted therapy resources</h2>
+              <p className="text-sm text-muted-foreground">High-quality external links from respected mental health organizations.</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {filteredResources.map((resource) => {
+                const saved = savedResources.includes(resource.id);
+                return (
+                  <Card key={resource.id} className="border-border/40">
+                    <CardContent className="p-5 space-y-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="secondary" className="rounded-full">{resource.type}</Badge>
+                            <span className="text-xs text-muted-foreground">{resource.source}</span>
+                          </div>
+                          <h3 className="text-lg font-semibold text-foreground">{resource.title}</h3>
                         </div>
+                        <Button variant="outline" size="sm" onClick={() => toggleSaved(resource.id)} className="rounded-full">
+                          {saved ? 'Saved' : 'Save'}
+                        </Button>
                       </div>
-                      <button onClick={() => toggleSave(article.id)}>
-                        <Heart className={`w-4 h-4 ${savedResources.includes(article.id) ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
-                      </button>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">{resource.description}</p>
+                      <a href={resource.url} target="_blank" rel="noreferrer" className="inline-flex">
+                        <Button className="rounded-xl bg-calm-lavender text-primary-foreground hover:bg-calm-lavender/90 gap-2">
+                          Open resource <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </a>
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-
-          {/* Empty state */}
-          {((activeSection === "exercises" && filterByCategory(exercises).length === 0) ||
-            (activeSection === "courses" && filterByCategory(courses).length === 0) ||
-            (activeSection === "articles" && filterByCategory(articles.map(a => ({ ...a, description: a.title }))).length === 0)) && (
-            <div className="text-center py-16">
-              <Search className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground">No resources found. Try a different category or search term.</p>
+                );
+              })}
             </div>
-          )}
+          </section>
 
-          {/* CTA */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-            className="mt-16 text-center p-8 rounded-2xl bg-gradient-to-r from-calm-sage-light/30 to-calm-sky-light/30 border border-border/30">
-            <Sun className="w-8 h-8 text-calm-sage mx-auto mb-3" />
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Need personalized support?</h2>
-            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-              Book a session with a professional counselor for tailored guidance on your wellness journey.
-            </p>
-            <Button className="bg-calm-sage hover:bg-calm-sage/90 text-white rounded-xl gap-2" onClick={() => window.location.href = '/consultation'}>
-              Book a Counselor <ArrowRight className="w-4 h-4" />
-            </Button>
-          </motion.div>
+          <section>
+            <Card className="border-border/40 bg-gradient-to-r from-calm-sage-light/30 via-background to-calm-lavender-light/30">
+              <CardContent className="p-6 md:p-8 text-center">
+                <Heart className="w-8 h-8 text-calm-sage mx-auto mb-3" />
+                <h2 className="font-display text-2xl font-bold text-foreground mb-2">Need deeper personal support?</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto mb-5">
+                  Self-help is powerful, and professional support can make it even more effective when life feels bigger than what you can hold alone.
+                </p>
+                <Button className="rounded-xl bg-calm-sage text-primary-foreground hover:bg-calm-sage/90 gap-2" onClick={() => window.location.href = '/consultation'}>
+                  Book a counselor <ArrowRight className="w-4 h-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          </section>
         </div>
       </main>
       <Footer />

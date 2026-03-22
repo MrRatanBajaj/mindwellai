@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { JOURNAL_STORAGE_KEY } from '@/components/journal/types';
 import {
   User, Calendar, Clock, Brain, Heart, BookOpen,
   ArrowRight, Star, Edit3, Flame, Activity,
@@ -31,8 +32,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     // Load journal from localStorage
-    const saved = localStorage.getItem('journalEntries');
+    const saved = localStorage.getItem(`${JOURNAL_STORAGE_KEY}:${user.id}`);
     if (saved) setJournalEntries(JSON.parse(saved));
+    else setJournalEntries([]);
 
     const fetchData = async () => {
       const [profileRes, sessionRes, subRes, consultRes] = await Promise.all([
@@ -92,7 +94,7 @@ const Dashboard = () => {
                 <Button variant="outline" size="sm" onClick={() => setEditingProfile(!editingProfile)} className="rounded-lg gap-1.5">
                   <Settings className="w-3.5 h-3.5" /> Profile
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleSignOut} className="rounded-lg gap-1.5 text-red-500 hover:text-red-600">
+                <Button variant="outline" size="sm" onClick={handleSignOut} className="rounded-lg gap-1.5 text-destructive hover:text-destructive">
                   <LogOut className="w-3.5 h-3.5" /> Sign Out
                 </Button>
               </div>
@@ -189,7 +191,7 @@ const Dashboard = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Plan</span><Badge>{subscription.plan_id}</Badge></div>
                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Sessions Left</span><span className="font-semibold">{subscription.sessions_remaining}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant="outline" className="border-green-500 text-green-600">Active</Badge></div>
+                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant="outline" className="border-calm-sage text-calm-sage">Active</Badge></div>
                   </div>
                 ) : (
                   <div>
