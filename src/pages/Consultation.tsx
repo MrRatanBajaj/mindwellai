@@ -9,32 +9,44 @@ import TavusVideoConsultation from "@/components/ui-custom/TavusVideoConsultatio
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Shield, Video, Clock, AlertTriangle, CheckCircle, Star, Zap, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import {
+  Calendar, Shield, Video, Clock, AlertTriangle, CheckCircle, Star,
+  ArrowRight, Search, Sparkles, Heart, Brain, MessageCircle
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { DOCTOR_CARD_ORDER, DOCTOR_PROFILES, type DoctorType } from "@/lib/doctorProfiles";
 
-type ConsultationStep = 'selection' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'tavus-video' | 'completed';
+type ConsultationStep = 'selection' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'tavus-video' | 'ai-match' | 'completed';
 
-const DOCTORS = DOCTOR_CARD_ORDER.map((type) => ({
-  type,
-  ...DOCTOR_PROFILES[type],
-}));
+const DOCTORS = DOCTOR_CARD_ORDER.map((type) => ({ type, ...DOCTOR_PROFILES[type] }));
+
+const MATCH_QUESTIONS = [
+  { q: "What best describes what you need help with?", opts: ["Anxiety or Stress", "Relationship issues", "Career guidance", "Physical health concern", "Grief or loss", "General wellness"] },
+  { q: "What type of support feels most comfortable?", opts: ["A calm, nurturing voice", "Direct and practical advice", "Someone my age who gets it", "An experienced elder perspective"] },
+  { q: "How urgently do you need support?", opts: ["I'd like to chat now", "This week would be fine", "Just exploring options"] },
+];
 
 const Consultation = () => {
   const [currentStep, setCurrentStep] = useState<ConsultationStep>('selection');
   const [registrationData, setRegistrationData] = useState<any>(null);
   const [sessionType, setSessionType] = useState<'scheduled' | 'emergency'>('scheduled');
   const [selectedDoctorType, setSelectedDoctorType] = useState<DoctorType>('general');
-  const [hoveredDoctor, setHoveredDoctor] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [matchStep, setMatchStep] = useState(0);
+  const [matchAnswers, setMatchAnswers] = useState<string[]>([]);
+  const [matchedDoctor, setMatchedDoctor] = useState<typeof DOCTORS[0] | null>(null);
+
+  const filteredDoctors = DOCTORS.filter(d =>
+    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const handleServiceSelection = (type: 'scheduled' | 'emergency') => {
     setSessionType(type);
-    if (type === 'emergency') {
-      setCurrentStep('emergency');
-    } else {
-      setCurrentStep('registration');
-    }
+    setCurrentStep(type === 'emergency' ? 'emergency' : 'registration');
   };
 
   const handleStartTavusConsultation = (doctorType: DoctorType) => {
@@ -48,289 +60,262 @@ const Consultation = () => {
   };
 
   const handleEmergencySession = (type: 'video' | 'chat', urgency: string) => {
-    if (type === 'video') {
-      setCurrentStep('video-call');
-    }
+    if (type === 'video') setCurrentStep('video-call');
   };
 
-  const handleCallEnd = () => {
-    setCurrentStep('completed');
+  const handleCallEnd = () => setCurrentStep('completed');
+
+  const handleMatchAnswer = (answer: string) => {
+    const newAnswers = [...matchAnswers, answer];
+    setMatchAnswers(newAnswers);
+    if (matchStep < MATCH_QUESTIONS.length - 1) {
+      setMatchStep(s => s + 1);
+    } else {
+      // Simple matching logic
+      const a0 = newAnswers[0]?.toLowerCase() || "";
+      let match: DoctorType = 'mental_health';
+      if (a0.includes("relationship")) match = 'relationship';
+      else if (a0.includes("career")) match = 'career';
+      else if (a0.includes("physical")) match = 'general';
+      else if (a0.includes("grief")) match = 'elder_counselor';
+      else if (a0.includes("wellness")) match = 'nutritionist';
+
+      const a1 = newAnswers[1]?.toLowerCase() || "";
+      if (a1.includes("my age")) match = 'youth_counselor';
+      else if (a1.includes("elder")) match = 'elder_counselor';
+
+      setMatchedDoctor({ type: match, ...DOCTOR_PROFILES[match] });
+    }
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 'selection':
         return (
-          <section className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-            {/* Hero Section */}
-            <div className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5" />
-              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              
-              <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-12">
-                <motion.div 
-                  className="text-center max-w-3xl mx-auto"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary mb-6"
-                  >
-                    <Zap className="w-4 h-4" />
-                    <span className="text-sm font-medium">AI-Powered Healthcare</span>
-                  </motion.div>
-                  
-                  <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
-                    Meet Your AI
-                    <span className="block bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                      Healthcare Team
-                    </span>
+          <section className="min-h-screen bg-background">
+            {/* Hero */}
+            <div className="relative overflow-hidden bg-gradient-to-b from-calm-sage-light/40 via-calm-sky/20 to-background">
+              <div className="max-w-5xl mx-auto px-6 pt-16 pb-12 text-center">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-sage-light border border-border/50 text-sm text-foreground/80 mb-6">
+                    <Heart className="w-3.5 h-3.5 text-calm-sage" />
+                    <span>Your wellness team, always ready</span>
+                  </div>
+                  <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
+                    Book a Counselor
                   </h1>
-                  
-                  <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                    Connect instantly with specialized AI doctors and counselors for personalized guidance.
-                    Available 24/7 with HD video consultations.
+                  <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">
+                    Browse our 13 specialized AI counselors or let us match you with the right one.
                   </p>
 
-                  <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-                    {[
-                      { icon: Video, text: 'HD Video Call' },
-                      { icon: Shield, text: 'HIPAA Compliant' },
-                      { icon: Clock, text: 'Available 24/7' },
-                      { icon: Star, text: '4.9 Rating' },
-                    ].map((item, i) => (
-                      <motion.div
-                        key={item.text}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + i * 0.1 }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50"
-                      >
-                        <item.icon className="w-4 h-4 text-primary" />
-                        <span>{item.text}</span>
-                      </motion.div>
-                    ))}
+                  {/* Mode toggle */}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+                    <Button variant="outline" onClick={() => {}} className="border-calm-sage/30 bg-calm-sage-light/50 text-foreground gap-2">
+                      <Search className="w-4 h-4" /> Browse Specialists
+                    </Button>
+                    <Button
+                      onClick={() => { setCurrentStep('ai-match'); setMatchStep(0); setMatchAnswers([]); setMatchedDoctor(null); }}
+                      className="bg-calm-sage hover:bg-calm-sage/90 text-white gap-2"
+                    >
+                      <Sparkles className="w-4 h-4" /> AI Match Me
+                    </Button>
                   </div>
                 </motion.div>
               </div>
             </div>
 
-            {/* Doctors Grid */}
-            <div className="max-w-7xl mx-auto px-6 pb-16">
+            {/* Search */}
+            <div className="max-w-5xl mx-auto px-6 -mt-2 mb-8">
+              <div className="relative max-w-md mx-auto">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, specialty, or concern..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11 bg-card border-border/50 rounded-xl"
+                />
+              </div>
+            </div>
+
+            {/* Doctor Grid */}
+            <div className="max-w-6xl mx-auto px-6 pb-12">
               <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.2 }}
               >
-                {DOCTORS.map((doctor, index) => (
+                {filteredDoctors.map((doctor, index) => (
                   <motion.div
                     key={doctor.type}
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                    onMouseEnter={() => setHoveredDoctor(doctor.type)}
-                    onMouseLeave={() => setHoveredDoctor(null)}
+                    transition={{ delay: 0.05 * index }}
                   >
                     <Card
-                      className={cn(
-                        "group relative h-full overflow-hidden cursor-pointer transition-all duration-500",
-                        "border-2 border-transparent hover:border-primary/30",
-                        "hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2",
-                        hoveredDoctor === doctor.type && "scale-[1.02]"
-                      )}
+                      className="group h-full cursor-pointer border border-border/50 hover:border-calm-sage/40 hover:shadow-lg transition-all duration-300 bg-card/80 backdrop-blur-sm"
                       onClick={() => handleStartTavusConsultation(doctor.type)}
                     >
-                      {/* Gradient Background */}
-                      <div className={cn(
-                        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-                        `bg-gradient-to-br ${doctor.gradient}`
-                      )} style={{ opacity: hoveredDoctor === doctor.type ? 0.05 : 0 }} />
-
-                      <CardContent className="relative p-6">
-                        {/* Status Badge */}
-                        <div className="flex justify-between items-start mb-4">
-                          <motion.div
-                            className={cn(
-                              "w-14 h-14 rounded-2xl flex items-center justify-center",
-                              `bg-gradient-to-br ${doctor.gradient}`,
-                              "shadow-lg"
-                            )}
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            transition={{ type: "spring", stiffness: 400 }}
-                          >
-                            <doctor.icon className="w-7 h-7 text-white" />
-                          </motion.div>
-
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "bg-green-500/10 text-green-600 border-green-500/30",
-                              "flex items-center gap-1"
-                            )}
-                          >
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                            Online
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4 mb-3">
+                          <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center shrink-0", "bg-calm-sage-light")}>
+                            <doctor.icon className="w-5 h-5 text-calm-sage" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-foreground truncate">{doctor.name}</h3>
+                            <p className="text-sm text-calm-sage">{doctor.specialty}</p>
+                          </div>
+                          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-[10px] shrink-0">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse" />Online
                           </Badge>
                         </div>
-
-                        {/* Doctor Info */}
-                        <div className="mb-4">
-                          <h3 className="text-lg font-bold text-foreground mb-1">{doctor.name}</h3>
-                          <p className="text-sm font-medium text-primary">{doctor.specialty}</p>
-                        </div>
-
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {doctor.description}
-                        </p>
-
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {doctor.expertise.slice(0, 2).map((item) => (
-                            <Badge key={item} variant="secondary" className="text-[10px] px-2 py-0.5">
-                              {item}
-                            </Badge>
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{doctor.description}</p>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {doctor.expertise.slice(0, 3).map(e => (
+                            <Badge key={e} variant="secondary" className="text-[10px] px-2 py-0 bg-muted/60">{e}</Badge>
                           ))}
                         </div>
-
-                        {/* Rating */}
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={cn(
-                                  "w-3.5 h-3.5",
-                                  i < Math.floor(doctor.rating) ? "text-yellow-500 fill-yellow-500" : "text-muted"
-                                )} 
-                              />
-                            ))}
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <span className="text-sm font-medium">{doctor.rating}</span>
                           </div>
-                          <span className="text-sm font-medium">{doctor.rating}</span>
+                          <Button size="sm" className="h-8 bg-calm-sage hover:bg-calm-sage/90 text-white text-xs gap-1 rounded-lg">
+                            <Video className="w-3 h-3" /> Consult
+                          </Button>
                         </div>
-
-                        {/* CTA Button */}
-                        <Button 
-                          className={cn(
-                            "w-full group/btn relative overflow-hidden",
-                            `bg-gradient-to-r ${doctor.gradient}`,
-                            "hover:shadow-lg transition-all duration-300"
-                          )}
-                        >
-                          <span className="relative z-10 flex items-center gap-2">
-                            <Video className="w-4 h-4" />
-                            Start Consultation
-                            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                          </span>
-                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>
                 ))}
               </motion.div>
 
-              {/* Additional Options */}
-              <motion.div 
-                className="mt-16"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                <div className="relative mb-10">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-4 text-sm text-muted-foreground bg-background">
-                      Or explore other options
-                    </span>
-                  </div>
+              {filteredDoctors.length === 0 && (
+                <div className="text-center py-16 text-muted-foreground">
+                  <Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                  <p>No counselors match your search. Try different keywords.</p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                  {/* Schedule Consultation */}
-                  <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 400 }}>
-                    <Card 
-                      className="group cursor-pointer border-2 hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden"
-                      onClick={() => handleServiceSelection('scheduled')}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <CardContent className="relative p-8">
-                        <div className="flex items-start gap-5">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all">
-                            <Calendar className="w-8 h-8 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold mb-2">Schedule Consultation</h3>
-                            <p className="text-muted-foreground mb-4">
-                              Book a planned session with our AI counselor at your convenience
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {['50-min sessions', 'Follow-up care', 'Resources'].map((item) => (
-                                <Badge key={item} variant="secondary" className="text-xs">
-                                  {item}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-
-                  {/* Emergency Support */}
-                  <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 400 }}>
-                    <Card 
-                      className="group cursor-pointer border-2 border-red-500/20 hover:border-red-500/40 hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300 overflow-hidden"
-                      onClick={() => handleServiceSelection('emergency')}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <CardContent className="relative p-8">
-                        <div className="flex items-start gap-5">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all">
-                            <AlertTriangle className="w-8 h-8 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold mb-2 text-red-600">Emergency Support</h3>
-                            <p className="text-muted-foreground mb-4">
-                              Get immediate help from our AI crisis counselor
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {['Available 24/7', 'Crisis trained', 'Instant connect'].map((item) => (
-                                <Badge key={item} variant="secondary" className="text-xs bg-red-500/10 text-red-600 border-red-500/20">
-                                  {item}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </div>
-              </motion.div>
-
-              {/* Trust Indicators */}
-              <motion.div 
-                className="mt-16 text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
-              >
-                <p className="text-sm text-muted-foreground mb-6">Trusted by thousands of patients worldwide</p>
-                <div className="flex flex-wrap justify-center gap-8 items-center opacity-50">
-                  {['10,000+ Consultations', 'HIPAA Compliant', '99.9% Uptime', '24/7 Support'].map((item) => (
-                    <div key={item} className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm font-medium">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+              )}
             </div>
+
+            {/* Additional Options */}
+            <div className="max-w-4xl mx-auto px-6 pb-16">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
+                <div className="relative flex justify-center">
+                  <span className="px-4 text-sm text-muted-foreground bg-background">Other options</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <Card className="cursor-pointer border border-border/50 hover:border-calm-sage/40 hover:shadow-md transition-all" onClick={() => handleServiceSelection('scheduled')}>
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-calm-sage-light flex items-center justify-center shrink-0">
+                      <Calendar className="w-6 h-6 text-calm-sage" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Schedule Consultation</h3>
+                      <p className="text-sm text-muted-foreground">Book a planned session at your convenience</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer border border-destructive/20 hover:border-destructive/40 hover:shadow-md transition-all" onClick={() => handleServiceSelection('emergency')}>
+                  <CardContent className="p-6 flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-6 h-6 text-destructive" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1 text-destructive">Emergency Support</h3>
+                      <p className="text-sm text-muted-foreground">Immediate crisis counseling, available 24/7</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Trust bar */}
+            <div className="max-w-4xl mx-auto px-6 pb-12">
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+                {[
+                  { icon: Shield, text: "HIPAA Compliant" },
+                  { icon: Clock, text: "Available 24/7" },
+                  { icon: CheckCircle, text: "10,000+ Sessions" },
+                ].map(item => (
+                  <div key={item.text} className="flex items-center gap-2">
+                    <item.icon className="w-4 h-4 text-calm-sage" />
+                    <span>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+
+      case 'ai-match':
+        return (
+          <section className="min-h-screen bg-background flex items-center justify-center px-6 py-20">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg">
+              <Button variant="ghost" onClick={() => { setCurrentStep('selection'); setMatchStep(0); setMatchAnswers([]); setMatchedDoctor(null); }} className="mb-6 text-muted-foreground">
+                ← Back to all counselors
+              </Button>
+
+              {!matchedDoctor ? (
+                <Card className="border border-border/50 bg-card/80 backdrop-blur-sm">
+                  <CardContent className="p-8">
+                    <div className="text-center mb-6">
+                      <div className="w-14 h-14 rounded-xl bg-calm-sage-light flex items-center justify-center mx-auto mb-4">
+                        <Sparkles className="w-7 h-7 text-calm-sage" />
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-1">Question {matchStep + 1} of {MATCH_QUESTIONS.length}</p>
+                      <div className="w-full bg-muted rounded-full h-1.5 mb-4">
+                        <div className="bg-calm-sage h-1.5 rounded-full transition-all" style={{ width: `${((matchStep + 1) / MATCH_QUESTIONS.length) * 100}%` }} />
+                      </div>
+                      <h2 className="font-display text-xl font-bold">{MATCH_QUESTIONS[matchStep].q}</h2>
+                    </div>
+                    <div className="space-y-3">
+                      <AnimatePresence mode="wait">
+                        {MATCH_QUESTIONS[matchStep].opts.map((opt, i) => (
+                          <motion.button
+                            key={opt}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            onClick={() => handleMatchAnswer(opt)}
+                            className="w-full text-left px-4 py-3 rounded-xl border border-border/50 hover:border-calm-sage/40 hover:bg-calm-sage-light/30 transition-all text-sm"
+                          >
+                            {opt}
+                          </motion.button>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                  <Card className="border border-calm-sage/30 bg-card/80 backdrop-blur-sm">
+                    <CardContent className="p-8 text-center">
+                      <div className="w-16 h-16 rounded-2xl bg-calm-sage-light flex items-center justify-center mx-auto mb-4">
+                        <matchedDoctor.icon className="w-8 h-8 text-calm-sage" />
+                      </div>
+                      <Badge className="bg-calm-sage/10 text-calm-sage border-calm-sage/30 mb-3">Best Match</Badge>
+                      <h2 className="font-display text-2xl font-bold mb-1">{matchedDoctor.name}</h2>
+                      <p className="text-calm-sage mb-3">{matchedDoctor.specialty}</p>
+                      <p className="text-sm text-muted-foreground mb-4">{matchedDoctor.description}</p>
+                      <div className="flex flex-wrap justify-center gap-1.5 mb-6">
+                        {matchedDoctor.expertise.map(e => (
+                          <Badge key={e} variant="secondary" className="text-xs">{e}</Badge>
+                        ))}
+                      </div>
+                      <Button className="w-full bg-calm-sage hover:bg-calm-sage/90 text-white gap-2" onClick={() => handleStartTavusConsultation(matchedDoctor.type)}>
+                        <Video className="w-4 h-4" /> Start Consultation <ArrowRight className="w-4 h-4" />
+                      </Button>
+                      <button onClick={() => setCurrentStep('selection')} className="mt-3 text-sm text-muted-foreground hover:text-foreground">
+                        Browse all counselors instead
+                      </button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </motion.div>
           </section>
         );
 
@@ -339,9 +324,7 @@ const Consultation = () => {
           <section className="py-10 px-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <Button variant="outline" onClick={() => setCurrentStep('selection')} className="mb-4">
-                  ← Back
-                </Button>
+                <Button variant="outline" onClick={() => setCurrentStep('selection')} className="mb-4">← Back</Button>
               </div>
               <RegistrationForm onComplete={handleRegistrationComplete} />
             </div>
@@ -353,9 +336,7 @@ const Consultation = () => {
           <section className="py-10 px-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <Button variant="outline" onClick={() => setCurrentStep('selection')} className="mb-4">
-                  ← Back
-                </Button>
+                <Button variant="outline" onClick={() => setCurrentStep('selection')} className="mb-4">← Back</Button>
               </div>
               <EmergencyCounseling onStartSession={handleEmergencySession} />
             </div>
@@ -367,9 +348,7 @@ const Consultation = () => {
           <section className="py-10 px-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <Button variant="outline" onClick={() => setCurrentStep('registration')} className="mb-4">
-                  ← Back
-                </Button>
+                <Button variant="outline" onClick={() => setCurrentStep('registration')} className="mb-4">← Back</Button>
               </div>
               <ConsultationForm />
             </div>
@@ -385,23 +364,13 @@ const Consultation = () => {
       case 'completed':
         return (
           <section className="py-20 px-6 min-h-screen flex items-center justify-center">
-            <motion.div 
-              className="max-w-lg mx-auto text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                <CheckCircle className="w-12 h-12 text-white" />
+            <motion.div className="max-w-lg mx-auto text-center" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+              <div className="w-20 h-20 bg-calm-sage-light rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10 text-calm-sage" />
               </div>
-              <h2 className="text-3xl font-bold mb-4">Session Complete</h2>
-              <p className="text-muted-foreground mb-8">
-                Thank you for your consultation. Take care of your health!
-              </p>
-              <Button 
-                onClick={() => setCurrentStep('selection')}
-                size="lg"
-                className="bg-gradient-to-r from-primary to-purple-500"
-              >
+              <h2 className="font-display text-2xl font-bold mb-3">Session Complete</h2>
+              <p className="text-muted-foreground mb-6">Thank you for your consultation. Remember, taking care of your mental health is an act of strength.</p>
+              <Button onClick={() => setCurrentStep('selection')} className="bg-calm-sage hover:bg-calm-sage/90 text-white">
                 Start New Consultation
               </Button>
             </motion.div>
@@ -416,10 +385,8 @@ const Consultation = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-grow pt-20">
-        {renderStepContent()}
-      </main>
-      {currentStep === 'selection' && <Footer />}
+      <main className="flex-grow pt-20">{renderStepContent()}</main>
+      {(currentStep === 'selection' || currentStep === 'ai-match') && <Footer />}
     </div>
   );
 };
