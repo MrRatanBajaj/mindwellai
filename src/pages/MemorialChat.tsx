@@ -1,7 +1,7 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { motion } from "framer-motion";
-import { Heart, Clock, Sparkles, ArrowLeft, Shield, Infinity, Brain } from "lucide-react";
+import { Heart, Clock, Sparkles, ArrowLeft, Shield, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
