@@ -241,9 +241,16 @@ const Auth = () => {
                               {otpChannel === "email" ? <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> : <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground text-center rounded-xl bg-muted/40 border border-border/40 px-3 py-2">
-                            We&apos;ll send a secure 6-digit WellMindAI code to your {otpChannel === "email" ? "email inbox" : "phone"}. For phone OTP, enable the <span className="text-foreground font-medium">Phone provider</span> in Supabase and connect an SMS provider such as Twilio.
-                          </p>
+                          {otpChannel === "phone" ? (
+                            <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 space-y-1">
+                              <p className="font-medium">⚠️ Phone OTP Setup Required</p>
+                              <p>To use Phone OTP, enable the <span className="font-semibold">Phone provider</span> in your Supabase Auth settings and connect Twilio as your SMS provider. Until then, please use <button type="button" onClick={() => setOtpChannel("email")} className="underline font-medium text-calm-sage">Email OTP</button> instead.</p>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground text-center rounded-xl bg-muted/40 border border-border/40 px-3 py-2">
+                              A secure 6-digit verification code will be sent to your email inbox on behalf of the <span className="text-foreground font-medium">WellMindAI team</span>.
+                            </p>
+                          )}
                           <Button onClick={handleSendOtp} disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
                             {isLoading ? "Sending..." : <>Send OTP <ArrowRight className="ml-2 h-4 w-4" /></>}
                           </Button>
