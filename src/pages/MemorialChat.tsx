@@ -26,7 +26,7 @@ const MemorialChat = () => {
             className="relative inline-block mb-8"
           >
             <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-calm-lavender via-calm-sky to-calm-sage-light flex items-center justify-center mx-auto shadow-lg">
-              <Infinity className="w-14 h-14 text-calm-sage" />
+              <Heart className="w-14 h-14 text-calm-sage" />
             </div>
             <motion.div
               animate={{ rotate: 360 }}
