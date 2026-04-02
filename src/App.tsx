@@ -16,6 +16,7 @@ import SelfHelp from "./pages/SelfHelp";
 import Journal from "./pages/Journal";
 import Consultation from "./pages/Consultation";
 import Dashboard from "./pages/Dashboard";
+import MemorialChat from "./pages/MemorialChat";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/policy" element={<Policy />} />
             <Route path="/careers" element={<Careers />} />
+            <Route path="/memorial-chat" element={<MemorialChat />} />
             {/* Protected routes */}
             <Route path="/self-help" element={<ProtectedRoute><SelfHelp /></ProtectedRoute>} />
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
