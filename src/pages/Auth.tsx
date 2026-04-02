@@ -5,19 +5,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Lock, User, Mail, ArrowRight, Brain, Heart, Shield, Sparkles, Phone, KeyRound } from "lucide-react";
+import { Lock, User, Mail, ArrowRight, Brain, Heart, Shield, Sparkles, Phone, KeyRound, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { motion, AnimatePresence } from "framer-motion";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Progress } from "@/components/ui/progress";
 
 const authMessages = {
-  emailOtp: "A secure WellMindAI verification code is on its way to your inbox from the WellMindAI team.",
-  phoneOtp: "A secure WellMindAI verification code is on its way by SMS on behalf of the WellMindAI team.",
+  emailOtp: "A secure WellMindAI verification code is on its way to your inbox.",
+  phoneOtp: "A secure WellMindAI verification code is on its way via SMS.",
 };
 
 type AuthMode = "login" | "signup" | "otp-verify";
 type OtpChannel = "email" | "phone";
+
+const getPasswordStrength = (password: string) => {
+  let score = 0;
+  if (password.length >= 6) score += 20;
+  if (password.length >= 8) score += 20;
+  if (/[A-Z]/.test(password)) score += 20;
+  if (/[0-9]/.test(password)) score += 20;
+  if (/[^A-Za-z0-9]/.test(password)) score += 20;
+  return score;
+};
+
+const strengthLabel = (score: number) => {
+  if (score <= 20) return { text: "Weak", color: "text-destructive" };
+  if (score <= 40) return { text: "Fair", color: "text-amber-500" };
+  if (score <= 60) return { text: "Good", color: "text-amber-400" };
+  if (score <= 80) return { text: "Strong", color: "text-calm-sage" };
+  return { text: "Very Strong", color: "text-calm-sage" };
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -26,16 +45,27 @@ const Auth = () => {
   const [otpChannel, setOtpChannel] = useState<OtpChannel>("email");
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "", confirmPassword: "", phone: "" });
-  const [otpTarget, setOtpTarget] = useState(""); // email or phone used for OTP
+  const [otpTarget, setOtpTarget] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [useOtp, setUseOtp] = useState(false); // toggle OTP login
+  const [useOtp, setUseOtp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) navigate("/dashboard");
     });
   }, [navigate]);
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,8 +115,14 @@ const Auth = () => {
       }
       toast.success(otpChannel === "email" ? authMessages.emailOtp : authMessages.phoneOtp);
       setMode("otp-verify");
+      setResendCooldown(60);
     } catch { toast.error("Failed to send OTP"); }
     finally { setIsLoading(false); }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    await handleSendOtp();
   };
 
   const handleVerifyOtp = async () => {
@@ -104,13 +140,18 @@ const Auth = () => {
     finally { setIsLoading(false); }
   };
 
+  const pwStrength = getPasswordStrength(mode === "signup" ? signupData.password : "");
+  const pwLabel = strengthLabel(pwStrength);
+
   return (
     <div className="min-h-screen flex relative overflow-hidden bg-background">
       {/* Left decorative panel */}
-      <motion.div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 bg-gradient-to-br from-calm-sage-light/30 to-calm-sky-light/30"
-        initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+      <motion.div
+        className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 bg-gradient-to-br from-calm-sage-light/30 to-calm-sky-light/30"
+        initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
+      >
         <div className="max-w-md text-center space-y-6">
-          <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }} className="mx-auto">
+          <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }}>
             <div className="w-40 h-40 rounded-3xl bg-card/90 backdrop-blur-md border border-border/50 shadow-glass flex items-center justify-center mx-auto overflow-hidden">
               <img src={wellmindLogo} alt="WellMindAI" className="w-36 h-36 object-contain" />
             </div>
@@ -135,11 +176,10 @@ const Auth = () => {
               </div>
             ))}
           </div>
-          {/* Awareness message */}
-          <div className="mt-6 p-4 rounded-xl bg-white/50 border border-border/30">
+          <div className="mt-6 p-4 rounded-xl bg-card/50 border border-border/30">
             <Heart className="w-5 h-5 text-calm-sage mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">
-              "Taking care of your mental health is an act of courage. Every step you take here brings you closer to a healthier, happier you."
+            <p className="text-xs text-muted-foreground italic">
+              "Taking care of your mental health is an act of courage. Every step brings you closer to a healthier, happier you."
             </p>
           </div>
         </div>
@@ -167,10 +207,11 @@ const Auth = () => {
                     </div>
                     <h2 className="font-display text-xl font-bold text-foreground mb-1">Verify OTP</h2>
                     <p className="text-sm text-muted-foreground">
-                      Enter the 6-digit code sent to<br /><span className="font-medium text-foreground">{otpTarget}</span>
+                      Enter the 6-digit code sent to<br />
+                      <span className="font-medium text-foreground">{otpTarget}</span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-3 rounded-xl bg-muted/40 px-3 py-2 border border-border/40">
-                      This one-time code is sent securely on behalf of the <span className="text-foreground font-medium">WellMindAI team</span>.
+                      Sent securely by the <span className="text-foreground font-medium">WellMindAI team</span>.
                     </p>
                   </div>
                   <div className="flex justify-center">
@@ -185,6 +226,19 @@ const Auth = () => {
                   <Button onClick={handleVerifyOtp} disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
                     {isLoading ? "Verifying..." : "Verify & Sign In"}
                   </Button>
+
+                  {/* Resend OTP */}
+                  <div className="text-center">
+                    <button
+                      onClick={handleResendOtp}
+                      disabled={resendCooldown > 0 || isLoading}
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50 transition"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
+                    </button>
+                  </div>
+
                   <button onClick={() => { setMode("login"); setOtpCode(""); }} className="w-full text-sm text-muted-foreground hover:text-foreground text-center">
                     ← Back to login
                   </button>
@@ -238,17 +292,21 @@ const Auth = () => {
                                 onChange={e => setOtpTarget(e.target.value)}
                                 className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl"
                               />
-                              {otpChannel === "email" ? <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /> : <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
+                              {otpChannel === "email"
+                                ? <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                : <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
                             </div>
                           </div>
                           {otpChannel === "phone" ? (
                             <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 space-y-1">
                               <p className="font-medium">⚠️ Phone OTP Setup Required</p>
-                              <p>To use Phone OTP, enable the <span className="font-semibold">Phone provider</span> in your Supabase Auth settings and connect Twilio as your SMS provider. Until then, please use <button type="button" onClick={() => setOtpChannel("email")} className="underline font-medium text-calm-sage">Email OTP</button> instead.</p>
+                              <p>Enable the <span className="font-semibold">Phone provider</span> in Supabase Auth and connect Twilio. Use{" "}
+                                <button type="button" onClick={() => setOtpChannel("email")} className="underline font-medium text-calm-sage">Email OTP</button> instead.
+                              </p>
                             </div>
                           ) : (
                             <p className="text-xs text-muted-foreground text-center rounded-xl bg-muted/40 border border-border/40 px-3 py-2">
-                              A secure 6-digit verification code will be sent to your email inbox on behalf of the <span className="text-foreground font-medium">WellMindAI team</span>.
+                              A 6-digit code will be sent to your email by <span className="text-foreground font-medium">WellMindAI</span>.
                             </p>
                           )}
                           <Button onClick={handleSendOtp} disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
@@ -267,13 +325,19 @@ const Auth = () => {
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex justify-between"><Label className="text-sm">Password</Label>
-                              <button type="button" className="text-xs text-calm-sage hover:underline">Forgot?</button></div>
+                            <div className="flex justify-between">
+                              <Label className="text-sm">Password</Label>
+                              <button type="button" className="text-xs text-calm-sage hover:underline">Forgot?</button>
+                            </div>
                             <div className="relative">
-                              <Input type="password" placeholder="••••••••" value={loginData.password}
+                              <Input type={showPassword ? "text" : "password"} placeholder="••••••••" value={loginData.password}
                                 onChange={e => setLoginData(p => ({ ...p, password: e.target.value }))} required
-                                className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl" />
+                                className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl" />
                               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
                             </div>
                           </div>
                           <Button type="submit" disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
@@ -313,28 +377,43 @@ const Auth = () => {
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-2">
-                          <Label className="text-sm">Password</Label>
-                          <div className="relative">
-                            <Input type="password" placeholder="••••••" value={signupData.password}
-                              onChange={e => setSignupData(p => ({ ...p, password: e.target.value }))} required
-                              className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl" />
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Password</Label>
+                        <div className="relative">
+                          <Input type={showPassword ? "text" : "password"} placeholder="Min 6 characters" value={signupData.password}
+                            onChange={e => setSignupData(p => ({ ...p, password: e.target.value }))} required
+                            className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl" />
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm">Confirm</Label>
-                          <div className="relative">
-                            <Input type="password" placeholder="••••••" value={signupData.confirmPassword}
-                              onChange={e => setSignupData(p => ({ ...p, confirmPassword: e.target.value }))} required
-                              className="pl-10 h-11 bg-muted/30 border-border/50 rounded-xl" />
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        {signupData.password && (
+                          <div className="space-y-1">
+                            <Progress value={pwStrength} className="h-1.5" />
+                            <p className={`text-[10px] font-medium ${pwLabel.color}`}>{pwLabel.text}</p>
                           </div>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Confirm Password</Label>
+                        <div className="relative">
+                          <Input type={showConfirmPassword ? "text" : "password"} placeholder="Re-enter password" value={signupData.confirmPassword}
+                            onChange={e => setSignupData(p => ({ ...p, confirmPassword: e.target.value }))} required
+                            className="pl-10 pr-10 h-11 bg-muted/30 border-border/50 rounded-xl" />
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
                         </div>
+                        {signupData.confirmPassword && signupData.confirmPassword !== signupData.password && (
+                          <p className="text-[10px] text-destructive">Passwords do not match</p>
+                        )}
                       </div>
                       <div className="rounded-xl bg-muted/40 border border-border/40 px-3 py-2 text-xs text-muted-foreground">
-                        Signup creates your private wellness space, and your personal dashboard/profile stays separate from every other user.
+                        Your private wellness space — your dashboard stays separate from every other user.
                       </div>
                       <Button type="submit" disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
                         {isLoading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
@@ -357,7 +436,7 @@ const Auth = () => {
           {/* Awareness message on mobile */}
           <div className="lg:hidden mt-4 p-3 rounded-xl bg-calm-sage-light/20 border border-border/20 text-center">
             <p className="text-xs text-muted-foreground">
-              🌿 "Mental health is not a destination, but a process. It's about how you drive, not where you're going."
+              🌿 "Mental health is not a destination, but a process."
             </p>
           </div>
         </motion.div>
