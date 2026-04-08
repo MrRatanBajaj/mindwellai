@@ -38,6 +38,12 @@ const exercises = [
   { id: 'ex-4', title: 'Self-Compassion Pause', category: 'mood', duration: '5 min', description: 'Use kind internal language during hard emotional moments.', steps: ['Notice the pain', 'Name it kindly', 'Offer yourself support'] },
   { id: 'ex-5', title: '5 Senses Reset', category: 'mindfulness', duration: '3 min', description: 'Return to the present when your mind feels overloaded.', steps: ['5 things you see', '4 you feel', '3 you hear'] },
   { id: 'ex-6', title: 'Boundary Rehearsal', category: 'stress', duration: '6 min', description: 'Practice a calm sentence for saying no without guilt.', steps: ['Write your boundary', 'Say it aloud', 'Keep it short and warm'] },
+  { id: 'ex-7', title: 'Progressive Muscle Relaxation', category: 'anxiety', duration: '10 min', description: 'Systematically tense and release each muscle group to dissolve physical anxiety.', steps: ['Start with your toes', 'Tense for 5 seconds', 'Release and notice the calm'] },
+  { id: 'ex-8', title: 'Gratitude Reflection', category: 'mood', duration: '5 min', description: 'Shift your focus toward positive aspects of your day.', steps: ['Write 3 things you are grateful for', 'Why each matters', 'Feel the warmth'] },
+  { id: 'ex-9', title: 'Box Breathing', category: 'stress', duration: '4 min', description: 'A Navy SEAL technique to calm stress instantly.', steps: ['Inhale 4 sec', 'Hold 4 sec', 'Exhale 4 sec, Hold 4 sec'] },
+  { id: 'ex-10', title: 'Sleep Body Scan', category: 'sleep', duration: '15 min', description: 'A guided awareness of each body part to ease into restful sleep.', steps: ['Lie down comfortably', 'Scan from head to toes', 'Release tension at each point'] },
+  { id: 'ex-11', title: 'Mindful Walking', category: 'mindfulness', duration: '10 min', description: 'Walk slowly and notice every sensation — a moving meditation.', steps: ['Walk at half speed', 'Feel each footstep', 'Notice sounds around you'] },
+  { id: 'ex-12', title: 'Emotional Check-In', category: 'mood', duration: '3 min', description: 'Name your current emotion without judgment.', steps: ['Pause and breathe', 'Name the emotion', 'Accept it without fixing'] },
 ];
 
 const resources = [
@@ -49,6 +55,16 @@ const resources = [
   { id: 're-6', title: 'Mindful: Meditation Basics', category: 'mindfulness', type: 'Practice', url: 'https://www.mindful.org/how-to-meditate/', source: 'Mindful', description: 'A gentle beginner-friendly path into mindful awareness.' },
   { id: 're-7', title: 'Psychology Tools: CBT Thought Record', category: 'mood', type: 'Worksheet', url: 'https://www.psychologytools.com/', source: 'Psychology Tools', description: 'A classic CBT exercise for reframing negative thoughts.' },
   { id: 're-8', title: 'HelpGuide: Emotional Resilience', category: 'stress', type: 'Article', url: 'https://www.helpguide.org/mental-health/wellbeing/building-better-mental-health', source: 'HelpGuide', description: 'Build resilience habits when life feels emotionally heavy.' },
+  { id: 're-9', title: 'Headspace: Free Meditation & Sleep', category: 'mindfulness', type: 'App', url: 'https://www.headspace.com/headspace-meditation-app', source: 'Headspace', description: 'Free guided meditations, focus music, and sleep sounds.' },
+  { id: 're-10', title: 'Verywell Mind: Coping Strategies', category: 'stress', type: 'Guide', url: 'https://www.verywellmind.com/forty-healthy-coping-skills-4586742', source: 'Verywell Mind', description: '40+ healthy coping skills backed by mental health professionals.' },
+  { id: 're-11', title: 'Anxiety Canada: MindShift CBT', category: 'anxiety', type: 'App', url: 'https://www.anxietycanada.com/resources/mindshift-cbt/', source: 'Anxiety Canada', description: 'Free CBT-based app for managing anxiety, worry, and panic.' },
+  { id: 're-12', title: 'Harvard Health: Sleep & Mental Health', category: 'sleep', type: 'Article', url: 'https://www.health.harvard.edu/newsletter_article/sleep-and-mental-health', source: 'Harvard Health', description: 'Research-backed insights on the link between sleep and emotional wellbeing.' },
+  { id: 're-13', title: 'Greater Good: Gratitude Journal', category: 'mood', type: 'Practice', url: 'https://greatergood.berkeley.edu/article/item/tips_for_keeping_a_gratitude_journal', source: 'UC Berkeley', description: 'Science-based gratitude journaling tips to boost happiness.' },
+  { id: 're-14', title: 'beyondblue: Anxiety & Depression', category: 'anxiety', type: 'Guide', url: 'https://www.beyondblue.org.au/', source: 'beyondblue', description: 'Comprehensive free resources for anxiety, depression, and suicide prevention.' },
+  { id: 're-15', title: 'Calm: Free Breathing Exercises', category: 'mindfulness', type: 'Tool', url: 'https://www.calm.com/breathe', source: 'Calm', description: 'Simple guided breathing exercises you can do anywhere, anytime.' },
+  { id: 're-16', title: 'SAMHSA Helpline Resources', category: 'mood', type: 'Helpline', url: 'https://www.samhsa.gov/find-help/national-helpline', source: 'SAMHSA', description: 'Free, confidential 24/7 helpline for mental health and substance use.' },
+  { id: 're-17', title: 'Tiny Buddha: Letting Go of Stress', category: 'stress', type: 'Article', url: 'https://tinybuddha.com/blog/category/letting-go/', source: 'Tiny Buddha', description: 'Warm, relatable articles on releasing stress and emotional burdens.' },
+  { id: 're-18', title: 'NHS: 5 Steps to Mental Wellbeing', category: 'mindfulness', type: 'Guide', url: 'https://www.nhs.uk/mental-health/self-help/guides-and-tools/five-steps-to-mental-wellbeing/', source: 'NHS', description: 'Evidence-based steps: connect, be active, learn, give, be present.' },
 ];
 
 const therapistTracks = [
