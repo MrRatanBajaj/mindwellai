@@ -38,6 +38,12 @@ const exercises = [
   { id: 'ex-4', title: 'Self-Compassion Pause', category: 'mood', duration: '5 min', description: 'Use kind internal language during hard emotional moments.', steps: ['Notice the pain', 'Name it kindly', 'Offer yourself support'] },
   { id: 'ex-5', title: '5 Senses Reset', category: 'mindfulness', duration: '3 min', description: 'Return to the present when your mind feels overloaded.', steps: ['5 things you see', '4 you feel', '3 you hear'] },
   { id: 'ex-6', title: 'Boundary Rehearsal', category: 'stress', duration: '6 min', description: 'Practice a calm sentence for saying no without guilt.', steps: ['Write your boundary', 'Say it aloud', 'Keep it short and warm'] },
+  { id: 'ex-7', title: 'Progressive Muscle Relaxation', category: 'anxiety', duration: '10 min', description: 'Systematically tense and release each muscle group to dissolve physical anxiety.', steps: ['Start with your toes', 'Tense for 5 seconds', 'Release and notice the calm'] },
+  { id: 'ex-8', title: 'Gratitude Reflection', category: 'mood', duration: '5 min', description: 'Shift your focus toward positive aspects of your day.', steps: ['Write 3 things you are grateful for', 'Why each matters', 'Feel the warmth'] },
+  { id: 'ex-9', title: 'Box Breathing', category: 'stress', duration: '4 min', description: 'A Navy SEAL technique to calm stress instantly.', steps: ['Inhale 4 sec', 'Hold 4 sec', 'Exhale 4 sec, Hold 4 sec'] },
+  { id: 'ex-10', title: 'Sleep Body Scan', category: 'sleep', duration: '15 min', description: 'A guided awareness of each body part to ease into restful sleep.', steps: ['Lie down comfortably', 'Scan from head to toes', 'Release tension at each point'] },
+  { id: 'ex-11', title: 'Mindful Walking', category: 'mindfulness', duration: '10 min', description: 'Walk slowly and notice every sensation — a moving meditation.', steps: ['Walk at half speed', 'Feel each footstep', 'Notice sounds around you'] },
+  { id: 'ex-12', title: 'Emotional Check-In', category: 'mood', duration: '3 min', description: 'Name your current emotion without judgment.', steps: ['Pause and breathe', 'Name the emotion', 'Accept it without fixing'] },
 ];
 
 const resources = [
