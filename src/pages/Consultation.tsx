@@ -41,9 +41,9 @@ const Consultation = () => {
 
   const CATEGORIES: { label: string; types: DoctorType[] }[] = [
     { label: "All", types: [] },
-    { label: "Mental Health", types: ['mental_health', 'male_therapist', 'elder_counselor', 'youth_counselor', 'relationship'] },
-    { label: "Physical Health", types: ['general', 'cardiologist', 'dermatologist', 'pediatrician', 'neurologist', 'gynecologist'] },
-    { label: "Lifestyle", types: ['nutritionist', 'career'] },
+    { label: "Mental Health", types: ['mental_health', 'anxiety_specialist', 'male_therapist', 'elder_counselor', 'youth_counselor', 'relationship'] },
+    { label: "Physical Health", types: ['general', 'cardiologist', 'dermatologist', 'pediatrician', 'neurologist', 'gynecologist', 'fertility_expert', 'postpartum'] },
+    { label: "Lifestyle", types: ['nutritionist', 'career', 'sleep_specialist', 'skin_wellness'] },
   ];
 
   const filteredDoctors = DOCTORS.filter(d => {
