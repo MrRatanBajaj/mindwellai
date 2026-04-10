@@ -44,6 +44,13 @@ const Consultation = () => {
     d.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const selectedDoctor = DOCTORS.find(d => d.type === selectedDoctorType);
+
+  const handleDoctorClick = (doctorType: DoctorType) => {
+    setSelectedDoctorType(doctorType);
+    setCurrentStep('doctor-detail');
+  };
+
   const handleServiceSelection = (type: 'scheduled' | 'emergency') => {
     setSessionType(type);
     setCurrentStep(type === 'emergency' ? 'emergency' : 'registration');
