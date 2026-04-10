@@ -16,16 +16,6 @@ import {
   Smile,
   Sun,
 } from 'lucide-react';
-  Apple,
-  Baby,
-  Brain,
-  Briefcase,
-  Heart,
-  HeartHandshake,
-  Sparkles,
-  Stethoscope,
-  User,
-} from 'lucide-react';
 
 export type DoctorType =
   | 'general'
