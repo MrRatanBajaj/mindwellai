@@ -34,15 +34,27 @@ const Consultation = () => {
   const [sessionType, setSessionType] = useState<'scheduled' | 'emergency'>('scheduled');
   const [selectedDoctorType, setSelectedDoctorType] = useState<DoctorType>('general');
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const [matchStep, setMatchStep] = useState(0);
   const [matchAnswers, setMatchAnswers] = useState<string[]>([]);
   const [matchedDoctor, setMatchedDoctor] = useState<typeof DOCTORS[0] | null>(null);
 
-  const filteredDoctors = DOCTORS.filter(d =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const CATEGORIES: { label: string; types: DoctorType[] }[] = [
+    { label: "All", types: [] },
+    { label: "Mental Health", types: ['mental_health', 'male_therapist', 'elder_counselor', 'youth_counselor', 'relationship'] },
+    { label: "Physical Health", types: ['general', 'cardiologist', 'dermatologist', 'pediatrician', 'neurologist', 'gynecologist'] },
+    { label: "Lifestyle", types: ['nutritionist', 'career'] },
+  ];
+
+  const filteredDoctors = DOCTORS.filter(d => {
+    const matchesSearch = searchQuery === "" ||
+      d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = activeCategory === "All" ||
+      CATEGORIES.find(c => c.label === activeCategory)?.types.includes(d.type);
+    return matchesSearch && matchesCategory;
+  });
 
   const selectedDoctor = DOCTORS.find(d => d.type === selectedDoctorType);
 
@@ -141,6 +153,31 @@ const Consultation = () => {
                   onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10 h-11 bg-card border-border/50 rounded-xl"
                 />
+              </div>
+            </div>
+
+            {/* Category Tabs */}
+            <div className="max-w-6xl mx-auto px-6 mb-6">
+              <div className="flex gap-2 flex-wrap">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.label}
+                    onClick={() => setActiveCategory(cat.label)}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeCategory === cat.label
+                        ? "bg-calm-sage text-white shadow-sm"
+                        : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {cat.label}
+                    {cat.label !== "All" && (
+                      <span className="ml-1.5 text-xs opacity-70">
+                        ({cat.types.length})
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
