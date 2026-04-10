@@ -156,6 +156,31 @@ const Consultation = () => {
               </div>
             </div>
 
+            {/* Category Tabs */}
+            <div className="max-w-6xl mx-auto px-6 mb-6">
+              <div className="flex gap-2 flex-wrap">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.label}
+                    onClick={() => setActiveCategory(cat.label)}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeCategory === cat.label
+                        ? "bg-calm-sage text-white shadow-sm"
+                        : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {cat.label}
+                    {cat.label !== "All" && (
+                      <span className="ml-1.5 text-xs opacity-70">
+                        ({cat.types.length})
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Doctor Grid */}
             <div className="max-w-6xl mx-auto px-6 pb-12">
               <motion.div
