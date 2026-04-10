@@ -312,7 +312,7 @@ const Consultation = () => {
                           <Badge key={e} variant="secondary" className="text-xs">{e}</Badge>
                         ))}
                       </div>
-                      <Button className="w-full bg-calm-sage hover:bg-calm-sage/90 text-white gap-2" onClick={() => handleStartTavusConsultation(matchedDoctor.type)}>
+                      <Button className="w-full bg-calm-sage hover:bg-calm-sage/90 text-white gap-2" onClick={() => handleDoctorClick(matchedDoctor.type)}>
                         <Video className="w-4 h-4" /> Start Consultation <ArrowRight className="w-4 h-4" />
                       </Button>
                       <button onClick={() => setCurrentStep('selection')} className="mt-3 text-sm text-muted-foreground hover:text-foreground">
