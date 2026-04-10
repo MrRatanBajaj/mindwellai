@@ -326,6 +326,107 @@ const Consultation = () => {
           </section>
         );
 
+      case 'doctor-detail':
+        return selectedDoctor ? (
+          <section className="min-h-screen bg-background">
+            <div className="max-w-4xl mx-auto px-6 pt-10 pb-20">
+              <Button variant="ghost" onClick={() => setCurrentStep('selection')} className="mb-6 text-muted-foreground">
+                ← Back to all counselors
+              </Button>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                {/* Profile Header */}
+                <Card className="border border-border/50 overflow-hidden">
+                  <div className={`h-32 bg-gradient-to-r ${selectedDoctor.gradient}`} />
+                  <CardContent className="p-6 -mt-12">
+                    <div className="flex flex-col sm:flex-row items-start gap-5">
+                      <div className="w-20 h-20 rounded-2xl bg-card border-4 border-background shadow-lg flex items-center justify-center shrink-0">
+                        <selectedDoctor.icon className="w-9 h-9 text-calm-sage" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h1 className="font-display text-2xl font-bold text-foreground">{selectedDoctor.name}</h1>
+                          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-xs">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse" />Online
+                          </Badge>
+                        </div>
+                        <p className="text-calm-sage font-medium mt-1">{selectedDoctor.specialty}</p>
+                        <div className="flex items-center gap-1 mt-2">
+                          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                          <span className="font-semibold">{selectedDoctor.rating}</span>
+                          <span className="text-sm text-muted-foreground ml-1">• 500+ sessions</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* About */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-6">
+                    <h2 className="font-semibold text-lg mb-3">About</h2>
+                    <p className="text-muted-foreground leading-relaxed">{selectedDoctor.description}</p>
+                  </CardContent>
+                </Card>
+
+                {/* Expertise */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-6">
+                    <h2 className="font-semibold text-lg mb-3">Areas of Expertise</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDoctor.expertise.map(e => (
+                        <Badge key={e} variant="secondary" className="px-3 py-1 text-sm bg-calm-sage-light text-foreground">{e}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Key Features */}
+                <Card className="border border-border/50">
+                  <CardContent className="p-6">
+                    <h2 className="font-semibold text-lg mb-4">Session Highlights</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {[
+                        { icon: Video, title: "HD Video Call", desc: "Face-to-face AI consultation" },
+                        { icon: Shield, title: "100% Private", desc: "End-to-end encrypted session" },
+                        { icon: Clock, title: "No Wait Time", desc: "Start instantly, available 24/7" },
+                      ].map(item => (
+                        <div key={item.title} className="flex items-start gap-3 p-3 rounded-xl bg-muted/40">
+                          <item.icon className="w-5 h-5 text-calm-sage mt-0.5 shrink-0" />
+                          <div>
+                            <p className="font-medium text-sm">{item.title}</p>
+                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    size="lg"
+                    className="flex-1 bg-calm-sage hover:bg-calm-sage/90 text-white gap-2 py-6 text-base"
+                    onClick={() => handleStartTavusConsultation(selectedDoctor.type)}
+                  >
+                    <Video className="w-5 h-5" /> Start Video Consultation
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="flex-1 gap-2 py-6 text-base border-calm-sage/30"
+                    onClick={() => { setSelectedDoctorType(selectedDoctor.type); handleServiceSelection('scheduled'); }}
+                  >
+                    <Calendar className="w-5 h-5" /> Schedule for Later
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        ) : null;
+
       case 'registration':
         return (
           <section className="py-10 px-6">
