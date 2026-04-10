@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { DOCTOR_CARD_ORDER, DOCTOR_PROFILES, type DoctorType } from "@/lib/doctorProfiles";
 
-type ConsultationStep = 'selection' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'tavus-video' | 'ai-match' | 'completed';
+type ConsultationStep = 'selection' | 'doctor-detail' | 'registration' | 'emergency' | 'scheduling' | 'video-call' | 'tavus-video' | 'ai-match' | 'completed';
 
 const DOCTORS = DOCTOR_CARD_ORDER.map((type) => ({ type, ...DOCTOR_PROFILES[type] }));
 
