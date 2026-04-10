@@ -36,10 +36,6 @@ export type DoctorType =
   | 'skin_wellness'
   | 'postpartum'
   | 'anxiety_specialist';
-  | 'relationship'
-  | 'male_therapist'
-  | 'elder_counselor'
-  | 'youth_counselor';
 
 export interface DoctorProfile {
   name: string;
