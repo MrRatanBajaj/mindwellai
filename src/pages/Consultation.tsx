@@ -161,7 +161,7 @@ const Consultation = () => {
                   >
                     <Card
                       className="group h-full cursor-pointer border border-border/50 hover:border-calm-sage/40 hover:shadow-lg transition-all duration-300 bg-card/80 backdrop-blur-sm"
-                      onClick={() => handleStartTavusConsultation(doctor.type)}
+                      onClick={() => handleDoctorClick(doctor.type)}
                     >
                       <CardContent className="p-5">
                         <div className="flex items-start gap-4 mb-3">
