@@ -30,6 +30,15 @@ export type DoctorType =
   | 'relationship'
   | 'male_therapist'
   | 'elder_counselor'
+  | 'youth_counselor'
+  | 'sleep_specialist'
+  | 'fertility_expert'
+  | 'skin_wellness'
+  | 'postpartum'
+  | 'anxiety_specialist';
+  | 'relationship'
+  | 'male_therapist'
+  | 'elder_counselor'
   | 'youth_counselor';
 
 export interface DoctorProfile {
