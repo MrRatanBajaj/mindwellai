@@ -34,15 +34,27 @@ const Consultation = () => {
   const [sessionType, setSessionType] = useState<'scheduled' | 'emergency'>('scheduled');
   const [selectedDoctorType, setSelectedDoctorType] = useState<DoctorType>('general');
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const [matchStep, setMatchStep] = useState(0);
   const [matchAnswers, setMatchAnswers] = useState<string[]>([]);
   const [matchedDoctor, setMatchedDoctor] = useState<typeof DOCTORS[0] | null>(null);
 
-  const filteredDoctors = DOCTORS.filter(d =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const CATEGORIES: { label: string; types: DoctorType[] }[] = [
+    { label: "All", types: [] },
+    { label: "Mental Health", types: ['mental_health', 'male_therapist', 'elder_counselor', 'youth_counselor', 'relationship'] },
+    { label: "Physical Health", types: ['general', 'cardiologist', 'dermatologist', 'pediatrician', 'neurologist', 'gynecologist'] },
+    { label: "Lifestyle", types: ['nutritionist', 'career'] },
+  ];
+
+  const filteredDoctors = DOCTORS.filter(d => {
+    const matchesSearch = searchQuery === "" ||
+      d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      d.expertise.some(e => e.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = activeCategory === "All" ||
+      CATEGORIES.find(c => c.label === activeCategory)?.types.includes(d.type);
+    return matchesSearch && matchesCategory;
+  });
 
   const selectedDoctor = DOCTORS.find(d => d.type === selectedDoctorType);
 
