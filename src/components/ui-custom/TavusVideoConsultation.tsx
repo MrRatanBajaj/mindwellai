@@ -387,111 +387,132 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="text-center max-w-xl w-full"
+      className="text-center max-w-lg w-full"
     >
-      <Card className="p-8 bg-card/80 backdrop-blur-lg border-border overflow-hidden relative">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className={cn("absolute -top-24 -right-24 w-48 h-48 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)} />
-          <div className={cn("absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-gradient-to-br opacity-20 blur-3xl", doctorInfo.gradient)} />
+      <Card className="overflow-hidden relative border-0 shadow-2xl bg-gradient-to-b from-card to-card/95 backdrop-blur-xl">
+        {/* Top gradient banner */}
+        <div className={cn("h-32 relative bg-gradient-to-r", doctorInfo.gradient)}>
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute -bottom-16 left-1/2 -translate-x-1/2">
+            <motion.div 
+              className={cn(
+                "w-32 h-32 rounded-2xl flex items-center justify-center bg-gradient-to-br shadow-2xl border-4 border-background",
+                doctorInfo.gradient
+              )}
+              animate={{ 
+                boxShadow: [
+                  "0 8px 32px rgba(0,0,0,0.15)",
+                  "0 16px 48px rgba(0,0,0,0.25)",
+                  "0 8px 32px rgba(0,0,0,0.15)"
+                ]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <DoctorIcon className="h-14 w-14 text-white" />
+            </motion.div>
+          </div>
+          {/* Online indicator */}
+          <div className="absolute top-4 right-4">
+            <Badge className="bg-green-500/90 text-white border-0 text-xs gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              Online
+            </Badge>
+          </div>
         </div>
-        
-        <CardContent className="space-y-6 p-0 relative z-10">
-          {/* Doctor Avatar */}
-          <motion.div 
-            className={cn(
-              "w-36 h-36 rounded-3xl mx-auto flex items-center justify-center bg-gradient-to-br shadow-2xl",
-              doctorInfo.gradient
-            )}
-            animate={{ 
-              boxShadow: [
-                "0 0 20px rgba(0,0,0,0.1)",
-                "0 0 40px rgba(0,0,0,0.2)",
-                "0 0 20px rgba(0,0,0,0.1)"
-              ]
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <DoctorIcon className="h-16 w-16 text-white" />
-          </motion.div>
 
-          <div>
-            <h2 className="text-3xl font-bold text-foreground">{doctorInfo.name}</h2>
-            <p className="text-lg text-muted-foreground">{doctorInfo.specialty}</p>
-            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+        <CardContent className="pt-20 pb-6 px-6 space-y-5">
+          {/* Doctor info */}
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold text-foreground">{doctorInfo.name}</h2>
+            <p className="text-sm font-medium text-primary">{doctorInfo.specialty}</p>
+            <p className="text-xs text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
               {doctorInfo.description}
             </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Specialized model: {doctorInfo.knowledgeBase}
-            </p>
-            <div className="mt-3 flex flex-wrap justify-center gap-2">
-              {doctorInfo.expertise.map((item) => (
-                <Badge key={item} variant="secondary" className="text-xs">
-                  {item}
-                </Badge>
-              ))}
-            </div>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            {[
-              { icon: Shield, label: 'Secure & Private', color: 'text-green-500' },
-              { icon: Brain, label: 'AI-Powered', color: 'text-purple-500' },
-              { icon: Clock, label: 'Available 24/7', color: 'text-blue-500' },
-              { icon: Heart, label: 'Empathetic Care', color: 'text-red-500' },
-            ].map((feature, index) => (
+          {/* Expertise tags */}
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {doctorInfo.expertise.map((item, i) => (
               <motion.div
-                key={feature.label}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-2 text-muted-foreground bg-muted/50 rounded-lg p-2"
+                key={item}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
               >
-                <feature.icon className={cn("h-4 w-4", feature.color)} />
-                <span>{feature.label}</span>
+                <Badge variant="outline" className="text-xs font-normal bg-muted/50">
+                  {item}
+                </Badge>
               </motion.div>
             ))}
           </div>
 
-          {/* Consultation Options */}
-          <div className="space-y-3">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          {/* Features row */}
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { icon: Shield, label: 'Private', color: 'text-green-500' },
+              { icon: Brain, label: 'AI-Powered', color: 'text-purple-500' },
+              { icon: Clock, label: '24/7', color: 'text-blue-500' },
+              { icon: Heart, label: 'Empathetic', color: 'text-red-500' },
+            ].map((feature, index) => (
+              <motion.div
+                key={feature.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.08 }}
+                className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-muted/40"
+              >
+                <feature.icon className={cn("h-4 w-4", feature.color)} />
+                <span className="text-[10px] text-muted-foreground font-medium">{feature.label}</span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Model info */}
+          <div className="bg-muted/30 rounded-xl p-3 border border-border/50">
+            <p className="text-[11px] text-muted-foreground">
+              <span className="font-semibold text-foreground/70">Specialized Model:</span> {doctorInfo.knowledgeBase}
+            </p>
+          </div>
+
+          {/* Action buttons */}
+          <div className="space-y-2.5 pt-1">
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 onClick={startVideoConsultation}
                 disabled={isLoading}
                 size="lg"
-                className={cn("w-full bg-gradient-to-r text-white shadow-lg h-14 text-lg", doctorInfo.gradient)}
+                className={cn("w-full bg-gradient-to-r text-white shadow-lg h-12 text-sm font-semibold rounded-xl", doctorInfo.gradient)}
               >
                 {isLoading && mode === 'video' ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Connecting Video...
                   </>
                 ) : (
                   <>
-                    <Video className="h-5 w-5 mr-2" />
+                    <Video className="h-4 w-4 mr-2" />
                     Start Video Consultation
                   </>
                 )}
               </Button>
             </motion.div>
 
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 onClick={startVoiceConsultation}
                 disabled={isLoading}
                 size="lg"
                 variant="outline"
-                className="w-full h-14 text-lg border-2"
+                className="w-full h-12 text-sm font-semibold rounded-xl border-2"
               >
                 {isLoading && mode === 'voice' ? (
                   <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Connecting Voice...
                   </>
                 ) : (
                   <>
-                    <Volume2 className="h-5 w-5 mr-2" />
+                    <Volume2 className="h-4 w-4 mr-2" />
                     Start Voice Consultation
                   </>
                 )}
@@ -499,16 +520,17 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
             </motion.div>
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            Video requires Tavus setup. Voice uses ElevenLabs AI.
+          <p className="text-[10px] text-muted-foreground/70">
+            Video powered by Tavus · Voice powered by ElevenLabs AI
           </p>
 
           <Button
             variant="ghost"
+            size="sm"
             onClick={onEndCall}
-            className="w-full"
+            className="w-full text-muted-foreground hover:text-foreground"
           >
-            Cancel
+            ← Back to Counselors
           </Button>
         </CardContent>
       </Card>
