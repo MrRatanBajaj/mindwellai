@@ -95,7 +95,17 @@ const Auth = () => {
           data: { display_name: signupData.name, phone: signupData.phone },
         },
       });
-      if (error) { logSignupAttempt(false, signupData.email); toast.error(error.message); return; }
+      if (error) {
+        logSignupAttempt(false, signupData.email);
+        if (error.message.includes('rate limit') || error.status === 429) {
+          toast.error("Too many attempts. Please wait a few minutes before trying again.", { duration: 6000 });
+        } else if (error.message.includes('sending confirmation')) {
+          toast.error("Email service is temporarily unavailable. Please try again in a few minutes or use a different email.", { duration: 6000 });
+        } else {
+          toast.error(error.message);
+        }
+        return;
+      }
       logSignupAttempt(true, signupData.email);
       toast.success("Account created! Check your email to verify your account.");
     } catch { logSignupAttempt(false, signupData.email); toast.error("An unexpected error occurred"); }
