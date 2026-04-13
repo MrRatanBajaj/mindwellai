@@ -52,6 +52,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [signupCooldown, setSignupCooldown] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -66,6 +67,14 @@ const Auth = () => {
       return () => clearTimeout(timer);
     }
   }, [resendCooldown]);
+
+  // Signup cooldown timer to prevent rate limits
+  useEffect(() => {
+    if (signupCooldown > 0) {
+      const timer = setTimeout(() => setSignupCooldown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [signupCooldown]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +95,10 @@ const Auth = () => {
     e.preventDefault();
     if (signupData.password !== signupData.confirmPassword) { toast.error("Passwords do not match"); return; }
     if (signupData.password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    if (signupCooldown > 0) {
+      toast.error(`Please wait ${signupCooldown} seconds before trying again`);
+      return;
+    }
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -98,16 +111,21 @@ const Auth = () => {
       if (error) {
         logSignupAttempt(false, signupData.email);
         if (error.message.includes('rate limit') || error.status === 429) {
-          toast.error("Too many attempts. Please wait a few minutes before trying again.", { duration: 6000 });
-        } else if (error.message.includes('sending confirmation')) {
-          toast.error("Email service is temporarily unavailable. Please try again in a few minutes or use a different email.", { duration: 6000 });
+          setSignupCooldown(120);
+          toast.error("Rate limit reached. Please wait 2 minutes before trying again.", { duration: 8000 });
+        } else if (error.message.includes('sending') || error.message.includes('confirmation')) {
+          setSignupCooldown(60);
+          toast.error("Email service busy. Your account may be created — try logging in, or wait 1 minute to retry.", { duration: 8000 });
+        } else if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+          toast.error("This email is already registered. Please sign in instead.", { duration: 6000 });
         } else {
           toast.error(error.message);
         }
         return;
       }
       logSignupAttempt(true, signupData.email);
-      toast.success("Account created! Check your email to verify your account.");
+      setSignupCooldown(30);
+      toast.success("Account created! Check your email to verify, or try logging in directly.", { duration: 8000 });
     } catch { logSignupAttempt(false, signupData.email); toast.error("An unexpected error occurred"); }
     finally { setIsLoading(false); }
   };
@@ -430,8 +448,8 @@ const Auth = () => {
                       <div className="rounded-xl bg-muted/40 border border-border/40 px-3 py-2 text-xs text-muted-foreground">
                         Your private wellness space — your dashboard stays separate from every other user.
                       </div>
-                      <Button type="submit" disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
-                        {isLoading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
+                <Button type="submit" disabled={isLoading || signupCooldown > 0} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
+                        {isLoading ? "Creating account..." : signupCooldown > 0 ? `Wait ${signupCooldown}s` : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
                       </Button>
                     </motion.form>
                   )}
@@ -456,7 +474,13 @@ const Auth = () => {
                       provider: 'google',
                       options: { redirectTo: window.location.origin + '/dashboard' },
                     });
-                    if (error) toast.error(error.message);
+                    if (error) {
+                      if (error.message.includes('not enabled') || error.message.includes('provider')) {
+                        toast.error("Google login is being set up. Please use email/password or OTP for now.", { duration: 6000 });
+                      } else {
+                        toast.error(error.message);
+                      }
+                    }
                   }}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
