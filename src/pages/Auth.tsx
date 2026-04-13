@@ -448,8 +448,8 @@ const Auth = () => {
                       <div className="rounded-xl bg-muted/40 border border-border/40 px-3 py-2 text-xs text-muted-foreground">
                         Your private wellness space — your dashboard stays separate from every other user.
                       </div>
-                      <Button type="submit" disabled={isLoading} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
-                        {isLoading ? "Creating account..." : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
+                <Button type="submit" disabled={isLoading || signupCooldown > 0} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
+                        {isLoading ? "Creating account..." : signupCooldown > 0 ? `Wait ${signupCooldown}s` : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
                       </Button>
                     </motion.form>
                   )}
