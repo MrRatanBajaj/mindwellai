@@ -474,7 +474,13 @@ const Auth = () => {
                       provider: 'google',
                       options: { redirectTo: window.location.origin + '/dashboard' },
                     });
-                    if (error) toast.error(error.message);
+                    if (error) {
+                      if (error.message.includes('not enabled') || error.message.includes('provider')) {
+                        toast.error("Google login is being set up. Please use email/password or OTP for now.", { duration: 6000 });
+                      } else {
+                        toast.error(error.message);
+                      }
+                    }
                   }}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
