@@ -118,7 +118,12 @@ const Auth = () => {
     try {
       if (otpChannel === "email") {
         const { error } = await supabase.auth.signInWithOtp({ email: otpTarget });
-        if (error) { toast.error(error.message); return; }
+        if (error) {
+          const msg = (error.message.includes('rate limit') || error.status === 429)
+            ? "Too many OTP requests. Please wait a few minutes before trying again."
+            : error.message.includes('sending') ? "Email service temporarily unavailable. Please try again later." : error.message;
+          toast.error(msg, { duration: 6000 }); return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithOtp({ phone: otpTarget });
         if (error) { toast.error(error.message); return; }
