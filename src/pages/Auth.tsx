@@ -68,6 +68,14 @@ const Auth = () => {
     }
   }, [resendCooldown]);
 
+  // Signup cooldown timer to prevent rate limits
+  useEffect(() => {
+    if (signupCooldown > 0) {
+      const timer = setTimeout(() => setSignupCooldown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [signupCooldown]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
