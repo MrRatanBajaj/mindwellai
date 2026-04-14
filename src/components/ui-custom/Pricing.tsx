@@ -3,54 +3,57 @@ import PricingCard, { PricingPlan } from "./PricingCard";
 
 const pricingPlans: PricingPlan[] = [
   {
-    id: "free-trial",
-    name: "Free Trial",
+    id: "free",
+    name: "Free Plan",
     price: "₹0",
-    description: "Try our AI counseling with no commitment",
+    description: "Get started with basic mental wellness tools",
     features: [
-      "3 free counseling sessions",
-      "Basic mental health assessment",
-      "Access to meditation resources",
-      "Email support",
+      "2 AI counseling sessions",
+      "Basic mood tracking",
+      "Access to meditation library",
+      "Self-help resources",
+      "Community support forum",
     ],
-    buttonText: "Start Free Trial",
+    buttonText: "Get Started Free",
     isFree: true,
-    sessionsCount: 3
+    sessionsCount: 2
   },
   {
-    id: "basic",
-    name: "Basic Plan",
-    price: "₹999",
-    description: "Perfect for ongoing support needs",
+    id: "standard",
+    name: "Standard Plan",
+    price: "₹199",
+    description: "Enhanced support for your mental wellness",
     features: [
-      "8 counseling sessions per month",
-      "Comprehensive mental health assessment",
-      "Personalized growth plan",
-      "Access to all meditation resources",
+      "10 AI counseling sessions/month",
+      "Comprehensive mood assessment",
+      "Personalized wellness plan",
+      "All meditation resources",
       "Priority email support",
+      "Session history & insights",
       "UPI & Digital wallet payments",
     ],
-    buttonText: "Choose Basic",
-    sessionsCount: 8
+    buttonText: "Choose Standard",
+    sessionsCount: 10
   },
   {
     id: "premium",
     name: "Premium Plan",
-    price: "₹1999",
-    description: "Comprehensive mental wellness support",
+    price: "₹499",
+    description: "Complete mental wellness experience",
     features: [
       "Unlimited counseling sessions",
-      "Advanced mental health assessments",
-      "Customized wellness program",
-      "Full access to all resources",
+      "Advanced AI assessments",
+      "Custom wellness program",
+      "AI Voice counseling",
       "Guided meditation sessions",
       "24/7 priority support",
-      "AI Voice counseling included",
+      "Video consultation access",
+      "Journal & progress tracking",
       "UPI & Digital wallet payments",
     ],
     buttonText: "Choose Premium",
     isFeatured: true,
-    sessionsCount: 999 // Unlimited
+    sessionsCount: 999
   }
 ];
 

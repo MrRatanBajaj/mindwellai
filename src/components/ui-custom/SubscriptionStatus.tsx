@@ -55,7 +55,9 @@ const SubscriptionStatus = () => {
 
   const getPlanDetails = (planId: string) => {
     const plans: Record<string, { name: string; sessions: number; color: string }> = {
+      'free': { name: 'Free Plan', sessions: 2, color: 'from-slate-500 to-slate-600' },
       'free-trial': { name: 'Free Trial', sessions: 3, color: 'from-slate-500 to-slate-600' },
+      'standard': { name: 'Standard Plan', sessions: 10, color: 'from-blue-500 to-blue-600' },
       'basic': { name: 'Basic Plan', sessions: 8, color: 'from-blue-500 to-blue-600' },
       'premium': { name: 'Premium Plan', sessions: 999, color: 'from-violet-500 to-purple-600' },
     };
