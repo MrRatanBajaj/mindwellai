@@ -38,6 +38,53 @@ const strengthLabel = (score: number) => {
   return { text: "Very Strong", color: "text-calm-sage" };
 };
 
+const normalizeEmail = (value: string) => value.trim().toLowerCase();
+
+const getFriendlyLoginError = (message: string) => {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("invalid login credentials")) {
+    return "Wrong email or password.";
+  }
+
+  if (normalized.includes("email not confirmed")) {
+    return "Your old signup was not activated properly. Use Sign Up again with the same email to activate it instantly.";
+  }
+
+  return message;
+};
+
+const getFriendlyGoogleError = (message: string) => {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("not enabled") || normalized.includes("provider")) {
+    return "Google login is not enabled yet in Supabase. Please use email/password for now.";
+  }
+
+  if (normalized.includes("requested path is invalid") || normalized.includes("redirect")) {
+    return "Google login redirect was invalid. Please try again now.";
+  }
+
+  return message;
+};
+
+const extractFunctionErrorMessage = async (error: unknown) => {
+  if (typeof error === "object" && error !== null && "context" in error) {
+    const context = (error as { context?: { json?: () => Promise<unknown> } }).context;
+
+    if (typeof context?.json === "function") {
+      try {
+        const payload = await context.json() as { error?: string };
+        if (payload?.error) return payload.error;
+      } catch {
+        // Ignore JSON parsing errors and fall back to generic handling.
+      }
+    }
+  }
+
+  return error instanceof Error ? error.message : "Unable to complete the request.";
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const { logLoginAttempt, logSignupAttempt } = useSecurityMonitoring();
@@ -60,7 +107,6 @@ const Auth = () => {
     });
   }, [navigate]);
 
-  // Resend cooldown timer
   useEffect(() => {
     if (resendCooldown > 0) {
       const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
@@ -68,7 +114,6 @@ const Auth = () => {
     }
   }, [resendCooldown]);
 
-  // Signup cooldown timer to prevent rate limits
   useEffect(() => {
     if (signupCooldown > 0) {
       const timer = setTimeout(() => setSignupCooldown(c => c - 1), 1000);
@@ -79,78 +124,139 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     try {
+      const email = normalizeEmail(loginData.email);
       const { error } = await supabase.auth.signInWithPassword({
-        email: loginData.email, password: loginData.password,
+        email,
+        password: loginData.password,
       });
-      if (error) { logLoginAttempt(false, loginData.email); toast.error(error.message); return; }
-      logLoginAttempt(true, loginData.email);
+
+      if (error) {
+        logLoginAttempt(false, email);
+        toast.error(getFriendlyLoginError(error.message));
+        return;
+      }
+
+      logLoginAttempt(true, email);
       toast.success("Welcome back!");
       navigate("/dashboard");
-    } catch { logLoginAttempt(false, loginData.email); toast.error("An unexpected error occurred"); }
-    finally { setIsLoading(false); }
+    } catch {
+      logLoginAttempt(false, loginData.email);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signupData.password !== signupData.confirmPassword) { toast.error("Passwords do not match"); return; }
-    if (signupData.password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+
+    if (signupData.password !== signupData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (signupData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     if (signupCooldown > 0) {
       toast.error(`Please wait ${signupCooldown} seconds before trying again`);
       return;
     }
+
     setIsLoading(true);
+
     try {
-      const { error } = await supabase.auth.signUp({
-        email: signupData.email, password: signupData.password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: { display_name: signupData.name, phone: signupData.phone },
+      const email = normalizeEmail(signupData.email);
+      const { data, error } = await supabase.functions.invoke("direct-signup", {
+        body: {
+          name: signupData.name.trim(),
+          email,
+          password: signupData.password,
+          phone: signupData.phone.trim(),
         },
       });
+
       if (error) {
-        logSignupAttempt(false, signupData.email);
-        if (error.message.includes('rate limit') || error.status === 429) {
-          setSignupCooldown(120);
-          toast.error("Rate limit reached. Please wait 2 minutes before trying again.", { duration: 8000 });
-        } else if (error.message.includes('sending') || error.message.includes('confirmation')) {
-          setSignupCooldown(60);
-          toast.error("Email service busy. Your account may be created — try logging in, or wait 1 minute to retry.", { duration: 8000 });
-        } else if (error.message.includes('already registered') || error.message.includes('already been registered')) {
-          toast.error("This email is already registered. Please sign in instead.", { duration: 6000 });
-        } else {
-          toast.error(error.message);
-        }
+        const message = await extractFunctionErrorMessage(error);
+        logSignupAttempt(false, email);
+        toast.error(message);
         return;
       }
-      logSignupAttempt(true, signupData.email);
-      setSignupCooldown(30);
-      toast.success("Account created! Check your email to verify, or try logging in directly.", { duration: 8000 });
-    } catch { logSignupAttempt(false, signupData.email); toast.error("An unexpected error occurred"); }
-    finally { setIsLoading(false); }
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: signupData.password,
+      });
+
+      if (signInError) {
+        logSignupAttempt(true, email);
+        toast.success(data?.mode === "recovered"
+          ? "Your earlier account is activated now. Please sign in once to continue."
+          : "Account created successfully. Please sign in to continue.", { duration: 6000 });
+        setMode("login");
+        setLoginData({ email, password: signupData.password });
+        return;
+      }
+
+      logSignupAttempt(true, email);
+      setSignupCooldown(10);
+      toast.success(
+        data?.mode === "recovered"
+          ? "Your earlier account was repaired and you are now signed in."
+          : "Account created successfully! You are now signed in.",
+        { duration: 6000 }
+      );
+      navigate("/dashboard");
+    } catch {
+      logSignupAttempt(false, signupData.email);
+      toast.error("Unable to create account right now. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSendOtp = async () => {
-    if (!otpTarget) { toast.error("Please enter your email or phone"); return; }
+    if (!otpTarget) {
+      toast.error("Please enter your email or phone");
+      return;
+    }
+
     setIsLoading(true);
+
     try {
       if (otpChannel === "email") {
-        const { error } = await supabase.auth.signInWithOtp({ email: otpTarget });
+        const { error } = await supabase.auth.signInWithOtp({ email: normalizeEmail(otpTarget) });
+
         if (error) {
-          const msg = (error.message.includes('rate limit') || error.status === 429)
+          const normalized = error.message.toLowerCase();
+          const message = normalized.includes("rate limit") || error.status === 429
             ? "Too many OTP requests. Please wait a few minutes before trying again."
-            : error.message.includes('sending') ? "Email service temporarily unavailable. Please try again later." : error.message;
-          toast.error(msg, { duration: 6000 }); return;
+            : normalized.includes("sending") || normalized.includes("smtp")
+              ? "Email OTP is unavailable right now. Please use password login or Google sign-in."
+              : error.message;
+          toast.error(message, { duration: 6000 });
+          return;
         }
       } else {
         const { error } = await supabase.auth.signInWithOtp({ phone: otpTarget });
-        if (error) { toast.error(error.message); return; }
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
       }
+
       toast.success(otpChannel === "email" ? authMessages.emailOtp : authMessages.phoneOtp);
       setMode("otp-verify");
       setResendCooldown(60);
-    } catch { toast.error("Failed to send OTP"); }
-    finally { setIsLoading(false); }
+    } catch {
+      toast.error("Failed to send OTP");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResendOtp = async () => {
@@ -159,18 +265,51 @@ const Auth = () => {
   };
 
   const handleVerifyOtp = async () => {
-    if (otpCode.length < 6) { toast.error("Please enter the 6-digit code"); return; }
+    if (otpCode.length < 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+
     setIsLoading(true);
+
     try {
       const verifyPayload = otpChannel === "email"
-        ? { email: otpTarget, token: otpCode, type: 'email' as const }
-        : { phone: otpTarget, token: otpCode, type: 'sms' as const };
+        ? { email: normalizeEmail(otpTarget), token: otpCode, type: "email" as const }
+        : { phone: otpTarget, token: otpCode, type: "sms" as const };
       const { error } = await supabase.auth.verifyOtp(verifyPayload);
-      if (error) { toast.error(error.message); return; }
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
       toast.success("Verified successfully! Welcome!");
       navigate("/dashboard");
-    } catch { toast.error("Verification failed"); }
-    finally { setIsLoading(false); }
+    } catch {
+      toast.error("Verification failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+
+      if (error) {
+        toast.error(getFriendlyGoogleError(error.message), { duration: 6000 });
+      }
+    } catch {
+      toast.error("Google login could not be started right now.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const pwStrength = getPasswordStrength(mode === "signup" ? signupData.password : "");
@@ -260,7 +399,6 @@ const Auth = () => {
                     {isLoading ? "Verifying..." : "Verify & Sign In"}
                   </Button>
 
-                  {/* Resend OTP */}
                   <div className="text-center">
                     <button
                       onClick={handleResendOtp}
@@ -278,7 +416,6 @@ const Auth = () => {
                 </motion.div>
               ) : (
                 <motion.div key="auth-forms" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {/* Tab switcher */}
                   <div className="flex gap-1 bg-muted/50 rounded-xl p-1 mb-6">
                     {(["login", "signup"] as const).map(tab => (
                       <button key={tab} onClick={() => setMode(tab)}
@@ -290,7 +427,6 @@ const Auth = () => {
 
                   {mode === "login" && (
                     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                      {/* OTP toggle */}
                       <div className="flex items-center justify-center gap-2 mb-5">
                         <button onClick={() => setUseOtp(false)}
                           className={`text-xs px-3 py-1.5 rounded-full transition ${!useOtp ? 'bg-calm-sage text-white' : 'bg-muted text-muted-foreground'}`}>
@@ -304,7 +440,6 @@ const Auth = () => {
 
                       {useOtp ? (
                         <div className="space-y-4">
-                          {/* OTP Channel */}
                           <div className="flex gap-2 mb-3">
                             <button onClick={() => setOtpChannel("email")}
                               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm border transition ${otpChannel === 'email' ? 'border-calm-sage bg-calm-sage-light/30 text-foreground' : 'border-border text-muted-foreground'}`}>
@@ -448,7 +583,7 @@ const Auth = () => {
                       <div className="rounded-xl bg-muted/40 border border-border/40 px-3 py-2 text-xs text-muted-foreground">
                         Your private wellness space — your dashboard stays separate from every other user.
                       </div>
-                <Button type="submit" disabled={isLoading || signupCooldown > 0} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
+                      <Button type="submit" disabled={isLoading || signupCooldown > 0} className="w-full h-11 bg-calm-sage hover:bg-calm-sage/90 text-white font-semibold rounded-xl">
                         {isLoading ? "Creating account..." : signupCooldown > 0 ? `Wait ${signupCooldown}s` : <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>}
                       </Button>
                     </motion.form>
@@ -457,7 +592,6 @@ const Auth = () => {
               )}
             </AnimatePresence>
 
-            {/* Social Login Divider */}
             {mode !== "otp-verify" && (
               <div className="mt-5 pt-4 border-t border-border/30 space-y-3">
                 <div className="flex items-center gap-3">
@@ -469,19 +603,8 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="w-full h-11 rounded-xl border-border/50 bg-card hover:bg-muted/50 gap-3 font-medium"
-                  onClick={async () => {
-                    const { error } = await supabase.auth.signInWithOAuth({
-                      provider: 'google',
-                      options: { redirectTo: window.location.origin + '/dashboard' },
-                    });
-                    if (error) {
-                      if (error.message.includes('not enabled') || error.message.includes('provider')) {
-                        toast.error("Google login is being set up. Please use email/password or OTP for now.", { duration: 6000 });
-                      } else {
-                        toast.error(error.message);
-                      }
-                    }
-                  }}
+                  onClick={handleGoogleAuth}
+                  disabled={isLoading}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -489,7 +612,7 @@ const Auth = () => {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
-                  Continue with Google
+                  {isLoading ? "Please wait..." : "Continue with Google"}
                 </Button>
               </div>
             )}
@@ -503,7 +626,6 @@ const Auth = () => {
             </div>
           </div>
 
-          {/* Awareness message on mobile */}
           <div className="lg:hidden mt-4 p-3 rounded-xl bg-calm-sage-light/20 border border-border/20 text-center">
             <p className="text-xs text-muted-foreground">
               🌿 "Mental health is not a destination, but a process."
