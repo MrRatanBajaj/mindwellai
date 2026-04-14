@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -20,12 +19,10 @@ serve(async (req) => {
       throw new Error('Missing payment verification parameters')
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Get Razorpay secret
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
 
     if (!razorpayKeySecret) {
@@ -52,7 +49,7 @@ serve(async (req) => {
       userId = user?.id
     }
 
-    // Update or create payment record
+    // Update payment record
     const { data: existingPayment } = await supabase
       .from('payments')
       .select('*')
@@ -82,7 +79,6 @@ serve(async (req) => {
         ? JSON.parse(consultation.notes) 
         : consultation.notes
 
-      // Update consultation status
       await supabase
         .from('consultations')
         .update({
@@ -99,7 +95,9 @@ serve(async (req) => {
       // Create or update subscription
       if (userId && notes.planId) {
         const sessionsMap: Record<string, number> = {
+          'free': 2,
           'free-trial': 3,
+          'standard': 10,
           'basic': 8,
           'premium': 999
         }
