@@ -36,11 +36,13 @@ const App = () => (
             <Route path="/policy" element={<Policy />} />
             <Route path="/careers" element={<Careers />} />
             <Route path="/memorial-chat" element={<MemorialChat />} />
+            <Route path="/plans" element={<Plans />} />
             {/* Protected routes */}
             <Route path="/self-help" element={<ProtectedRoute><SelfHelp /></ProtectedRoute>} />
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
             <Route path="/consultation" element={<ProtectedRoute><Consultation /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
