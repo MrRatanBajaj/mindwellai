@@ -17,6 +17,8 @@ import Journal from "./pages/Journal";
 import Consultation from "./pages/Consultation";
 import Dashboard from "./pages/Dashboard";
 import MemorialChat from "./pages/MemorialChat";
+import Plans from "./pages/Plans";
+import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
 
