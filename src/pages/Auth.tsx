@@ -204,13 +204,14 @@ const Auth = () => {
 
       logSignupAttempt(true, email);
       setSignupCooldown(10);
-      toast.success(
-        data?.mode === "recovered"
-          ? "Your earlier account was repaired and you are now signed in."
-          : "Account created successfully! You are now signed in.",
-        { duration: 6000 }
-      );
-      navigate("/dashboard");
+
+      if (data?.mode === "recovered") {
+        toast.success("Your earlier account was repaired and you are now signed in.", { duration: 6000 });
+        navigate("/dashboard");
+      } else {
+        toast.success("Account created! Choose a plan to start your journey.", { duration: 6000 });
+        navigate("/plans");
+      }
     } catch {
       logSignupAttempt(false, signupData.email);
       toast.error("Unable to create account right now. Please try again.");

@@ -25,6 +25,10 @@ const PricingCard = ({ plan, className }: PricingCardProps) => {
   const navigate = useNavigate();
 
   const handleSelectPlan = () => {
+    if (plan.isFree) {
+      navigate('/dashboard');
+      return;
+    }
     navigate(`/payment?plan=${plan.id}`);
   };
 

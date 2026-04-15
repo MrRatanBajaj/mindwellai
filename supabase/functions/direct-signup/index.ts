@@ -140,6 +140,28 @@ serve(async (req) => {
       }
     }
 
+    // Auto-create free subscription for new users
+    if (mode === 'created') {
+      const { data: existingSub } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (!existingSub) {
+        await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: userId,
+            plan_id: 'free',
+            status: 'active',
+            sessions_remaining: 2,
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
