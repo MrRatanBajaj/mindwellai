@@ -14,7 +14,8 @@ import { JOURNAL_STORAGE_KEY } from '@/components/journal/types';
 import {
   User, Calendar, Clock, Brain, Heart, BookOpen,
   ArrowRight, Star, Edit3, Flame, Activity,
-  Settings, LogOut, Shield, Leaf, TrendingUp
+  Settings, LogOut, Shield, Leaf, TrendingUp,
+  AlertTriangle, Zap, Crown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -191,13 +192,47 @@ const Dashboard = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Plan</span><Badge>{subscription.plan_id}</Badge></div>
                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Sessions Left</span><span className="font-semibold">{subscription.sessions_remaining}</span></div>
-                     <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant="outline" className="border-calm-sage text-calm-sage">Active</Badge></div>
+                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Status</span><Badge variant="outline" className="border-calm-sage text-calm-sage">Active</Badge></div>
+                    {/* Expiry / low sessions warning */}
+                    {(() => {
+                      const daysLeft = Math.ceil((new Date(subscription.current_period_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                      const isExpired = daysLeft <= 0;
+                      const isExpiringSoon = daysLeft > 0 && daysLeft <= 7;
+                      const lowSessions = subscription.sessions_remaining <= 1 && subscription.sessions_remaining < 999;
+
+                      if (isExpired) return (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertTriangle className="w-4 h-4 text-destructive" />
+                            <span className="text-sm font-semibold text-destructive">Plan Expired</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2">Renew your plan to continue your wellness journey.</p>
+                          <Button size="sm" onClick={() => navigate('/plans')} className="bg-calm-sage hover:bg-calm-sage/90 text-white rounded-lg gap-1.5 w-full">
+                            <Crown className="w-3.5 h-3.5" /> Renew Plan
+                          </Button>
+                        </motion.div>
+                      );
+                      if (isExpiringSoon || lowSessions) return (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-600" />
+                            <span className="text-sm font-semibold text-amber-700">
+                              {isExpiringSoon ? `Expires in ${daysLeft} day${daysLeft > 1 ? 's' : ''}` : `Only ${subscription.sessions_remaining} session left`}
+                            </span>
+                          </div>
+                          <Button size="sm" variant="outline" onClick={() => navigate('/plans')} className="rounded-lg gap-1.5 w-full border-amber-300 text-amber-700 hover:bg-amber-100">
+                            <Zap className="w-3.5 h-3.5" /> Upgrade Plan
+                          </Button>
+                        </motion.div>
+                      );
+                      return null;
+                    })()}
                   </div>
                 ) : (
                   <div>
                     <p className="text-sm text-muted-foreground mb-3">No active subscription.</p>
-                    <Button size="sm" variant="outline" onClick={() => navigate('/consultation')} className="rounded-lg gap-1.5">
-                      <Calendar className="w-3.5 h-3.5" /> Book Counselor
+                    <Button size="sm" onClick={() => navigate('/plans')} className="rounded-lg gap-1.5 bg-calm-sage hover:bg-calm-sage/90 text-white w-full">
+                      <Crown className="w-3.5 h-3.5" /> Choose a Plan
                     </Button>
                   </div>
                 )}
