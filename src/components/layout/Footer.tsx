@@ -30,6 +30,7 @@ const Footer = () => {
                 { to: "/journal", label: "Journal" },
                 { to: "/consultation", label: "Book Counselor" },
                 { to: "/about", label: "About" },
+                { to: "/feedback-wall", label: "Feedback Wall" },
               ].map((link) => (
                 <li key={link.to}>
                   <NavLink to={link.to} className="text-background/50 hover:text-background text-sm transition-colors">

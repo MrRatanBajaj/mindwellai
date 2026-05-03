@@ -19,6 +19,7 @@ import Dashboard from "./pages/Dashboard";
 import MemorialChat from "./pages/MemorialChat";
 import Plans from "./pages/Plans";
 import Payment from "./pages/Payment";
+import FeedbackWall from "./pages/FeedbackWall";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/careers" element={<Careers />} />
             <Route path="/memorial-chat" element={<MemorialChat />} />
             <Route path="/plans" element={<Plans />} />
+            <Route path="/feedback-wall" element={<FeedbackWall />} />
             {/* Protected routes */}
             <Route path="/self-help" element={<ProtectedRoute><SelfHelp /></ProtectedRoute>} />
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
