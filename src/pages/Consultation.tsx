@@ -342,13 +342,8 @@ const Consultation = () => {
                       </div>
                       <Badge className="bg-calm-sage/10 text-calm-sage border-calm-sage/30 mb-3">Best Match</Badge>
                       <h2 className="font-display text-2xl font-bold mb-1">{matchedDoctor.name}</h2>
-                      <p className="text-calm-sage mb-3">{matchedDoctor.specialty}</p>
+                      <p className="text-calm-sage mb-3">Counselor</p>
                       <p className="text-sm text-muted-foreground mb-4">{matchedDoctor.description}</p>
-                      <div className="flex flex-wrap justify-center gap-1.5 mb-6">
-                        {matchedDoctor.expertise.map(e => (
-                          <Badge key={e} variant="secondary" className="text-xs">{e}</Badge>
-                        ))}
-                      </div>
                       <Button className="w-full bg-calm-sage hover:bg-calm-sage/90 text-white gap-2" onClick={() => handleDoctorClick(matchedDoctor.type)}>
                         <Video className="w-4 h-4" /> Start Consultation <ArrowRight className="w-4 h-4" />
                       </Button>
@@ -387,7 +382,7 @@ const Consultation = () => {
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse" />Online
                           </Badge>
                         </div>
-                        <p className="text-calm-sage font-medium mt-1">{selectedDoctor.specialty}</p>
+                        <p className="text-calm-sage font-medium mt-1">Counselor</p>
                         <div className="flex items-center gap-1 mt-2">
                           <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                           <span className="font-semibold">{selectedDoctor.rating}</span>
