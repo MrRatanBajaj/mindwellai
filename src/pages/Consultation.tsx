@@ -207,7 +207,7 @@ const Consultation = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-foreground truncate">{doctor.name}</h3>
-                            <p className="text-sm text-calm-sage">{doctor.specialty}</p>
+                            <p className="text-sm text-calm-sage">Counselor</p>
                           </div>
                           <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 text-[10px] shrink-0">
                             <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse" />Online
@@ -215,7 +215,7 @@ const Consultation = () => {
                         </div>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{doctor.description}</p>
                         <div className="flex flex-wrap gap-1 mb-3">
-                          {doctor.expertise.slice(0, 3).map(e => (
+                          {[].map(e => (
                             <Badge key={e} variant="secondary" className="text-[10px] px-2 py-0 bg-muted/60">{e}</Badge>
                           ))}
                         </div>
