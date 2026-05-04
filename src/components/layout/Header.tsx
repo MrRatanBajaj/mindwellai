@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, BookOpen, Calendar, Leaf, Briefcase, MessageCircleHeart } from "lucide-react";
+import { Menu, X, LogOut, BookOpen, Calendar, Leaf, Briefcase, MessageCircleHeart, Crown } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -65,7 +65,13 @@ const Header = () => {
           {/* Auth */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                  <NavLink to="/subscription">
+                    <Crown className="w-4 h-4 mr-1" />
+                    My Plan
+                  </NavLink>
+                </Button>
                 <span className="text-sm text-muted-foreground max-w-[140px] truncate">
                   {user.email}
                 </span>
@@ -121,7 +127,15 @@ const Header = () => {
                   <div className="text-xs text-muted-foreground px-3 mb-2">
                     {user.email}
                   </div>
-                  <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3">
+                  <NavLink
+                    to="/subscription"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-sm"
+                  >
+                    <Crown className="w-4 h-4 text-primary" />
+                    My Plan
+                  </NavLink>
+                  <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3 mt-2">
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </Button>

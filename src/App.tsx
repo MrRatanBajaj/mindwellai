@@ -20,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import MemorialChat from "./pages/MemorialChat";
 import Plans from "./pages/Plans";
 import Payment from "./pages/Payment";
+import Subscription from "./pages/Subscription";
 import FeedbackWall from "./pages/FeedbackWall";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
             {/* Protected routes */}
             {/* Auth required, free for everyone */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             {/* Auth + active paid subscription required */}
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
