@@ -41,9 +41,11 @@ const App = () => (
             <Route path="/plans" element={<Plans />} />
             <Route path="/feedback-wall" element={<FeedbackWall />} />
             {/* Protected routes */}
-            <Route path="/self-help" element={<ProtectedRoute><SelfHelp /></ProtectedRoute>} />
+            {/* Auth required, free for everyone */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-            <Route path="/consultation" element={<ProtectedRoute><Consultation /></ProtectedRoute>} />
+            {/* Auth + active paid subscription required */}
+            <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
+            <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
