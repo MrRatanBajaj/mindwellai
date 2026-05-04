@@ -65,7 +65,13 @@ const Header = () => {
           {/* Auth */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                  <NavLink to="/subscription">
+                    <Crown className="w-4 h-4 mr-1" />
+                    My Plan
+                  </NavLink>
+                </Button>
                 <span className="text-sm text-muted-foreground max-w-[140px] truncate">
                   {user.email}
                 </span>
