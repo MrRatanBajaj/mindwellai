@@ -20,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import MemorialChat from "./pages/MemorialChat";
 import Plans from "./pages/Plans";
 import Payment from "./pages/Payment";
+import Subscription from "./pages/Subscription";
 import FeedbackWall from "./pages/FeedbackWall";
 
 const queryClient = new QueryClient();
