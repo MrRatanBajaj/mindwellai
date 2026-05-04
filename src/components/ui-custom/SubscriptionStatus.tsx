@@ -221,9 +221,29 @@ const SubscriptionStatus = () => {
             </Button>
           </NavLink>
         )}
-        <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
-          Manage Subscription
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+              <XCircle className="w-4 h-4 mr-2" />
+              Cancel Subscription
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your access to Self Help and Book Counselors will end immediately.
+                You can resubscribe anytime from the Plans page.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep plan</AlertDialogCancel>
+              <AlertDialogAction onClick={handleCancel}>
+                Yes, cancel
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </motion.div>
   );
