@@ -44,6 +44,7 @@ const App = () => (
             {/* Protected routes */}
             {/* Auth required, free for everyone */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             {/* Auth + active paid subscription required */}
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
