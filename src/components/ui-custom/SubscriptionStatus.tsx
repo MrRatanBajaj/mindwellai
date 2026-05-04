@@ -70,18 +70,40 @@ const SubscriptionStatus = () => {
     const plans: Record<string, { name: string; sessions: number; color: string }> = {
       'free': { name: 'Free Plan', sessions: 2, color: 'from-slate-500 to-slate-600' },
       'free-trial': { name: 'Free Trial', sessions: 3, color: 'from-slate-500 to-slate-600' },
-      'standard': { name: 'Standard Plan', sessions: 10, color: 'from-blue-500 to-blue-600' },
+      'starter': { name: 'Starter Plan', sessions: 2, color: 'from-emerald-500 to-teal-600' },
+      'standard': { name: 'Standard Plan', sessions: 6, color: 'from-blue-500 to-blue-600' },
       'basic': { name: 'Basic Plan', sessions: 8, color: 'from-blue-500 to-blue-600' },
       'premium': { name: 'Premium Plan', sessions: 999, color: 'from-violet-500 to-purple-600' },
     };
     return plans[planId] || { name: planId, sessions: 0, color: 'from-slate-500 to-slate-600' };
   };
 
+  const handleCancel = async () => {
+    if (!subscription || !user) return;
+    const { error } = await supabase
+      .from('subscriptions')
+      .update({
+        status: 'cancelled',
+        sessions_remaining: 0,
+        current_period_end: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast.error('Could not cancel. Please try again.');
+      return;
+    }
+    toast.success('Subscription cancelled. Access updated.');
+    setSubscription({ ...subscription, status: 'cancelled', sessions_remaining: 0 });
+  };
+
   if (loading) {
     return <Skeleton className="h-48 w-full rounded-xl" />;
   }
 
-  if (!subscription) {
+  const isCancelled = subscription?.status === 'cancelled';
+
+  if (!subscription || isCancelled) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -91,7 +113,9 @@ const SubscriptionStatus = () => {
         <div className="flex items-start justify-between">
           <div>
             <Crown className="w-10 h-10 mb-4" />
-            <h3 className="text-2xl font-bold mb-2">No Active Subscription</h3>
+            <h3 className="text-2xl font-bold mb-2">
+              {isCancelled ? 'Subscription Cancelled' : 'No Active Subscription'}
+            </h3>
             <p className="text-white/80 mb-6">
               Choose a plan to start your mental wellness journey
             </p>
