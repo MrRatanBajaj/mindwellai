@@ -95,11 +95,13 @@ serve(async (req) => {
       // Create or update subscription
       if (userId && notes.planId) {
         const sessionsMap: Record<string, number> = {
+          'starter': 2,
+          'standard': 6,
+          'premium': 999,
+          // legacy
           'free': 2,
           'free-trial': 3,
-          'standard': 10,
           'basic': 8,
-          'premium': 999
         }
         
         const { data: existingSub } = await supabase
