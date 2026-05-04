@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, BookOpen, Calendar, Leaf, Briefcase, MessageCircleHeart } from "lucide-react";
+import { Menu, X, LogOut, BookOpen, Calendar, Leaf, Briefcase, MessageCircleHeart, Crown } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
