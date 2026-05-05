@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, BookOpen, Calendar, Leaf, Briefcase, MessageCircleHeart, Crown } from "lucide-react";
+import { Menu, X, LogOut, BookOpen, Calendar, Leaf, MessageCircleHeart, Crown, Gift } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ const Header = () => {
     { to: "/self-help", label: "Self Help", icon: Leaf },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation", label: "Book Counselor", icon: Calendar },
-    { to: "/careers", label: "Careers", icon: Briefcase },
+    { to: "/referrals", label: "Refer & Earn", icon: Gift },
     { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
   ];
 
