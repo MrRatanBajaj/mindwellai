@@ -3,6 +3,21 @@ import PricingCard, { PricingPlan } from "./PricingCard";
 
 const pricingPlans: PricingPlan[] = [
   {
+    id: "student",
+    name: "Student",
+    price: "₹99",
+    description: "For verified students — pocket-friendly care",
+    features: [
+      "Verified student access (.edu / ID required)",
+      "Book 2 counselor sessions / month",
+      "Self Help library + Journaling",
+      "Video counselor in select cities (Mumbai, Delhi, Bengaluru, Pune, Hyderabad)",
+      "Email support",
+    ],
+    buttonText: "Choose Student",
+    sessionsCount: 2,
+  },
+  {
     id: "starter",
     name: "Starter",
     price: "₹299",
@@ -52,7 +67,7 @@ const pricingPlans: PricingPlan[] = [
 
 const Pricing = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-12">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-12">
       {pricingPlans.map((plan) => (
         <PricingCard key={plan.id} plan={plan} />
       ))}
