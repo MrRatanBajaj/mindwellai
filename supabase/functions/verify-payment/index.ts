@@ -95,6 +95,7 @@ serve(async (req) => {
       // Create or update subscription
       if (userId && notes.planId) {
         const sessionsMap: Record<string, number> = {
+          'student': 2,
           'starter': 2,
           'standard': 6,
           'premium': 999,

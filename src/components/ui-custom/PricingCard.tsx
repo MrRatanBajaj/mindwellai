@@ -29,6 +29,25 @@ const PricingCard = ({ plan, className }: PricingCardProps) => {
       navigate('/dashboard');
       return;
     }
+    if (plan.id === 'student') {
+      const email = window.prompt(
+        "Student verification\n\nEnter your student email (.edu / .ac.in / college domain) or your Student ID number:"
+      );
+      if (!email || email.trim().length < 4) {
+        alert("Verification cancelled. Student plan requires a valid student email or ID.");
+        return;
+      }
+      const looksLikeStudent =
+        /\.edu(\.[a-z]{2,3})?$/i.test(email) ||
+        /\.ac\.[a-z]{2,3}$/i.test(email) ||
+        /(college|university|school|institute)/i.test(email) ||
+        /^[A-Z0-9]{6,}$/i.test(email.trim());
+      if (!looksLikeStudent) {
+        alert("This doesn't look like a valid student email or ID. Please use your college email (e.g. you@xyz.edu) or your official Student ID.");
+        return;
+      }
+      sessionStorage.setItem('student_verification', email.trim());
+    }
     navigate(`/payment?plan=${plan.id}`);
   };
 
