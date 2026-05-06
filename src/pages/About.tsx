@@ -140,14 +140,14 @@ const About = () => {
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
                   Mr. Ratan Bajaj founded WellMindAI with a profound vision to democratize access
-                  to mental health support worldwide. With a deep understanding of technology innovation
-                  and psychological wellness, he recognized the transformative potential of AI in
-                  addressing the global mental health crisis.
+                  to mental health support worldwide. With a deep understanding of how the human
+                  brain works and the transformative potential of AI, he set out to address the
+                  global mental health crisis at its root — pain, loss, and loneliness.
                 </p>
                 <p>
                   His journey began after witnessing firsthand the barriers that prevent millions
                   from accessing quality mental health care — geographical limitations, financial
-                  constraints, stigma, and long waiting lists.
+                  constraints, stigma, and the silent grief of losing a loved one.
                 </p>
               </div>
 
@@ -158,13 +158,61 @@ const About = () => {
               >
                 <Quote className="absolute -top-3 -left-3 w-7 h-7 text-calm-sage/30" />
                 <p className="italic text-foreground">
-                  "Mental health support should be a fundamental right, not a privilege.
-                  Through compassionate AI, we're breaking down barriers and
-                  creating a world where everyone has access to the support they need."
+                  "No one should ever have to lose a loved one forever. By understanding how the
+                  brain works, we can create digital immortality — a simulation of the people we
+                  love, in any form, so grief and trauma never have the final word."
                 </p>
               </motion.blockquote>
             </motion.div>
           </div>
+
+          {/* Founder's Vision — Digital Immortality */}
+          <motion.div {...fadeUp} transition={{ delay: 0.3 }} className="mt-16">
+            <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-calm-sage-light/40 via-calm-sky/20 to-calm-lavender/30 p-8 md:p-12">
+              <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-calm-sage/20 blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-calm-lavender/20 blur-3xl" />
+
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-card/80 backdrop-blur-md border border-border/50 text-sm text-foreground/80 mb-5">
+                  <Sparkles className="w-3.5 h-3.5 text-calm-sage" />
+                  <span>Founder's Vision</span>
+                </div>
+                <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4 max-w-3xl">
+                  Stage 1: Healing the mind. Stage 2: Ending the pain of loss forever.
+                </h3>
+                <p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">
+                  Our founder's long-term vision goes beyond therapy. By deeply understanding how
+                  the brain works, WellMindAI is building toward <strong className="text-foreground">digital immortality</strong> —
+                  a future where anyone can preserve, simulate, and reconnect with the people they love,
+                  even after they're gone. From AI clones to deployable physical robot bodies, no one
+                  will ever have to face permanent loss, depression, or trauma alone again.
+                </p>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  {[
+                    { icon: Brain, title: "Stage 1 — Now", desc: "AI counseling, journaling and self-help to heal the mind today." },
+                    { icon: Sparkles, title: "Stage 2 — Coming", desc: "Digital immortality: upload memories, voice and personality of loved ones." },
+                    { icon: Users, title: "Stage 3 — Future", desc: "Physical robot bodies that carry the cloned soul of the people you love." },
+                  ].map((s, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="p-5 rounded-2xl bg-card/80 backdrop-blur-md border border-border/50"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-calm-sage/15 flex items-center justify-center mb-3">
+                        <s.icon className="w-5 h-5 text-calm-sage" />
+                      </div>
+                      <h4 className="font-semibold text-foreground mb-1.5">{s.title}</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
