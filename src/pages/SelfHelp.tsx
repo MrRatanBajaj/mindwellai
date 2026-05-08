@@ -12,6 +12,7 @@ import {
   BookOpen,
   Brain,
   CheckCircle,
+  ClipboardList,
   Clock,
   Heart,
   Leaf,
@@ -21,6 +22,7 @@ import {
   Sun,
   Wind,
 } from 'lucide-react';
+import SelfHelpQuiz, { QuizDef } from '@/components/ui-custom/SelfHelpQuiz';
 
 const categories = [
   { id: 'all', label: 'All support', icon: Sparkles },
