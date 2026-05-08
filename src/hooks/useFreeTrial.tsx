@@ -27,6 +27,17 @@ export function useFreeTrial() {
       return;
     }
 
+    // Founder / developer bypass — never marked as used, full time always available.
+    if (isFounder(user.email)) {
+      setState({
+        loading: false,
+        trialUsed: false,
+        trialDurationSeconds: 0,
+        trialRemainingSeconds: FREE_TRIAL_LIMIT,
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
