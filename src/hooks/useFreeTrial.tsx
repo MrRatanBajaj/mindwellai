@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { isFounder } from '@/lib/founderAccess';
 
 interface FreeTrialState {
   loading: boolean;
