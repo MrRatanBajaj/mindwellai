@@ -370,6 +370,23 @@ const SelfHelp = () => {
             </div>
           </section>
 
+          {filteredQuizzes.length > 0 && (
+            <section className="space-y-4">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-calm-sage" />
+                <div>
+                  <h2 className="font-display text-2xl font-bold text-foreground">Self-assessment quizzes</h2>
+                  <p className="text-sm text-muted-foreground">Quick reflective check-ins — not a diagnosis, just a gentle mirror.</p>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredQuizzes.map((quiz) => (
+                  <SelfHelpQuiz key={quiz.id} quiz={quiz} />
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="space-y-4">
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">Trusted therapy resources</h2>
