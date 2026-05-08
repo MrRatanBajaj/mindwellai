@@ -103,6 +103,33 @@ const SubscriptionStatus = () => {
     return <Skeleton className="h-48 w-full rounded-xl" />;
   }
 
+  // Founder / developer override — unlimited access, no payment.
+  if (isFounder(user?.email)) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-br from-amber-500 via-orange-500 to-pink-600 rounded-2xl p-8 text-white"
+      >
+        <Crown className="w-10 h-10 mb-4" />
+        <h3 className="text-2xl font-bold mb-2">Founder Access</h3>
+        <p className="text-white/90 mb-4">
+          Unlimited access to all features — no payment required.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/15 rounded-lg p-4">
+            <p className="text-xs text-white/80">Plan</p>
+            <p className="font-semibold">Founder</p>
+          </div>
+          <div className="bg-white/15 rounded-lg p-4">
+            <p className="text-xs text-white/80">Sessions</p>
+            <p className="font-semibold">Unlimited</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   const isCancelled = subscription?.status === 'cancelled';
 
   if (!subscription || isCancelled) {
