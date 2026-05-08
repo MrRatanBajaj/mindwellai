@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { isFounder } from '@/lib/founderAccess';
 
 interface FreeTrialState {
   loading: boolean;
@@ -23,6 +24,17 @@ export function useFreeTrial() {
   const fetchTrialStatus = useCallback(async () => {
     if (!user) {
       setState(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
+    // Founder / developer bypass — never marked as used, full time always available.
+    if (isFounder(user.email)) {
+      setState({
+        loading: false,
+        trialUsed: false,
+        trialDurationSeconds: 0,
+        trialRemainingSeconds: FREE_TRIAL_LIMIT,
+      });
       return;
     }
 

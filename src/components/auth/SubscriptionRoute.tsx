@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { isFounder } from '@/lib/founderAccess';
 
 interface SubscriptionRouteProps {
   children: ReactNode;
@@ -22,6 +23,12 @@ export function SubscriptionRoute({ children }: SubscriptionRouteProps) {
     let cancelled = false;
     const check = async () => {
       if (!user) {
+        setChecking(false);
+        return;
+      }
+      // Founder / developer bypass — unlimited access without payment.
+      if (isFounder(user.email)) {
+        setHasActiveSub(true);
         setChecking(false);
         return;
       }
