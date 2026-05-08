@@ -2,15 +2,26 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Pricing from "@/components/ui-custom/Pricing";
+import { useSearchParams } from "react-router-dom";
+import { Lock } from "lucide-react";
 
 const Plans = () => {
+  const [searchParams] = useSearchParams();
+  const gated = searchParams.get("gated") === "1";
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       {/* Hero Section */}
       <section className="pt-32 pb-10 px-6">
         <div className="max-w-4xl mx-auto text-center">
+          {gated && (
+            <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+              <Lock className="w-4 h-4" />
+              <span>This feature requires an active plan. Pick one below to continue.</span>
+            </div>
+          )}
           <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6 animate-fade-in">
             Choose Your Plan
           </span>
@@ -22,6 +33,7 @@ const Plans = () => {
           </p>
         </div>
       </section>
+
       
       {/* Pricing Section */}
       <section className="py-10 px-6 mb-20 flex-grow">
