@@ -245,6 +245,11 @@ const SelfHelp = () => {
     return categoryMatch && (!searchQuery || matches(item.title) || matches(item.description) || matches(item.source));
   }), [activeCategory, searchQuery]);
 
+  const filteredQuizzes = useMemo(() => quizzes.filter((item) => {
+    const categoryMatch = activeCategory === 'all' || item.category === activeCategory;
+    return categoryMatch && (!searchQuery || matches(item.title) || matches(item.description));
+  }), [activeCategory, searchQuery]);
+
   const toggleSaved = (id: string) => {
     setSavedResources((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
   };
