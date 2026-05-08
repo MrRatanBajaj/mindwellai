@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { isFounder } from '@/lib/founderAccess';
 
 interface SubscriptionRouteProps {
   children: ReactNode;
