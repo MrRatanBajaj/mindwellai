@@ -70,6 +70,7 @@ const SubscriptionStatus = () => {
     const plans: Record<string, { name: string; sessions: number; color: string }> = {
       'free': { name: 'Free Plan', sessions: 2, color: 'from-slate-500 to-slate-600' },
       'free-trial': { name: 'Free Trial', sessions: 3, color: 'from-slate-500 to-slate-600' },
+      'student': { name: 'Student Plan', sessions: 2, color: 'from-pink-500 to-rose-600' },
       'starter': { name: 'Starter Plan', sessions: 2, color: 'from-emerald-500 to-teal-600' },
       'standard': { name: 'Standard Plan', sessions: 6, color: 'from-blue-500 to-blue-600' },
       'basic': { name: 'Basic Plan', sessions: 8, color: 'from-blue-500 to-blue-600' },
