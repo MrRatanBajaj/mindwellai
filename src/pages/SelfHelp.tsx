@@ -67,6 +67,141 @@ const resources = [
   { id: 're-16', title: 'SAMHSA Helpline Resources', category: 'mood', type: 'Helpline', url: 'https://www.samhsa.gov/find-help/national-helpline', source: 'SAMHSA', description: 'Free, confidential 24/7 helpline for mental health and substance use.' },
   { id: 're-17', title: 'Tiny Buddha: Letting Go of Stress', category: 'stress', type: 'Article', url: 'https://tinybuddha.com/blog/category/letting-go/', source: 'Tiny Buddha', description: 'Warm, relatable articles on releasing stress and emotional burdens.' },
   { id: 're-18', title: 'NHS: 5 Steps to Mental Wellbeing', category: 'mindfulness', type: 'Guide', url: 'https://www.nhs.uk/mental-health/self-help/guides-and-tools/five-steps-to-mental-wellbeing/', source: 'NHS', description: 'Evidence-based steps: connect, be active, learn, give, be present.' },
+  { id: 're-19', title: 'Mayo Clinic: Depression Self-Care', category: 'mood', type: 'Article', url: 'https://www.mayoclinic.org/diseases-conditions/depression/in-depth/depression/art-20045943', source: 'Mayo Clinic', description: 'Doctor-reviewed steps to support yourself through low mood.' },
+  { id: 're-20', title: 'APA: Stress Effects on the Body', category: 'stress', type: 'Guide', url: 'https://www.apa.org/topics/stress/body', source: 'APA', description: 'Understand how chronic stress shows up physically — and what helps.' },
+  { id: 're-21', title: 'Insight Timer: Free Meditations', category: 'mindfulness', type: 'App', url: 'https://insighttimer.com/', source: 'Insight Timer', description: 'Largest free library of guided meditations and sleep music.' },
+  { id: 're-22', title: 'CCI: Sleep Workbook (Free PDF)', category: 'sleep', type: 'Workbook', url: 'https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Sleep', source: 'CCI Australia', description: 'Free CBT-I-style workbook to rebuild healthy sleep, step by step.' },
+  { id: 're-23', title: 'Vandrevala Foundation Helpline (India)', category: 'mood', type: 'Helpline', url: 'https://vandrevalafoundation.com/', source: 'Vandrevala', description: 'Free 24/7 mental health helpline for India: 1860 2662 345.' },
+  { id: 're-24', title: 'iCall India — Free Counseling', category: 'anxiety', type: 'Helpline', url: 'https://icallhelpline.org/', source: 'iCall TISS', description: 'Free email & phone counseling by trained Indian psychologists.' },
+];
+
+const quizzes: QuizDef[] = [
+  {
+    id: 'quiz-stress',
+    title: 'How stressed am I right now?',
+    description: 'A short check-in based on common stress signs from the last week.',
+    category: 'stress',
+    estimatedMinutes: 2,
+    questions: [
+      { q: 'How often have you felt overwhelmed this week?', options: [
+        { label: 'Almost never', score: 0 },
+        { label: 'Sometimes', score: 1 },
+        { label: 'Often', score: 2 },
+        { label: 'Almost every day', score: 3 },
+      ]},
+      { q: 'Have you had trouble relaxing or "switching off"?', options: [
+        { label: 'No, I rest well', score: 0 },
+        { label: 'A little', score: 1 },
+        { label: 'Yes, often', score: 2 },
+        { label: 'Constantly', score: 3 },
+      ]},
+      { q: 'How is your body feeling? (tightness, headaches, fatigue)', options: [
+        { label: 'Calm and rested', score: 0 },
+        { label: 'A bit tense', score: 1 },
+        { label: 'Tense most days', score: 2 },
+        { label: 'Exhausted / in pain', score: 3 },
+      ]},
+      { q: 'How easily are you getting irritated or short-tempered?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Mildly', score: 1 },
+        { label: 'Quite often', score: 2 },
+        { label: 'Very easily', score: 3 },
+      ]},
+      { q: 'Do you feel like you have time for yourself?', options: [
+        { label: 'Yes, regularly', score: 0 },
+        { label: 'A little', score: 1 },
+        { label: 'Rarely', score: 2 },
+        { label: 'Never', score: 3 },
+      ]},
+    ],
+    results: [
+      { maxScore: 4, level: 'Low stress', advice: 'You\'re managing well. Keep your daily breath / movement habits going.' },
+      { maxScore: 9, level: 'Moderate stress', advice: 'Try the Box Breathing exercise and the Worry Reset Sheet this week.' },
+      { maxScore: 15, level: 'High stress', advice: 'Consider booking a counselor session and using the Boundary Rehearsal exercise.' },
+    ],
+  },
+  {
+    id: 'quiz-anxiety',
+    title: 'Anxiety self check-in',
+    description: 'A gentle screen inspired by GAD-7 themes (not a diagnosis).',
+    category: 'anxiety',
+    estimatedMinutes: 2,
+    questions: [
+      { q: 'Feeling nervous, anxious, or on edge?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Several days', score: 1 },
+        { label: 'More than half the days', score: 2 },
+        { label: 'Nearly every day', score: 3 },
+      ]},
+      { q: 'Trouble stopping or controlling worrying?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Several days', score: 1 },
+        { label: 'More than half the days', score: 2 },
+        { label: 'Nearly every day', score: 3 },
+      ]},
+      { q: 'Trouble relaxing?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Several days', score: 1 },
+        { label: 'More than half the days', score: 2 },
+        { label: 'Nearly every day', score: 3 },
+      ]},
+      { q: 'Feeling afraid as if something awful might happen?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Several days', score: 1 },
+        { label: 'More than half the days', score: 2 },
+        { label: 'Nearly every day', score: 3 },
+      ]},
+    ],
+    results: [
+      { maxScore: 3, level: 'Minimal anxiety', advice: 'Maintain grounding habits like the 5 Senses Reset.' },
+      { maxScore: 7, level: 'Mild anxiety', advice: 'Try the 4-6 Grounding Breath daily and explore the MindShift CBT app.' },
+      { maxScore: 12, level: 'Notable anxiety', advice: 'Talking to a counselor is recommended. Use the Progressive Muscle Relaxation in the meantime.' },
+    ],
+  },
+  {
+    id: 'quiz-mood',
+    title: 'How is my mood today?',
+    description: 'A 5-question reflection based on common low-mood signals.',
+    category: 'mood',
+    estimatedMinutes: 2,
+    questions: [
+      { q: 'Little interest or pleasure in doing things?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Several days', score: 1 },
+        { label: 'More than half', score: 2 },
+        { label: 'Nearly every day', score: 3 },
+      ]},
+      { q: 'Feeling down, hopeless, or empty?', options: [
+        { label: 'Not at all', score: 0 },
+        { label: 'Several days', score: 1 },
+        { label: 'More than half', score: 2 },
+        { label: 'Nearly every day', score: 3 },
+      ]},
+      { q: 'Energy levels?', options: [
+        { label: 'Energetic', score: 0 },
+        { label: 'A bit tired', score: 1 },
+        { label: 'Often drained', score: 2 },
+        { label: 'Constantly exhausted', score: 3 },
+      ]},
+      { q: 'How are you treating yourself in your thoughts?', options: [
+        { label: 'Kindly', score: 0 },
+        { label: 'Mostly fair', score: 1 },
+        { label: 'Often critical', score: 2 },
+        { label: 'Very harsh', score: 3 },
+      ]},
+      { q: 'Connection with people you care about?', options: [
+        { label: 'Strong', score: 0 },
+        { label: 'Okay', score: 1 },
+        { label: 'Limited', score: 2 },
+        { label: 'Isolated', score: 3 },
+      ]},
+    ],
+    results: [
+      { maxScore: 4, level: 'Steady mood', advice: 'Keep up gratitude reflection and regular movement.' },
+      { maxScore: 9, level: 'Low mood signals', advice: 'Try Self-Compassion Pause daily and reach out to one trusted person.' },
+      { maxScore: 15, level: 'Heavy mood', advice: 'Please consider speaking with a counselor. You don\'t have to carry this alone.' },
+    ],
+  },
 ];
 
 const therapistTracks = [
