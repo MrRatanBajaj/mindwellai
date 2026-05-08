@@ -26,6 +26,12 @@ export function SubscriptionRoute({ children }: SubscriptionRouteProps) {
         setChecking(false);
         return;
       }
+      // Founder / developer bypass — unlimited access without payment.
+      if (isFounder(user.email)) {
+        setHasActiveSub(true);
+        setChecking(false);
+        return;
+      }
       const { data } = await supabase
         .from('subscriptions')
         .select('status, current_period_end, plan_id')
