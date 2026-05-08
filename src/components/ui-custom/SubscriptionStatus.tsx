@@ -28,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { isFounder } from "@/lib/founderAccess";
 
 interface Subscription {
   id: string;
