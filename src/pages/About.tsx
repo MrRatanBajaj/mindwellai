@@ -281,7 +281,52 @@ const About = () => {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Mental Health Counseling Guidelines */}
+      <section className="py-20 px-6 bg-muted/30">
+        <div className="max-w-5xl mx-auto">
+          <motion.div {...fadeUp} className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-sage-light border border-border/50 text-sm text-foreground/80 mb-4">
+              <Brain className="w-3.5 h-3.5 text-calm-sage" />
+              <span>Counseling Standards</span>
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">Mental Health Counseling Guidelines</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Every WellMindAI counselor follows globally recognized clinical and ethical standards so you receive safe, evidence-based, and respectful support.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {[
+              { icon: Shield, title: "Confidentiality & Privacy", desc: "All conversations are private, encrypted, and HIPAA-compliant. Nothing is ever shared without your explicit consent." },
+              { icon: Heart, title: "Non-Judgmental Space", desc: "You will never be judged. Every concern — big or small — is treated with empathy, dignity, and unconditional positive regard." },
+              { icon: Brain, title: "Evidence-Based Methods", desc: "Counselors apply CBT, DBT, ACT, mindfulness, and trauma-informed care backed by clinical research." },
+              { icon: CheckCircle2, title: "Informed Consent", desc: "You are always informed about how AI counseling works, your rights, and your option to pause or stop a session anytime." },
+              { icon: Users, title: "Cultural Sensitivity", desc: "Counselors respect your background, language, faith, gender identity, and lived experiences without bias." },
+              { icon: Sparkles, title: "Crisis-Safe Escalation", desc: "If you express crisis or self-harm thoughts, helpline resources and emergency support are surfaced immediately." },
+              { icon: Award, title: "Boundaries of AI Care", desc: "AI counseling supplements — it does not replace — licensed human therapy, medication management, or in-person psychiatric care when needed." },
+              { icon: Eye, title: "Continuous Improvement", desc: "Sessions are monitored for safety and quality. Feedback is reviewed by clinical advisors to keep care effective and ethical." },
+            ].map((g, i) => (
+              <motion.div key={i} {...fadeUp} transition={{ delay: i * 0.05 }}>
+                <Card className="h-full border border-border/50 bg-card/80 backdrop-blur-sm hover:shadow-md transition-shadow">
+                  <CardContent className="p-6 flex gap-4">
+                    <div className="w-11 h-11 rounded-xl bg-calm-sage-light flex items-center justify-center shrink-0">
+                      <g.icon className="w-5 h-5 text-calm-sage" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">{g.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{g.desc}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div {...fadeUp} transition={{ delay: 0.4 }} className="mt-8 p-5 rounded-2xl bg-amber-50 border border-amber-200/60 text-sm text-amber-900 leading-relaxed">
+            <strong>Important:</strong> WellMindAI provides supportive AI counseling and is not a substitute for emergency services. If you or someone you know is in immediate danger, please call your local emergency number or a crisis helpline right away.
+          </motion.div>
+        </div>
+      </section>
       <section className="py-20 px-6 bg-gradient-to-br from-calm-sage-light/60 via-calm-sky/30 to-calm-lavender/30">
         <div className="max-w-3xl mx-auto text-center">
           <motion.div {...fadeUp}>
