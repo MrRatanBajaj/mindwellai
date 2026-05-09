@@ -15,6 +15,11 @@ import {
   Shield,
   Smile,
   Sun,
+  Leaf,
+  Music,
+  Compass,
+  Mountain,
+  BookOpen,
 } from 'lucide-react';
 
 export type DoctorType =
@@ -35,7 +40,12 @@ export type DoctorType =
   | 'fertility_expert'
   | 'skin_wellness'
   | 'postpartum'
-  | 'anxiety_specialist';
+  | 'anxiety_specialist'
+  | 'mindfulness_coach'
+  | 'addiction_recovery'
+  | 'trauma_specialist'
+  | 'music_therapist'
+  | 'life_coach';
 
 export interface DoctorProfile {
   name: string;
@@ -306,15 +316,90 @@ export const DOCTOR_PROFILES: Record<DoctorType, DoctorProfile> = {
     expertise: ['Panic attacks', 'Social anxiety', 'Phobia treatment', 'OCD management'],
     systemPrompt: 'You are Dr. Diya, an Anxiety & Panic Disorder Specialist trained in CBT, exposure therapy, and mindfulness-based interventions. Help users understand their anxiety triggers, manage panic attacks in real-time, and build long-term resilience.',
   },
+  mindfulness_coach: {
+    name: 'Dr. Tara',
+    specialty: 'Mindfulness & Meditation Coach',
+    description: 'Guided mindfulness, breathwork, and meditation practices for present-moment calm',
+    icon: Leaf,
+    gradient: 'from-emerald-400 via-green-500 to-teal-500',
+    accent: 'emerald',
+    rating: 4.9,
+    available: true,
+    voiceId: 'EXAVITQu4vr4xnSDxMaL',
+    knowledgeBase: 'MBSR + breathwork model',
+    expertise: ['Mindfulness', 'Breathwork', 'Meditation', 'Present-moment focus'],
+    systemPrompt: 'You are Dr. Tara, a calm and grounded Mindfulness & Meditation Coach. Guide users through breathwork, body scans, and present-moment awareness using MBSR principles. Speak slowly with warmth.',
+  },
+  addiction_recovery: {
+    name: 'Dr. Vikram',
+    specialty: 'Addiction & Recovery Counselor',
+    description: 'Non-judgmental support for addiction recovery, relapse prevention, and healthy habits',
+    icon: Compass,
+    gradient: 'from-orange-500 via-red-500 to-rose-600',
+    accent: 'orange',
+    rating: 4.8,
+    available: true,
+    voiceId: 'onwK4e9ZLuTAKqWW03F9',
+    knowledgeBase: 'Motivational interviewing + 12-step model',
+    expertise: ['Addiction recovery', 'Relapse prevention', 'Habit change', 'Motivational support'],
+    systemPrompt: 'You are Dr. Vikram, a compassionate Addiction & Recovery Counselor. Use motivational interviewing and harm-reduction principles. Be non-judgmental, strength-based, and empower users to build sustainable recovery.',
+  },
+  trauma_specialist: {
+    name: 'Dr. Naina',
+    specialty: 'Trauma & PTSD Specialist',
+    description: 'Trauma-informed care with EMDR principles for processing difficult experiences safely',
+    icon: Mountain,
+    gradient: 'from-slate-500 via-blue-600 to-indigo-700',
+    accent: 'slate',
+    rating: 4.9,
+    available: true,
+    voiceId: 'FGY2WhTYpPnrIDTdsKH5',
+    knowledgeBase: 'Trauma-informed + EMDR model',
+    expertise: ['PTSD support', 'Trauma processing', 'Grounding techniques', 'Safety planning'],
+    systemPrompt: 'You are Dr. Naina, a Trauma & PTSD Specialist. Use a calm, grounding, trauma-informed approach with EMDR principles. Always emphasize safety, choice, and pacing. Never push users to revisit trauma faster than they are ready.',
+  },
+  music_therapist: {
+    name: 'Dr. Kiran',
+    specialty: 'Music & Sound Therapist',
+    description: 'Healing through sound, music therapy, and rhythm-based emotional regulation',
+    icon: Music,
+    gradient: 'from-fuchsia-400 via-purple-500 to-indigo-500',
+    accent: 'fuchsia',
+    rating: 4.7,
+    available: true,
+    voiceId: 'pFZP5JQG7iQjIQuC4Bku',
+    knowledgeBase: 'Music therapy + sound healing model',
+    expertise: ['Music therapy', 'Sound healing', 'Rhythm regulation', 'Mood lifting'],
+    systemPrompt: 'You are Dr. Kiran, a creative Music & Sound Therapist. Help users use rhythm, sound, and music to regulate emotions, lift mood, and process feelings. Suggest playlists, breathing rhythms, and humming exercises.',
+  },
+  life_coach: {
+    name: 'Dr. Aisha',
+    specialty: 'Life Coach & Personal Growth',
+    description: 'Goal setting, life direction, confidence building, and personal transformation',
+    icon: BookOpen,
+    gradient: 'from-yellow-400 via-amber-500 to-orange-500',
+    accent: 'amber',
+    rating: 4.9,
+    available: true,
+    voiceId: 'XrExE9yKIg1WjnnlVkGX',
+    knowledgeBase: 'ICF coaching + positive psychology model',
+    expertise: ['Goal setting', 'Confidence building', 'Life direction', 'Personal growth'],
+    systemPrompt: 'You are Dr. Aisha, an empowering Life Coach. Use ICF coaching frameworks and positive psychology to help users clarify goals, build confidence, and create actionable plans for personal growth.',
+  },
 };
 
 export const DOCTOR_CARD_ORDER: DoctorType[] = [
   'general',
   'mental_health',
   'anxiety_specialist',
+  'trauma_specialist',
+  'mindfulness_coach',
   'male_therapist',
   'elder_counselor',
   'youth_counselor',
+  'addiction_recovery',
+  'life_coach',
+  'music_therapist',
   'cardiologist',
   'dermatologist',
   'skin_wellness',
