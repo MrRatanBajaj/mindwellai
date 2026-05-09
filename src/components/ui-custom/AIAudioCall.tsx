@@ -214,6 +214,10 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       if (!shouldReconnectRef.current) return;
 
       try {
+        // Always tear down any lingering session before starting a new one
+        // to prevent overlapping voices / duplicate agents speaking at once.
+        try { await conversation.endSession(); } catch {}
+        if (!shouldReconnectRef.current) return;
         await conversation.startSession({ agentId: SOPHIA_AGENT_ID });
       } catch (error) {
         console.error(`Reconnect attempt ${attempts} failed after ${reason}:`, error);
