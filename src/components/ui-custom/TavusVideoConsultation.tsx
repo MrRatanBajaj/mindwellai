@@ -174,14 +174,17 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       toast({ title: 'Video Consultation Ready', description: `Connected with ${doctorInfo.name}` });
     } catch (error) {
       console.error('Error starting video consultation:', error);
+      const msg = error instanceof Error ? error.message : '';
+      const creditsOut = /credit|402|out of/i.test(msg);
       toast({
-        title: 'Video Connection Failed',
-        description: 'Falling back to voice consultation...',
+        title: creditsOut ? 'Video Temporarily Unavailable' : 'Video Connection Failed',
+        description: creditsOut
+          ? 'Our video service is at capacity right now. Please use Voice Consultation — same counselor, full session.'
+          : 'Could not start video. Please try Voice Consultation instead.',
         variant: 'destructive',
       });
-      // Auto-fallback to voice
+      // Stay on selection screen so user can explicitly pick voice
       setMode('selection');
-      startVoiceConsultation();
     } finally {
       setIsLoading(false);
     }
