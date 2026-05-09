@@ -316,6 +316,11 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
   }, [volume, isConnected, conversation]);
 
   const startCall = useCallback(async () => {
+    // Guard: prevent duplicate concurrent sessions (fixes overlapping voices)
+    if (isConnecting || isConnected || conversation.status === 'connected') {
+      console.warn('Call already in progress, ignoring duplicate startCall');
+      return;
+    }
     try {
       shouldReconnectRef.current = true;
       reconnectAttemptsRef.current = 0;
@@ -324,6 +329,9 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       setIsConnecting(true);
       setSessionDuration(0);
       setMessages([]);
+
+      // Make absolutely sure no previous session is alive before opening a new one
+      try { await conversation.endSession(); } catch {}
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
       micStreamRef.current = stream;
@@ -371,14 +379,29 @@ const AIAudioCall: React.FC<AIAudioCallProps> = ({ onCallEnd, maxDurationSeconds
       setIsReconnecting(false);
       stopAudioAnalysis();
     }
-  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore, clearReconnectTimer]);
+  }, [conversation, toast, startAudioAnalysis, stopAudioAnalysis, moodScore, clearReconnectTimer, isConnecting, isConnected, selectedCounselor, counselorDoctorType, counselorName]);
 
   const endCall = useCallback(async () => {
     try {
+      // Disable any pending reconnect FIRST so onDisconnect doesn't relaunch the agent
       shouldReconnectRef.current = false;
       clearReconnectTimer();
       setIsReconnecting(false);
+
+      // Mute output instantly so any buffered TTS audio stops being heard
+      // (ElevenLabs endSession() doesn't immediately drain the audio buffer)
+      try { conversation.setVolume({ volume: 0 }); } catch {}
+
       await conversation.endSession();
+
+      // Force-stop any audio elements the SDK may have attached to the page
+      // (belt-and-braces: prevents counselor "still speaking" after end)
+      try {
+        document.querySelectorAll('audio').forEach((el) => {
+          try { (el as HTMLAudioElement).pause(); (el as HTMLAudioElement).srcObject = null; } catch {}
+        });
+      } catch {}
+
       setIsConnected(false);
       stopAudioAnalysis();
       setShowSummary(true);
