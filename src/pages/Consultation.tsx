@@ -41,7 +41,7 @@ const Consultation = () => {
 
   const CATEGORIES: { label: string; types: DoctorType[] }[] = [
     { label: "All", types: [] },
-    { label: "Mental Health", types: ['mental_health', 'anxiety_specialist', 'male_therapist', 'elder_counselor', 'youth_counselor', 'relationship'] },
+    { label: "Mental Health", types: ['mental_health', 'anxiety_specialist', 'trauma_specialist', 'mindfulness_coach', 'male_therapist', 'elder_counselor', 'youth_counselor', 'addiction_recovery', 'life_coach', 'music_therapist', 'relationship'] },
     { label: "Physical Health", types: ['general', 'cardiologist', 'dermatologist', 'pediatrician', 'neurologist', 'gynecologist', 'fertility_expert', 'postpartum'] },
     { label: "Lifestyle", types: ['nutritionist', 'career', 'sleep_specialist', 'skin_wellness'] },
   ];
@@ -124,7 +124,7 @@ const Consultation = () => {
                     Book a Counselor
                   </h1>
                   <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-8">
-                    Browse our 13 specialized AI counselors or let us match you with the right one.
+                    Browse our 23 specialized AI counselors or let us match you with the right one.
                   </p>
 
                   {/* Mode toggle */}
