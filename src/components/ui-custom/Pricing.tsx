@@ -3,6 +3,22 @@ import PricingCard, { PricingPlan } from "./PricingCard";
 
 const pricingPlans: PricingPlan[] = [
   {
+    id: "free-trial",
+    name: "Free Trial",
+    price: "₹0",
+    description: "Try WellMindAI free for 3 days",
+    features: [
+      "1 video counseling session (one-time)",
+      "Full Self-Help library access",
+      "Unlimited Journaling for 3 days",
+      "Auto-locks after 3 days — no card needed",
+      "Upgrade anytime to continue",
+    ],
+    buttonText: "Start Free Trial",
+    sessionsCount: 1,
+    isFree: true,
+  },
+  {
     id: "student",
     name: "Student",
     price: "₹99",
@@ -67,7 +83,7 @@ const pricingPlans: PricingPlan[] = [
 
 const Pricing = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-12">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 py-12">
       {pricingPlans.map((plan) => (
         <PricingCard key={plan.id} plan={plan} />
       ))}

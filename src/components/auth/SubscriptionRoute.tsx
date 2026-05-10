@@ -42,7 +42,6 @@ export function SubscriptionRoute({ children }: SubscriptionRouteProps) {
       const active =
         !!data &&
         data.plan_id !== 'free' &&
-        data.plan_id !== 'free-trial' &&
         (!data.current_period_end || new Date(data.current_period_end) > new Date());
 
       if (!cancelled) {

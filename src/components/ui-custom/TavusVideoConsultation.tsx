@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversation } from '@11labs/react';
 import VoiceWaveformVisualizer from './VoiceWaveformVisualizer';
+import Sophia3DAvatar from './Sophia3DAvatar';
 import { DOCTOR_PROFILES, type DoctorType } from '@/lib/doctorProfiles';
 
 interface TavusVideoConsultationProps {
@@ -31,7 +32,7 @@ interface TavusVideoConsultationProps {
   onEndCall: () => void;
 }
 
-type ConsultationMode = 'selection' | 'video' | 'voice';
+type ConsultationMode = 'selection' | 'video' | 'voice' | 'avatar-video';
 type ReconnectReason = 'disconnect' | 'error';
 
 const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
@@ -88,7 +89,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     onDisconnect: () => {
       console.log('ElevenLabs voice disconnected');
       setIsConnected(false);
-      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+      if (shouldReconnectRef.current && (modeRef.current === 'voice' || modeRef.current === 'avatar-video')) {
         reconnectFnRef.current('disconnect');
       }
     },
@@ -101,7 +102,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       setVoiceError(errorMsg);
       setIsConnected(false);
       setIsLoading(false);
-      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+      if (shouldReconnectRef.current && (modeRef.current === 'voice' || modeRef.current === 'avatar-video')) {
         reconnectFnRef.current('error');
         return;
       }
@@ -175,16 +176,17 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     } catch (error) {
       console.error('Error starting video consultation:', error);
       const msg = error instanceof Error ? error.message : '';
-      const creditsOut = /credit|402|out of/i.test(msg);
+      const creditsOut = /credit|402|out of|quota/i.test(msg);
       toast({
-        title: creditsOut ? 'Video Temporarily Unavailable' : 'Video Connection Failed',
+        title: creditsOut ? 'Switching to Free Avatar Video' : 'Video Connection Failed',
         description: creditsOut
-          ? 'Our video service is at capacity right now. Please use Voice Consultation — same counselor, full session.'
-          : 'Could not start video. Please try Voice Consultation instead.',
-        variant: 'destructive',
+          ? 'Real-face video at capacity — using our free open-source animated avatar instead. Same counselor, full session.'
+          : 'Could not start real-face video. Using free animated avatar instead.',
       });
-      // Stay on selection screen so user can explicitly pick voice
-      setMode('selection');
+      // Auto-fallback to free avatar video (Sophia avatar + ElevenLabs voice)
+      setIsLoading(false);
+      startAvatarVideo();
+      return;
     } finally {
       setIsLoading(false);
     }
@@ -228,7 +230,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation]);
 
   const attemptReconnect = useCallback((reason: ReconnectReason) => {
-    if (!shouldReconnectRef.current || modeRef.current !== 'voice' || reconnectTimeoutRef.current) {
+    if (!shouldReconnectRef.current || (modeRef.current !== 'voice' && modeRef.current !== 'avatar-video') || reconnectTimeoutRef.current) {
       return;
     }
 
@@ -253,7 +255,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
 
     reconnectTimeoutRef.current = setTimeout(async () => {
       reconnectTimeoutRef.current = null;
-      if (!shouldReconnectRef.current || modeRef.current !== 'voice') return;
+      if (!shouldReconnectRef.current || (modeRef.current !== 'voice' && modeRef.current !== 'avatar-video')) return;
 
       try {
         await startVoiceSession();
@@ -298,11 +300,42 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     }
   }, [clearReconnectTimer, startVoiceSession, toast]);
 
+  // Start FREE Open-Source Avatar Video (Sophia animated avatar + ElevenLabs voice)
+  // No GPU / no credits — uses in-browser 2.5D avatar with real-time lip-sync animation
+  const startAvatarVideo = useCallback(async () => {
+    setIsLoading(true);
+    setMode('avatar-video');
+    setVoiceError(null);
+    shouldReconnectRef.current = true;
+    reconnectAttemptsRef.current = 0;
+    clearReconnectTimer();
+    setIsReconnecting(false);
+
+    try {
+      const permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      permissionStream.getTracks().forEach((track) => track.stop());
+      await startVoiceSession();
+    } catch (error) {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
+      setIsLoading(false);
+      console.error('Error starting avatar video:', error);
+      setVoiceError(error instanceof Error ? error.message : 'Avatar video failed to start');
+      toast({
+        title: 'Avatar Video Failed',
+        description: error instanceof Error ? error.message : 'Could not start avatar video',
+        variant: 'destructive',
+      });
+      setMode('selection');
+    }
+  }, [clearReconnectTimer, startVoiceSession, toast]);
+
   useEffect(() => {
     let keepAlive: NodeJS.Timeout;
     let healthCheck: NodeJS.Timeout;
 
-    if (mode === 'voice' && isConnected) {
+    if ((mode === 'voice' || mode === 'avatar-video') && isConnected) {
       keepAlive = setInterval(() => {
         try {
           elevenLabsConversation.sendUserActivity();
@@ -521,10 +554,32 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
                 )}
               </Button>
             </motion.div>
+
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+              <Button
+                onClick={startAvatarVideo}
+                disabled={isLoading}
+                size="lg"
+                variant="secondary"
+                className="w-full h-12 text-sm font-semibold rounded-xl"
+              >
+                {isLoading && mode === 'avatar-video' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Starting Avatar...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="h-4 w-4 mr-2" />
+                    Free Avatar Video (Open-Source)
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </div>
 
           <p className="text-[10px] text-muted-foreground/70">
-            Video powered by Tavus · Voice powered by ElevenLabs AI
+            Real-face video by Tavus · Voice by ElevenLabs · Avatar = open-source 2.5D + lip-sync
           </p>
 
           <Button
@@ -790,6 +845,100 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     </motion.div>
   );
 
+  // Free open-source avatar video screen (Sophia animated avatar synced with ElevenLabs voice)
+  const renderAvatarVideoScreen = () => (
+    <motion.div
+      key="avatar-video"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full max-w-2xl mx-auto"
+    >
+      <Card className="overflow-hidden bg-card/80 backdrop-blur-lg border-border">
+        <CardContent className="relative p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <Badge variant="outline" className="text-[10px]">
+              Open-source avatar · Free · No GPU
+            </Badge>
+            <Badge
+              variant="default"
+              className={cn(
+                "flex items-center gap-2",
+                isReconnecting ? "bg-amber-500" : isConnected ? "bg-green-500" : "bg-yellow-500"
+              )}
+            >
+              <motion.div
+                className="w-2 h-2 bg-white rounded-full"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              {isReconnecting
+                ? 'Reconnecting'
+                : elevenLabsConversation.isSpeaking
+                ? 'Speaking'
+                : isConnected
+                ? 'Live'
+                : 'Connecting'}
+              {isConnected && ` · ${formatDuration(sessionDuration)}`}
+            </Badge>
+          </div>
+
+          <div className="flex justify-center py-4">
+            <Sophia3DAvatar
+              isSpeaking={elevenLabsConversation.isSpeaking}
+              isListening={isConnected && !elevenLabsConversation.isSpeaking}
+              isActive={isConnected}
+              size="lg"
+            />
+          </div>
+
+          <div className="text-center">
+            <h3 className="font-semibold text-foreground">{doctorInfo.name}</h3>
+            <p className="text-xs text-muted-foreground">{doctorInfo.specialty}</p>
+          </div>
+
+          {voiceError && (
+            <div className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm">{voiceError}</span>
+            </div>
+          )}
+
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
+            <p className="text-xs text-center text-muted-foreground">
+              {elevenLabsConversation.isSpeaking
+                ? "🎧 Counselor is responding..."
+                : isConnected
+                ? "🎤 Speak naturally — I'm listening."
+                : "⏳ Preparing your free avatar session..."}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full h-14 w-14"
+              onClick={() => setIsMuted(!isMuted)}
+            >
+              {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </Button>
+
+            <Button
+              variant="destructive"
+              size="lg"
+              className="rounded-full px-10 h-14 shadow-lg"
+              onClick={endVoiceConsultation}
+            >
+              <PhoneOff className="h-5 w-5 mr-2" />
+              End Call
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col">
       {/* Header */}
@@ -840,6 +989,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
           {mode === 'selection' && !isConnected && renderSelectionScreen()}
           {mode === 'video' && isConnected && renderVideoScreen()}
           {mode === 'voice' && renderVoiceScreen()}
+          {mode === 'avatar-video' && renderAvatarVideoScreen()}
         </AnimatePresence>
       </div>
 

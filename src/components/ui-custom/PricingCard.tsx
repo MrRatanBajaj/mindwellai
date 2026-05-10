@@ -1,8 +1,12 @@
 
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 export interface PricingPlan {
   id: string;
@@ -23,8 +27,55 @@ interface PricingCardProps {
 
 const PricingCard = ({ plan, className }: PricingCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [activating, setActivating] = useState(false);
 
-  const handleSelectPlan = () => {
+  const handleSelectPlan = async () => {
+    // Free Trial: 3 days, 1 video session, no payment
+    if (plan.id === 'free-trial') {
+      if (!user) {
+        toast.info("Please sign up first to start your free trial.");
+        navigate('/auth?redirect=/plans');
+        return;
+      }
+      setActivating(true);
+      try {
+        // Check if already used
+        const { data: existing } = await supabase
+          .from('subscriptions')
+          .select('id, plan_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existing) {
+          toast.error("You've already used your free trial. Please choose a paid plan.");
+          setActivating(false);
+          return;
+        }
+
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 3);
+
+        const { error } = await supabase.from('subscriptions').insert({
+          user_id: user.id,
+          plan_id: 'free-trial',
+          status: 'active',
+          sessions_remaining: 1,
+          current_period_end: trialEnd.toISOString(),
+        });
+
+        if (error) throw error;
+
+        toast.success("Free trial activated! 3 days of access starts now.");
+        navigate('/dashboard');
+      } catch (e: any) {
+        toast.error(e?.message || "Could not activate free trial.");
+      } finally {
+        setActivating(false);
+      }
+      return;
+    }
+
     if (plan.isFree) {
       navigate('/dashboard');
       return;
@@ -90,6 +141,7 @@ const PricingCard = ({ plan, className }: PricingCardProps) => {
       
       <Button 
         onClick={handleSelectPlan}
+        disabled={activating}
         className={cn(
           "w-full", 
           plan.isFeatured 
@@ -97,7 +149,7 @@ const PricingCard = ({ plan, className }: PricingCardProps) => {
             : "bg-slate-100 hover:bg-slate-200 text-slate-800"
         )}
       >
-        {plan.buttonText}
+        {activating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Activating...</> : plan.buttonText}
       </Button>
     </div>
   );
