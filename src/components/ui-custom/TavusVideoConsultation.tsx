@@ -845,6 +845,100 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     </motion.div>
   );
 
+  // Free open-source avatar video screen (Sophia animated avatar synced with ElevenLabs voice)
+  const renderAvatarVideoScreen = () => (
+    <motion.div
+      key="avatar-video"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full max-w-2xl mx-auto"
+    >
+      <Card className="overflow-hidden bg-card/80 backdrop-blur-lg border-border">
+        <CardContent className="relative p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <Badge variant="outline" className="text-[10px]">
+              Open-source avatar · Free · No GPU
+            </Badge>
+            <Badge
+              variant="default"
+              className={cn(
+                "flex items-center gap-2",
+                isReconnecting ? "bg-amber-500" : isConnected ? "bg-green-500" : "bg-yellow-500"
+              )}
+            >
+              <motion.div
+                className="w-2 h-2 bg-white rounded-full"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              {isReconnecting
+                ? 'Reconnecting'
+                : elevenLabsConversation.isSpeaking
+                ? 'Speaking'
+                : isConnected
+                ? 'Live'
+                : 'Connecting'}
+              {isConnected && ` · ${formatDuration(sessionDuration)}`}
+            </Badge>
+          </div>
+
+          <div className="flex justify-center py-4">
+            <Sophia3DAvatar
+              isSpeaking={elevenLabsConversation.isSpeaking}
+              isListening={isConnected && !elevenLabsConversation.isSpeaking}
+              isActive={isConnected}
+              size="lg"
+            />
+          </div>
+
+          <div className="text-center">
+            <h3 className="font-semibold text-foreground">{doctorInfo.name}</h3>
+            <p className="text-xs text-muted-foreground">{doctorInfo.specialty}</p>
+          </div>
+
+          {voiceError && (
+            <div className="flex items-center gap-2 text-destructive bg-destructive/10 p-3 rounded-lg">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm">{voiceError}</span>
+            </div>
+          )}
+
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
+            <p className="text-xs text-center text-muted-foreground">
+              {elevenLabsConversation.isSpeaking
+                ? "🎧 Counselor is responding..."
+                : isConnected
+                ? "🎤 Speak naturally — I'm listening."
+                : "⏳ Preparing your free avatar session..."}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full h-14 w-14"
+              onClick={() => setIsMuted(!isMuted)}
+            >
+              {isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </Button>
+
+            <Button
+              variant="destructive"
+              size="lg"
+              className="rounded-full px-10 h-14 shadow-lg"
+              onClick={endVoiceConsultation}
+            >
+              <PhoneOff className="h-5 w-5 mr-2" />
+              End Call
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex flex-col">
       {/* Header */}
