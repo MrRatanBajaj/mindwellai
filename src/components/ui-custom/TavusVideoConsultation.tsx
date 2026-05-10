@@ -230,7 +230,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
   }, [doctorType, doctorInfo.systemPrompt, elevenLabsConversation]);
 
   const attemptReconnect = useCallback((reason: ReconnectReason) => {
-    if (!shouldReconnectRef.current || modeRef.current !== 'voice' || reconnectTimeoutRef.current) {
+    if (!shouldReconnectRef.current || (modeRef.current !== 'voice' && modeRef.current !== 'avatar-video') || reconnectTimeoutRef.current) {
       return;
     }
 
@@ -255,7 +255,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
 
     reconnectTimeoutRef.current = setTimeout(async () => {
       reconnectTimeoutRef.current = null;
-      if (!shouldReconnectRef.current || modeRef.current !== 'voice') return;
+      if (!shouldReconnectRef.current || (modeRef.current !== 'voice' && modeRef.current !== 'avatar-video')) return;
 
       try {
         await startVoiceSession();
