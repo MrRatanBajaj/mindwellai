@@ -335,7 +335,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     let keepAlive: NodeJS.Timeout;
     let healthCheck: NodeJS.Timeout;
 
-    if (mode === 'voice' && isConnected) {
+    if ((mode === 'voice' || mode === 'avatar-video') && isConnected) {
       keepAlive = setInterval(() => {
         try {
           elevenLabsConversation.sendUserActivity();
