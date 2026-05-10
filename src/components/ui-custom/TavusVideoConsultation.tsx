@@ -32,7 +32,7 @@ interface TavusVideoConsultationProps {
   onEndCall: () => void;
 }
 
-type ConsultationMode = 'selection' | 'video' | 'voice';
+type ConsultationMode = 'selection' | 'video' | 'voice' | 'avatar-video';
 type ReconnectReason = 'disconnect' | 'error';
 
 const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
