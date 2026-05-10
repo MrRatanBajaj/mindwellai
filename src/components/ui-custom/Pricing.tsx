@@ -3,6 +3,22 @@ import PricingCard, { PricingPlan } from "./PricingCard";
 
 const pricingPlans: PricingPlan[] = [
   {
+    id: "free-trial",
+    name: "Free Trial",
+    price: "₹0",
+    description: "Try WellMindAI free for 3 days",
+    features: [
+      "1 video counseling session (one-time)",
+      "Full Self-Help library access",
+      "Unlimited Journaling for 3 days",
+      "Auto-locks after 3 days — no card needed",
+      "Upgrade anytime to continue",
+    ],
+    buttonText: "Start Free Trial",
+    sessionsCount: 1,
+    isFree: true,
+  },
+  {
     id: "student",
     name: "Student",
     price: "₹99",
