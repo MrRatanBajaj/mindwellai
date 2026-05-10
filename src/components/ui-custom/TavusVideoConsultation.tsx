@@ -300,6 +300,37 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     }
   }, [clearReconnectTimer, startVoiceSession, toast]);
 
+  // Start FREE Open-Source Avatar Video (Sophia animated avatar + ElevenLabs voice)
+  // No GPU / no credits — uses in-browser 2.5D avatar with real-time lip-sync animation
+  const startAvatarVideo = useCallback(async () => {
+    setIsLoading(true);
+    setMode('avatar-video');
+    setVoiceError(null);
+    shouldReconnectRef.current = true;
+    reconnectAttemptsRef.current = 0;
+    clearReconnectTimer();
+    setIsReconnecting(false);
+
+    try {
+      const permissionStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      permissionStream.getTracks().forEach((track) => track.stop());
+      await startVoiceSession();
+    } catch (error) {
+      shouldReconnectRef.current = false;
+      clearReconnectTimer();
+      setIsReconnecting(false);
+      setIsLoading(false);
+      console.error('Error starting avatar video:', error);
+      setVoiceError(error instanceof Error ? error.message : 'Avatar video failed to start');
+      toast({
+        title: 'Avatar Video Failed',
+        description: error instanceof Error ? error.message : 'Could not start avatar video',
+        variant: 'destructive',
+      });
+      setMode('selection');
+    }
+  }, [clearReconnectTimer, startVoiceSession, toast]);
+
   useEffect(() => {
     let keepAlive: NodeJS.Timeout;
     let healthCheck: NodeJS.Timeout;
