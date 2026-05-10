@@ -895,6 +895,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
           {mode === 'selection' && !isConnected && renderSelectionScreen()}
           {mode === 'video' && isConnected && renderVideoScreen()}
           {mode === 'voice' && renderVoiceScreen()}
+          {mode === 'avatar-video' && renderAvatarVideoScreen()}
         </AnimatePresence>
       </div>
 
