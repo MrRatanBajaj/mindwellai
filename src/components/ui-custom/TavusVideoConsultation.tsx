@@ -89,7 +89,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     onDisconnect: () => {
       console.log('ElevenLabs voice disconnected');
       setIsConnected(false);
-      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+      if (shouldReconnectRef.current && (modeRef.current === 'voice' || modeRef.current === 'avatar-video')) {
         reconnectFnRef.current('disconnect');
       }
     },
@@ -102,7 +102,7 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
       setVoiceError(errorMsg);
       setIsConnected(false);
       setIsLoading(false);
-      if (shouldReconnectRef.current && modeRef.current === 'voice') {
+      if (shouldReconnectRef.current && (modeRef.current === 'voice' || modeRef.current === 'avatar-video')) {
         reconnectFnRef.current('error');
         return;
       }
