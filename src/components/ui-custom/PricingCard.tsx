@@ -141,6 +141,7 @@ const PricingCard = ({ plan, className }: PricingCardProps) => {
       
       <Button 
         onClick={handleSelectPlan}
+        disabled={activating}
         className={cn(
           "w-full", 
           plan.isFeatured 
@@ -148,7 +149,7 @@ const PricingCard = ({ plan, className }: PricingCardProps) => {
             : "bg-slate-100 hover:bg-slate-200 text-slate-800"
         )}
       >
-        {plan.buttonText}
+        {activating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Activating...</> : plan.buttonText}
       </Button>
     </div>
   );
