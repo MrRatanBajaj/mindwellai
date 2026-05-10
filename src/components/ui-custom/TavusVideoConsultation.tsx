@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversation } from '@11labs/react';
 import VoiceWaveformVisualizer from './VoiceWaveformVisualizer';
+import Sophia3DAvatar from './Sophia3DAvatar';
 import { DOCTOR_PROFILES, type DoctorType } from '@/lib/doctorProfiles';
 
 interface TavusVideoConsultationProps {
