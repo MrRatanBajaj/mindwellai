@@ -176,16 +176,17 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
     } catch (error) {
       console.error('Error starting video consultation:', error);
       const msg = error instanceof Error ? error.message : '';
-      const creditsOut = /credit|402|out of/i.test(msg);
+      const creditsOut = /credit|402|out of|quota/i.test(msg);
       toast({
-        title: creditsOut ? 'Video Temporarily Unavailable' : 'Video Connection Failed',
+        title: creditsOut ? 'Switching to Free Avatar Video' : 'Video Connection Failed',
         description: creditsOut
-          ? 'Our video service is at capacity right now. Please use Voice Consultation — same counselor, full session.'
-          : 'Could not start video. Please try Voice Consultation instead.',
-        variant: 'destructive',
+          ? 'Real-face video at capacity — using our free open-source animated avatar instead. Same counselor, full session.'
+          : 'Could not start real-face video. Using free animated avatar instead.',
       });
-      // Stay on selection screen so user can explicitly pick voice
-      setMode('selection');
+      // Auto-fallback to free avatar video (Sophia avatar + ElevenLabs voice)
+      setIsLoading(false);
+      startAvatarVideo();
+      return;
     } finally {
       setIsLoading(false);
     }
