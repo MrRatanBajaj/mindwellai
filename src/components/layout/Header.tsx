@@ -179,17 +179,19 @@ const Header = () => {
                   {link.label}
                 </NavLink>
               ))}
-              <NavLink
-                to="/referrals"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-calm-sage/15 to-calm-lavender/15 transition-colors text-sm font-medium"
-              >
-                <Gift className="w-4 h-4 text-calm-sage" />
-                Refer & Earn
-                <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
-                  +7d free
-                </span>
-              </NavLink>
+              {user && (
+                <NavLink
+                  to="/referrals"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-calm-sage/15 to-calm-lavender/15 transition-colors text-sm font-medium"
+                >
+                  <Gift className="w-4 h-4 text-calm-sage" />
+                  Refer & Earn
+                  <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
+                    +7d free
+                  </span>
+                </NavLink>
+              )}
 
               <div className="border-t border-border my-3" />
               {user ? (
