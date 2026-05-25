@@ -23,6 +23,7 @@ import Payment from "./pages/Payment";
 import Subscription from "./pages/Subscription";
 import FeedbackWall from "./pages/FeedbackWall";
 import Referrals from "./pages/Referrals";
+import PhoneCounselor from "./pages/PhoneCounselor";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/phone-counselor" element={<ProtectedRoute><PhoneCounselor /></ProtectedRoute>} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
