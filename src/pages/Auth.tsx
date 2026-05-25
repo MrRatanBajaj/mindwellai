@@ -11,6 +11,7 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { motion, AnimatePresence } from "framer-motion";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
+import { useSEO } from "@/hooks/useSEO";
 
 const authMessages = {
   emailOtp: "A secure WellMindAI verification code is on its way to your inbox.",

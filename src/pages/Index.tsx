@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
@@ -15,6 +16,11 @@ import {
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  useSEO({
+    title: "WellMind AI — Affordable Online Therapy & AI Counseling",
+    description: "24/7 AI-powered mental health support with video, phone & chat counseling, journaling and self-help. Plans from ₹149/month.",
+    path: "/",
+  });
 
   useEffect(() => {
     if (!loading && user) navigate("/dashboard", { replace: true });

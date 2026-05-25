@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 interface Note {
   id: string;

@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { useSEO } from "@/hooks/useSEO";
 
 const steps = [
   {

@@ -3,10 +3,15 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { useSEO } from "@/hooks/useSEO";
+
 const Policy = () => {
-  useEffect(() => {
-    document.title = "Privacy Policy & Terms - WellMindAI";
-  }, []);
+  useSEO({
+    title: "Privacy Policy & Terms — WellMind AI",
+    description: "Read WellMind AI's privacy policy and terms of service. Learn how we protect your mental health data with HIPAA-style safeguards and RLS.",
+    path: "/policy",
+  });
+
 
   return (
     <div className="min-h-screen bg-white">
