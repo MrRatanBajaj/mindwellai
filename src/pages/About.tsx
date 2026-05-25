@@ -9,6 +9,7 @@ import {
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import wellmindLogo from "@/assets/wellmind-logo-2.png";
+import { useSEO } from "@/hooks/useSEO";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -18,6 +19,11 @@ const fadeUp = {
 };
 
 const About = () => {
+  useSEO({
+    title: "About WellMind AI — Mission, Vision & Founder",
+    description: "Learn about WellMind AI's mission to make mental health care accessible across India, founder Ratan Bajaj, and our evidence-based approach.",
+    path: "/about",
+  });
   const stats = [
     { value: "10K+", label: "Active Users", icon: Users },
     { value: "50K+", label: "Sessions", icon: Video },

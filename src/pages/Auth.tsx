@@ -11,6 +11,7 @@ import { useSecurityMonitoring } from "@/hooks/useSecurityMonitoring";
 import { motion, AnimatePresence } from "framer-motion";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Progress } from "@/components/ui/progress";
+import { useSEO } from "@/hooks/useSEO";
 
 const authMessages = {
   emailOtp: "A secure WellMindAI verification code is on its way to your inbox.",
@@ -86,6 +87,11 @@ const extractFunctionErrorMessage = async (error: unknown) => {
 };
 
 const Auth = () => {
+  useSEO({
+    title: "Sign In or Create Account — WellMind AI",
+    description: "Log in or sign up for WellMind AI to access AI counselors, video therapy, journaling and self-help tools. Secure OTP authentication.",
+    path: "/auth",
+  });
   const navigate = useNavigate();
   const { logLoginAttempt, logSignupAttempt } = useSecurityMonitoring();
   const [mode, setMode] = useState<AuthMode>("login");

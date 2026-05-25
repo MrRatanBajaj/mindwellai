@@ -4,10 +4,16 @@ import Footer from "@/components/layout/Footer";
 import Pricing from "@/components/ui-custom/Pricing";
 import { useSearchParams } from "react-router-dom";
 import { Lock } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 const Plans = () => {
   const [searchParams] = useSearchParams();
   const gated = searchParams.get("gated") === "1";
+  useSEO({
+    title: "Pricing & Plans — WellMind AI Therapy from ₹149/mo",
+    description: "Compare Free, Student (₹149), Standard (₹499) and Premium (₹999) plans. Video, phone and AI chat counseling included.",
+    path: "/plans",
+  });
 
   return (
     <div className="min-h-screen flex flex-col">

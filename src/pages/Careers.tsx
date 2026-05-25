@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { useSEO } from "@/hooks/useSEO";
 
 interface JobPosition {
   id: string;
@@ -148,6 +149,11 @@ const jobPositions: JobPosition[] = [
 ];
 
 const Careers = () => {
+  useSEO({
+    title: "Careers at WellMind AI — Build the Future of Mental Health",
+    description: "Join WellMind AI. Explore open engineering, design and counseling roles helping make mental health care accessible across India.",
+    path: "/careers",
+  });
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
