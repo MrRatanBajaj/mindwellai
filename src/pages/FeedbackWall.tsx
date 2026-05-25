@@ -35,6 +35,11 @@ const HANDWRITTEN_FONTS = [
 ];
 
 const FeedbackWall = () => {
+  useSEO({
+    title: "Feedback Wall — Stories from WellMind AI Users",
+    description: "Read real feedback and stories from people using WellMind AI for therapy, journaling and self-help. Share your own experience.",
+    path: "/feedback-wall",
+  });
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
 

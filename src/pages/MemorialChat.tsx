@@ -64,6 +64,11 @@ const features = [
 ];
 
 const MemorialChat = () => {
+  useSEO({
+    title: "Memorial Chat — Compassionate AI for Grief Support | WellMind AI",
+    description: "Reconnect with the memory of a loved one through an AI-guided memorial chat. Private grief support powered by WellMind AI.",
+    path: "/memorial-chat",
+  });
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
