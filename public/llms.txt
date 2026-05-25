@@ -1,0 +1,19 @@
+# WellMind AI
+
+> Affordable, 24/7 AI-powered mental health platform offering video, phone, and chat counseling, journaling, and self-help resources for students and professionals in India.
+
+WellMind AI combines AI counselors (Sophia), human-style video sessions (via Tavus) and phone calls (via ElevenLabs) with journaling and CBT/DBT/ACT self-help tools. Plans start from ₹149/month with a free 15-minute trial.
+
+## Pages
+
+- [Home](/): Overview of WellMind AI, features, pricing and investor highlights.
+- [About](/about): Mission, vision, founder Ratan Bajaj, and the team.
+- [Plans & Pricing](/plans): Free, Student, Standard and Premium subscription tiers.
+- [Careers](/careers): Open roles and how to apply at WellMind AI.
+- [Feedback Wall](/feedback-wall): Public wall of user feedback and stories.
+- [Privacy Policy](/policy): Privacy, HIPAA-style protections and data handling.
+- [Sign In / Sign Up](/auth): Account creation and login.
+
+## Optional
+
+- [Memorial Chat](/memorial-chat): Compassionate AI conversations for grief support.
