@@ -228,17 +228,83 @@ const Index = () => {
             ))}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              { title: "Market", body: "₹4,500 Cr Indian mental healthcare TAM. AI-enabled segment growing at 42% CAGR." },
-              { title: "Moat", body: "23 fine-tuned counselor agents, 10K+ session corpus, college distribution network." },
-              { title: "Ask", body: "₹2.5 Cr pre-seed for 18-mo runway → ₹3 Cr ARR, Series A readiness." },
-            ].map((b) => (
-              <div key={b.title} className="p-6 rounded-2xl bg-foreground/5 backdrop-blur border border-accent/30">
-                <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-2">{b.title}</div>
-                <p className="text-primary-foreground/85 leading-relaxed text-sm">{b.body}</p>
-              </div>
-            ))}
+          {/* Market Opportunity — TAM / SAM / SOM */}
+          <div className="mb-10">
+            <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-4 text-center">Market Opportunity</div>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { k: "TAM", v: "₹18,000 Cr", body: "India's mental wellness market by 2030. 150M+ Indians underserved." },
+                { k: "SAM", v: "₹4,500 Cr", body: "35M college students + 50M corporate professionals in high-stress roles." },
+                { k: "SOM", v: "₹120 Cr", body: "5-yr capture target — Tier 1/2 colleges + IT/BPO workplace wellness." },
+              ].map((b) => (
+                <div key={b.k} className="p-6 rounded-2xl bg-foreground/5 backdrop-blur border border-accent/30">
+                  <div className="text-accent text-[10px] uppercase tracking-widest font-bold mb-1">{b.k}</div>
+                  <div className="font-display text-3xl mb-2">{b.v}</div>
+                  <p className="text-primary-foreground/80 leading-relaxed text-sm">{b.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Revenue Model — 3 streams */}
+          <div className="mb-10">
+            <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-4 text-center">Revenue Model — 3 Clean Streams</div>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { t: "B2C Subscription", p: "₹149 – ₹199 / mo", body: "High-volume student & individual plans. 30 min Tavus video + unlimited phone counseling." },
+                { t: "B2B Corporate SaaS", p: "₹99 PEPM", body: "Per-Employee-Per-Month workplace wellness for offices & colleges. High margin, recurring." },
+                { t: "Marketplace Commission", p: "20% cut", body: "Booking commission on physical therapist referrals for severe / clinical cases." },
+              ].map((b) => (
+                <div key={b.t} className="p-6 rounded-2xl bg-foreground/5 backdrop-blur border border-accent/30">
+                  <div className="font-display text-lg mb-1">{b.t}</div>
+                  <div className="text-accent text-sm font-semibold mb-3">{b.p}</div>
+                  <p className="text-primary-foreground/80 leading-relaxed text-sm">{b.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Unit Economics */}
+          <div className="mb-10 p-7 rounded-3xl bg-gradient-to-br from-accent/20 to-foreground/5 border border-accent/40 backdrop-blur">
+            <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-3">Unit Economics Advantage</div>
+            <h3 className="font-display text-2xl md:text-3xl mb-4">Token-capped backend. Profitable from ₹149.</h3>
+            <p className="text-primary-foreground/80 mb-5 max-w-3xl leading-relaxed">
+              Every user's Tavus / ElevenLabs / LLM minutes are hard-capped per plan in the edge layer.
+              When the cap is reached, the stream auto-disconnects and prompts an upgrade — no runaway API bills.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { k: "Tavus burn / user", v: "30 min cap" },
+                { k: "Margin @ ₹149", v: "~62%" },
+                { k: "Top-up", v: "₹49 / 10 min" },
+                { k: "CAC", v: "₹78 (campus)" },
+              ].map((x) => (
+                <div key={x.k} className="p-4 rounded-xl bg-foreground/5 border border-foreground/10">
+                  <div className="text-[10px] uppercase tracking-widest text-primary-foreground/60">{x.k}</div>
+                  <div className="font-display text-xl mt-1">{x.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Moat + GTM */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="p-6 rounded-2xl bg-foreground/5 backdrop-blur border border-accent/30">
+              <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-2">Technology & Moat</div>
+              <p className="text-primary-foreground/85 leading-relaxed text-sm">
+                Exclusive workflow combining real-time Tavus video avatars, ElevenLabs phone-style audio,
+                and our privacy-first “Hide the Thought” release tool. 23 specialist counselor agents
+                trained on 10K+ session corpus — not easily cloneable.
+              </p>
+            </div>
+            <div className="p-6 rounded-2xl bg-foreground/5 backdrop-blur border border-accent/30">
+              <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-2">Go-To-Market</div>
+              <p className="text-primary-foreground/85 leading-relaxed text-sm">
+                <strong className="text-primary-foreground">Phase 1:</strong> 1–2 engineering colleges + 1 mid-sized IT firm
+                using our 100-hr Tavus credit grant — zero-cost proof of concept.
+                <strong className="text-primary-foreground"> Phase 2:</strong> Campus Ambassador network scale-out.
+              </p>
+            </div>
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
