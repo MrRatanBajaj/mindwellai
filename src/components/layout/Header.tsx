@@ -39,12 +39,14 @@ const Header = () => {
     }
   };
 
-  const primaryLinks = [
+  // Navigation links only show after auth; landing page stays clean for guests.
+  const primaryLinks = user ? [
+    { to: "/dashboard", label: "Dashboard", icon: User },
     { to: "/self-help", label: "Self Help", icon: Leaf },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation", label: "Counselors", icon: Calendar },
     { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
-  ];
+  ] : [];
 
   return (
     <header
@@ -84,17 +86,18 @@ const Header = () => {
               </NavLink>
             ))}
 
-            {/* Refer & Earn — highlighted pill */}
-            <NavLink
-              to="/referrals"
-              className="ml-1 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-calm-sage/20 to-calm-lavender/20 text-foreground hover:from-calm-sage/30 hover:to-calm-lavender/30 transition-all"
-            >
-              <Gift className="w-3.5 h-3.5 text-calm-sage" />
-              <span>Refer & Earn</span>
-              <span className="hidden xl:inline text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
-                +7d
-              </span>
-            </NavLink>
+            {user && (
+              <NavLink
+                to="/referrals"
+                className="ml-1 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-calm-sage/20 to-calm-lavender/20 text-foreground hover:from-calm-sage/30 hover:to-calm-lavender/30 transition-all"
+              >
+                <Gift className="w-3.5 h-3.5 text-calm-sage" />
+                <span>Refer & Earn</span>
+                <span className="hidden xl:inline text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
+                  +7d
+                </span>
+              </NavLink>
+            )}
           </nav>
 
           {/* Auth */}
@@ -176,17 +179,19 @@ const Header = () => {
                   {link.label}
                 </NavLink>
               ))}
-              <NavLink
-                to="/referrals"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-calm-sage/15 to-calm-lavender/15 transition-colors text-sm font-medium"
-              >
-                <Gift className="w-4 h-4 text-calm-sage" />
-                Refer & Earn
-                <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
-                  +7d free
-                </span>
-              </NavLink>
+              {user && (
+                <NavLink
+                  to="/referrals"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-calm-sage/15 to-calm-lavender/15 transition-colors text-sm font-medium"
+                >
+                  <Gift className="w-4 h-4 text-calm-sage" />
+                  Refer & Earn
+                  <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
+                    +7d free
+                  </span>
+                </NavLink>
+              )}
 
               <div className="border-t border-border my-3" />
               {user ? (
