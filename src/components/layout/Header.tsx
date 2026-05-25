@@ -89,12 +89,12 @@ const Header = () => {
             {user && (
               <NavLink
                 to="/referrals"
-                className="ml-1 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-calm-sage/20 to-calm-lavender/20 text-foreground hover:from-calm-sage/30 hover:to-calm-lavender/30 transition-all"
+                className="ml-1 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-primary/15 to-accent/25 text-foreground hover:from-primary/25 hover:to-accent/40 transition-all"
               >
-                <Gift className="w-3.5 h-3.5 text-calm-sage" />
-                <span>Refer & Earn</span>
-                <span className="hidden xl:inline text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
-                  +7d
+                <Gift className="w-3.5 h-3.5 text-primary" />
+                <span>Campus Ambassador</span>
+                <span className="hidden xl:inline text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground">
+                  Apply
                 </span>
               </NavLink>
             )}
@@ -183,12 +183,12 @@ const Header = () => {
                 <NavLink
                   to="/referrals"
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-calm-sage/15 to-calm-lavender/15 transition-colors text-sm font-medium"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary/10 to-accent/20 transition-colors text-sm font-medium"
                 >
-                  <Gift className="w-4 h-4 text-calm-sage" />
-                  Refer & Earn
-                  <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-calm-sage text-white">
-                    +7d free
+                  <Gift className="w-4 h-4 text-primary" />
+                  Campus Ambassador
+                  <span className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground">
+                    Apply
                   </span>
                 </NavLink>
               )}

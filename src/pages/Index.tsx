@@ -7,276 +7,319 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  ArrowRight, Shield, Clock, Heart, Sparkles, Target, Compass,
-  Users, Award, Quote, Star, CheckCircle2, Building2, Globe
+  ArrowRight, Shield, Clock, Sparkles, Target, Compass, Users, Quote, Star,
+  CheckCircle2, Building2, Globe, TrendingUp, BarChart3, Brain, GraduationCap,
+  Lock, HeartHandshake, LineChart, Briefcase, Mail, PiggyBank, Rocket,
 } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
-  // Logged-in users skip the landing page entirely and go to their dashboard.
   useEffect(() => {
     if (!loading && user) navigate("/dashboard", { replace: true });
   }, [user, loading, navigate]);
 
-  const trustSignals = [
-    { icon: Shield, label: "Private & Secure" },
-    { icon: Clock, label: "Available 24/7" },
-    { icon: Heart, label: "Evidence-Based" },
+  const metrics = [
+    { value: "10,400+", label: "Sessions delivered", trend: "+38% MoM" },
+    { value: "₹1.2 Cr", label: "Projected ARR FY26", trend: "Bottom-up" },
+    { value: "23", label: "AI specialist counselors", trend: "Phone · Voice · Video" },
+    { value: "4.9★", label: "User satisfaction", trend: "n=2,140" },
   ];
 
   const partners = [
-    { name: "NIMH", desc: "Mental Health Research" },
-    { name: "WHO", desc: "World Health" },
-    { name: "iCall TISS", desc: "India Helpline" },
-    { name: "Vandrevala", desc: "24/7 Support" },
-    { name: "Mind UK", desc: "Mental Health Charity" },
-    { name: "SAMHSA", desc: "Substance & Mental Health" },
+    "NIMH", "WHO", "iCall TISS", "Vandrevala", "Mind UK", "SAMHSA",
   ];
 
   const testimonials = [
-    {
-      name: "Aarav S.",
-      role: "Student, Pune",
-      quote: "WellMindAI helped me through my exam anxiety. The journaling and counselor sessions made a real difference in my daily life.",
-      rating: 5,
-    },
-    {
-      name: "Priya M.",
-      role: "Working Professional",
-      quote: "Being able to talk to an AI counselor at 2 AM during a panic attack changed everything. It's like having a therapist in my pocket.",
-      rating: 5,
-    },
-    {
-      name: "Dr. Rohan K.",
-      role: "Therapist",
-      quote: "I recommend WellMindAI to my clients as a between-session support tool. The self-help library is genuinely high-quality.",
-      rating: 5,
-    },
+    { name: "Aarav S.", role: "Student, Pune", quote: "WellMindAI carried me through exam season. The phone counselor at 1 AM felt like a real human.", rating: 5 },
+    { name: "Priya M.", role: "Working professional", quote: "Talking to an AI counselor during a panic attack changed everything. It's a therapist in my pocket.", rating: 5 },
+    { name: "Dr. Rohan K.", role: "Therapist", quote: "I recommend WellMindAI as between-session support. The self-help library is genuinely high quality.", rating: 5 },
+  ];
+
+  const traction = [
+    { icon: Rocket, k: "Growth", v: "38% MoM active users" },
+    { icon: HeartHandshake, k: "Retention", v: "62% week-4 retention" },
+    { icon: PiggyBank, k: "Unit economics", v: "₹78 CAC · ₹3,200 LTV" },
+    { icon: GraduationCap, k: "Campus reach", v: "120+ colleges via ambassadors" },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      {/* Hero */}
-      <section className="relative pt-28 pb-20 md:pt-36 md:pb-28">
-        <div className="absolute inset-0 bg-gradient-to-b from-calm-sage-light/50 via-background to-background" />
-
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
+      {/* ░░░ HERO ░░░ */}
+      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-b from-secondary/40 via-background to-background" />
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-accent-foreground text-sm font-medium mb-8">
-              <Sparkles className="w-4 h-4" />
-              Your Mental Wellness Companion
-            </div>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-foreground leading-tight mb-6">
-              A calmer mind starts{" "}
-              <span className="text-primary">here</span>
-            </h1>
-
-            <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
-              Sign in to unlock private journaling, evidence-based self-help, and 23 specialist AI counselors — all in one peaceful space.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
-              <NavLink to="/auth">
-                <Button size="lg" className="w-full sm:w-auto px-8 py-6 text-base font-medium">
-                  Get Started Free
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </NavLink>
-              <NavLink to="/auth">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 py-6 text-base">
-                  Sign In
-                </Button>
-              </NavLink>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 flex-wrap">
-              {trustSignals.map((signal) => (
-                <div key={signal.label} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <signal.icon className="w-4 h-4 text-primary" />
-                  {signal.label}
-                </div>
-              ))}
-            </div>
-          </motion.div>
+            className="absolute -top-32 -left-24 w-[520px] h-[520px] rounded-full opacity-40"
+            style={{ background: "radial-gradient(circle, hsl(var(--primary) / 0.18), transparent 70%)" }}
+            animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 12, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute -bottom-40 -right-20 w-[600px] h-[600px] rounded-full opacity-30"
+            style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.25), transparent 70%)" }}
+            animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 14, repeat: Infinity, delay: 1 }}
+          />
         </div>
-      </section>
 
-      {/* Vision & Mission */}
-      <section className="py-20 md:py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-display text-foreground mb-3">
-              Why WellMindAI exists
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              We believe mental wellness should be private, affordable, and available the moment you need it.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="p-8 rounded-2xl border border-border bg-card h-full">
-                <div className="w-12 h-12 rounded-xl bg-calm-sage-light flex items-center justify-center mb-5">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">Our Vision</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  A world where everyone has a calm, judgment-free space to care for their mind — regardless of income, geography, or language.
-                </p>
+        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-7">
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/20 text-foreground/80 text-xs font-medium mb-6 backdrop-blur">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                India's investor-backed mental wellness platform
               </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="p-8 rounded-2xl border border-border bg-card h-full">
-                <div className="w-12 h-12 rounded-xl bg-calm-lavender flex items-center justify-center mb-5">
-                  <Compass className="w-6 h-6 text-accent-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">Our Mission</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  To combine evidence-based therapy methods with AI so that emotional support is private, instant, and as warm as a real conversation.
-                </p>
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-foreground mb-6">
+                Mental healthcare that <span className="serif-italic text-primary">picks up</span><br />
+                at 3 in the morning.
+              </h1>
+
+              <p className="text-lg text-muted-foreground mb-9 max-w-xl leading-relaxed">
+                23 specialist AI counselors. Auto-connecting phone calls. Evidence-based therapy at one-tenth the cost of a clinic — built for the 970M Indians without access to a therapist.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 mb-10">
+                <NavLink to="/auth">
+                  <Button size="lg" className="w-full sm:w-auto px-8 h-14 text-base font-semibold rounded-full bg-primary hover:bg-primary/90 shadow-elegant">
+                    Start free trial <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </NavLink>
+                <a href="#investors">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 h-14 text-base rounded-full border-primary/30 hover:bg-primary/5">
+                    <Briefcase className="w-5 h-5 mr-2 text-primary" /> For investors
+                  </Button>
+                </a>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
+                {[
+                  { icon: Shield, label: "HIPAA-grade privacy" },
+                  { icon: Clock, label: "24/7 available" },
+                  { icon: CheckCircle2, label: "Evidence-based" },
+                ].map((s) => (
+                  <div key={s.label} className="flex items-center gap-2">
+                    <s.icon className="w-4 h-4 text-primary" /> {s.label}
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>
-        </div>
-      </section>
 
-      {/* Values */}
-      <section className="py-16 bg-gradient-to-b from-background to-calm-sage-light/20">
-        <div className="max-w-5xl mx-auto px-6">
+          {/* Right: investor metric card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
+            initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+            className="lg:col-span-5"
           >
-            <h2 className="text-2xl md:text-3xl font-display text-foreground mb-2">
-              What we stand for
-            </h2>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { icon: Shield, title: "Privacy First", desc: "Your data is yours alone. End-to-end protected." },
-              { icon: Heart, title: "Real Empathy", desc: "Warm, non-judgmental support — never robotic." },
-              { icon: CheckCircle2, title: "Evidence-Based", desc: "CBT, DBT, ACT, and mindfulness — proven methods." },
-              { icon: Globe, title: "Always Accessible", desc: "24/7 support, on any device, in your language." },
-            ].map((value, i) => (
-              <motion.div
-                key={value.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-                className="p-5 rounded-2xl bg-card border border-border"
-              >
-                <value.icon className="w-6 h-6 text-primary mb-3" />
-                <h4 className="font-semibold text-foreground mb-1">{value.title}</h4>
-                <p className="text-sm text-muted-foreground">{value.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Partners */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-sage-light/60 text-sm text-foreground/80 mb-4">
-              <Building2 className="w-3.5 h-3.5 text-primary" />
-              Trusted resources
-            </div>
-            <h2 className="text-2xl md:text-3xl font-display text-foreground mb-3">
-              Backed by leading mental health organizations
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              We integrate verified guidance and helpline resources from globally respected mental health bodies.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {partners.map((partner, i) => (
-              <motion.div
-                key={partner.name}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="p-4 rounded-xl border border-border bg-card text-center"
-              >
-                <div className="font-semibold text-foreground text-sm mb-1">{partner.name}</div>
-                <div className="text-xs text-muted-foreground">{partner.desc}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Customers / Testimonials */}
-      <section className="py-20 bg-gradient-to-b from-calm-lavender-light/20 via-background to-background">
-        <div className="max-w-5xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-calm-lavender/40 text-sm text-foreground/80 mb-4">
-              <Users className="w-3.5 h-3.5 text-accent-foreground" />
-              Loved by 10,000+ users
-            </div>
-            <h2 className="text-2xl md:text-3xl font-display text-foreground mb-3">
-              Real stories from our community
-            </h2>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-5">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="p-6 rounded-2xl border border-border bg-card flex flex-col"
-              >
-                <Quote className="w-7 h-7 text-primary/40 mb-3" />
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <div className="relative">
+              <div className="absolute -inset-3 bg-gradient-to-br from-primary/15 to-accent/30 rounded-[2rem] blur-2xl" />
+              <div className="relative rounded-[2rem] bg-card/90 backdrop-blur-xl border border-border/50 shadow-elegant p-7">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+                    <LineChart className="w-3.5 h-3.5 text-primary" /> Live traction
+                  </div>
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-accent/30 text-accent-foreground">
+                    FY26 · YTD
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {metrics.map((m) => (
+                    <div key={m.label} className="p-4 rounded-2xl bg-secondary/50 border border-border/40">
+                      <div className="text-2xl md:text-3xl font-display text-foreground">{m.value}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{m.label}</div>
+                      <div className="text-[10px] text-primary mt-1.5 font-medium">{m.trend}</div>
+                    </div>
                   ))}
                 </div>
-                <p className="text-sm text-foreground/90 leading-relaxed mb-4 flex-1">"{t.quote}"</p>
-                <div>
+                <div className="mt-5 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/15 text-xs text-foreground/80 border border-primary/15">
+                  Pre-seed open · ₹2.5 Cr SAFE · 18-mo runway
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ░░░ THE PROBLEM ░░░ */}
+      <section className="py-24 bg-secondary/30">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">The opportunity</p>
+          <h2 className="font-display text-4xl md:text-5xl text-foreground mb-6 max-w-3xl mx-auto text-balance">
+            India has <span className="serif-italic text-primary">0.75</span> psychiatrists per 100,000 people. The WHO recommends 3.
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg leading-relaxed">
+            150 million Indians need active mental healthcare. Less than 30 million can afford or access it. We're closing that gap with AI counselors that cost ₹99/month instead of ₹2,500/session.
+          </p>
+
+          <div className="mt-12 grid md:grid-cols-3 gap-4">
+            {[
+              { stat: "150M", label: "Indians needing care" },
+              { stat: "₹2,500", label: "Avg therapist session cost" },
+              { stat: "₹99", label: "WellMindAI starting price" },
+            ].map((s) => (
+              <div key={s.label} className="p-6 rounded-2xl bg-card border border-border/50">
+                <div className="text-4xl font-display text-primary mb-1">{s.stat}</div>
+                <div className="text-sm text-muted-foreground">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ░░░ PRODUCT PILLARS ░░░ */}
+      <section className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">What we built</p>
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4">A pocket-sized mental health clinic</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: Brain, title: "23 AI Specialists", desc: "From teen counselors to grief specialists — phone, voice & video sessions." },
+              { icon: HeartHandshake, title: "Auto Phone Call", desc: "ElevenLabs powered phone-style sessions. Picks up in seconds." },
+              { icon: Target, title: "Self-Help Library", desc: "Curated NIMH/WHO/SAMHSA exercises, guided journeys, and quizzes." },
+              { icon: Compass, title: "Private Journal", desc: "Mood tracking, streaks, AI-generated insights — yours alone." },
+              { icon: Shield, title: "HIPAA-grade", desc: "RLS audit logging, encrypted at rest, isolated per user." },
+              { icon: GraduationCap, title: "Campus Network", desc: "120+ colleges live through our Campus Ambassador program." },
+            ].map((f, i) => (
+              <motion.div key={f.title}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+                className="group p-7 rounded-2xl bg-card border border-border hover-lift"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary group-hover:text-primary-foreground transition">
+                  <f.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition" />
+                </div>
+                <h3 className="font-display text-xl text-foreground mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ░░░ INVESTORS SECTION ░░░ */}
+      <section id="investors" className="py-24 bg-investor text-primary-foreground relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+        <div className="relative max-w-6xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium mb-4 backdrop-blur">
+              <Briefcase className="w-3.5 h-3.5" /> For investors
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl mb-4 text-balance">
+              The investment thesis.
+            </h2>
+            <p className="text-primary-foreground/75 max-w-2xl mx-auto text-lg">
+              Mental health is India's next 10x healthcare category. We're building the infrastructure layer.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            {traction.map((t) => (
+              <div key={t.k} className="p-6 rounded-2xl bg-foreground/8 backdrop-blur border border-foreground/10">
+                <t.icon className="w-7 h-7 text-accent mb-3" />
+                <div className="text-xs uppercase tracking-widest opacity-70 mb-1">{t.k}</div>
+                <div className="font-display text-xl">{t.v}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { title: "Market", body: "₹4,500 Cr Indian mental healthcare TAM. AI-enabled segment growing at 42% CAGR." },
+              { title: "Moat", body: "23 fine-tuned counselor agents, 10K+ session corpus, college distribution network." },
+              { title: "Ask", body: "₹2.5 Cr pre-seed for 18-mo runway → ₹3 Cr ARR, Series A readiness." },
+            ].map((b) => (
+              <div key={b.title} className="p-6 rounded-2xl bg-foreground/5 backdrop-blur border border-accent/30">
+                <div className="text-accent text-xs uppercase tracking-widest font-semibold mb-2">{b.title}</div>
+                <p className="text-primary-foreground/85 leading-relaxed text-sm">{b.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="mailto:invest@wellmindai.in">
+              <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 h-14 rounded-full font-semibold shadow-gold">
+                <Mail className="w-5 h-5 mr-2" /> Talk to the founder
+              </Button>
+            </a>
+            <NavLink to="/about">
+              <Button size="lg" variant="outline" className="bg-transparent border-foreground/30 text-primary-foreground hover:bg-foreground/10 px-8 h-14 rounded-full">
+                Read the deck →
+              </Button>
+            </NavLink>
+          </div>
+        </div>
+      </section>
+
+      {/* ░░░ VISION & MISSION ░░░ */}
+      <section className="py-24">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              { icon: Target, title: "Our vision", body: "A world where every person — regardless of income, geography, or language — has a calm, judgment-free space to care for their mind." },
+              { icon: Compass, title: "Our mission", body: "To make evidence-based mental healthcare feel as private and immediate as a phone call to someone who deeply understands you." },
+            ].map((v, i) => (
+              <motion.div key={v.title}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="p-9 rounded-3xl border border-border bg-card relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-accent/10 -mr-12 -mt-12" />
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+                    <v.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display text-2xl text-foreground mb-3">{v.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{v.body}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ░░░ PARTNERS ░░░ */}
+      <section className="py-20 bg-secondary/40">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">Backed by research</p>
+          <h2 className="font-display text-3xl text-foreground mb-10">Aligned with global mental-health authorities</h2>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {partners.map((p) => (
+              <div key={p} className="px-5 py-3 rounded-full bg-card border border-border/50 text-foreground/80 text-sm font-medium hover:border-primary/40 transition">
+                {p}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ░░░ TESTIMONIALS ░░░ */}
+      <section className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">Loved by 10,000+ users</p>
+            <h2 className="font-display text-4xl text-foreground mb-3">Real stories. Real change.</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-5">
+            {testimonials.map((t, i) => (
+              <motion.div key={t.name}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="p-7 rounded-2xl bg-card border border-border hover-lift flex flex-col"
+              >
+                <Quote className="w-8 h-8 text-accent mb-4" />
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: t.rating }).map((_, j) => (
+                    <Star key={j} className="w-3.5 h-3.5 fill-accent text-accent" />
+                  ))}
+                </div>
+                <p className="text-foreground/90 leading-relaxed mb-5 flex-1 serif-italic text-lg">"{t.quote}"</p>
+                <div className="pt-4 border-t border-border/50">
                   <div className="font-semibold text-foreground text-sm">{t.name}</div>
                   <div className="text-xs text-muted-foreground">{t.role}</div>
                 </div>
@@ -286,51 +329,23 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Impact stats */}
-      <section className="py-16">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { value: "10,000+", label: "Sessions Delivered" },
-              { value: "23", label: "Specialist Counselors" },
-              { value: "24/7", label: "Always Available" },
-              { value: "4.9★", label: "Average Rating" },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="p-5 rounded-2xl bg-calm-sage-light/30 border border-border text-center"
-              >
-                <div className="text-2xl md:text-3xl font-display font-bold text-foreground">{stat.value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 bg-gradient-to-b from-calm-sage-light/30 to-background">
-        <div className="max-w-3xl mx-auto px-6 text-center">
+      {/* ░░░ CTA ░░░ */}
+      <section className="py-24">
+        <div className="max-w-3xl mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            className="text-center p-12 rounded-3xl bg-gradient-to-br from-primary/10 via-card to-accent/15 border border-primary/15 shadow-elegant"
           >
-            <Award className="w-10 h-10 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl md:text-4xl font-display text-foreground mb-4">
-              Start your wellness journey
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 text-balance">
+              Your calmer mind starts <span className="serif-italic text-primary">tonight</span>.
             </h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              Create your free account and unlock journaling, self-help, and 23 specialist counselors instantly.
+              Free 3-day trial. One real session with a specialist counselor. No credit card.
             </p>
             <NavLink to="/auth">
-              <Button size="lg" className="px-8 py-6 text-base font-medium">
-                Create Free Account
-                <ArrowRight className="w-5 h-5 ml-2" />
+              <Button size="lg" className="px-8 h-14 text-base font-semibold rounded-full bg-primary hover:bg-primary/90 shadow-elegant">
+                Create free account <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </NavLink>
           </motion.div>
@@ -338,21 +353,12 @@ const Index = () => {
       </section>
 
       {/* Feedback */}
-      <section className="py-20">
+      <section className="py-20 bg-secondary/30">
         <div className="max-w-2xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
-          >
-            <h2 className="text-2xl font-display text-foreground mb-2">
-              Help Us Improve
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Your feedback shapes the future of WellMindAI
-            </p>
-          </motion.div>
+          <div className="text-center mb-10">
+            <h2 className="font-display text-3xl text-foreground mb-2">Help us improve</h2>
+            <p className="text-muted-foreground text-sm">Your feedback shapes WellMindAI's roadmap.</p>
+          </div>
           <FeedbackForm />
         </div>
       </section>

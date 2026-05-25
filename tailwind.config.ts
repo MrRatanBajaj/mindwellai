@@ -120,8 +120,13 @@ export default {
 				'float': 'float 6s infinite ease-in-out',
 			},
 			fontFamily: {
-				sans: ['DM Sans', 'sans-serif'],
-				display: ['DM Serif Display', 'serif'],
+				sans: ['Work Sans', 'DM Sans', 'sans-serif'],
+				display: ['Instrument Serif', 'DM Serif Display', 'serif'],
+				serif: ['Instrument Serif', 'serif'],
+			},
+			boxShadow: {
+				'elegant': 'var(--shadow-elegant, 0 18px 50px -20px rgba(0,0,0,0.2))',
+				'gold': 'var(--shadow-gold, 0 12px 40px -16px rgba(212,175,55,0.5))',
 			},
 			backdropBlur: {
 				xs: '2px',
