@@ -3,6 +3,9 @@ import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
+import VisionFeatureSection from "@/components/ui-custom/VisionFeatureSection";
+import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
+import CrowdfundingSection from "@/components/ui-custom/CrowdfundingSection";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -207,6 +210,15 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* ░░░ VISION IN MOTION ░░░ */}
+      <VisionFeatureSection />
+
+      {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
+      <DigitalImmortalitySection />
+
+      {/* ░░░ CROWDFUND ░░░ */}
+      <CrowdfundingSection />
 
       {/* ░░░ INVESTORS SECTION ░░░ */}
       <section id="investors" className="py-24 bg-investor text-primary-foreground relative overflow-hidden">
