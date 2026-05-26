@@ -211,6 +211,15 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ░░░ VISION IN MOTION ░░░ */}
+      <VisionFeatureSection />
+
+      {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
+      <DigitalImmortalitySection />
+
+      {/* ░░░ CROWDFUND ░░░ */}
+      <CrowdfundingSection />
+
       {/* ░░░ INVESTORS SECTION ░░░ */}
       <section id="investors" className="py-24 bg-investor text-primary-foreground relative overflow-hidden">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
