@@ -209,7 +209,7 @@ serve(async (req) => {
         body: JSON.stringify({
           persona_id: personaId,
           replica_id: replicaId,
-          properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: false },
+          properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
         }),
       });
 
