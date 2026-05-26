@@ -165,7 +165,7 @@ serve(async (req) => {
           body: JSON.stringify({
             replica_id: replicaId,
             custom_greeting: `Hello! I'm ${doctorConfig.persona_name.split(' - ')[0]}. How can I help you today?`,
-            properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: false },
+            properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
           }),
         });
 
