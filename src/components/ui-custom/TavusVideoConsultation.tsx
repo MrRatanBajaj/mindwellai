@@ -559,32 +559,12 @@ const TavusVideoConsultation: React.FC<TavusVideoConsultationProps> = ({
               </Button>
             </motion.div>
 
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-              <Button
-                onClick={startAvatarVideo}
-                disabled={isLoading}
-                size="lg"
-                variant="secondary"
-                className="w-full h-12 text-sm font-semibold rounded-xl"
-              >
-                {isLoading && mode === 'avatar-video' ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Starting Avatar...
-                  </>
-                ) : (
-                  <>
-                    <Brain className="h-4 w-4 mr-2" />
-                    Free Avatar Video (Open-Source)
-                  </>
-                )}
-              </Button>
-            </motion.div>
           </div>
 
           <p className="text-[10px] text-muted-foreground/70">
-            Real-face video by Tavus · Voice by ElevenLabs · Avatar = open-source 2.5D + lip-sync
+            Real-face video by Tavus · Voice by ElevenLabs · Sessions auto-recorded for your history
           </p>
+
 
           <Button
             variant="ghost"
