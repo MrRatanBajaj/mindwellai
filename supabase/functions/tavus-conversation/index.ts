@@ -128,19 +128,22 @@ serve(async (req) => {
 
       console.log(`Using replica: ${replicaId} for ${doctorType}`);
 
+      // NOTE: Do NOT specify layers.llm.model — Tavus rejects custom model names
+      // with 500. Let Tavus pick its default LLM. Only attach TTS if we have a key.
       const personaPayload: any = {
         persona_name: doctorConfig.persona_name,
         system_prompt: doctorConfig.system_prompt,
         context: doctorConfig.context,
         default_replica_id: replicaId,
-        layers: { llm: { model: "tavus-llama" } },
       };
 
       if (ELEVENLABS_API_KEY) {
-        personaPayload.layers.tts = {
-          tts_engine: "elevenlabs",
-          elevenlabs_voice_id: voiceId,
-          elevenlabs_api_key: ELEVENLABS_API_KEY,
+        personaPayload.layers = {
+          tts: {
+            tts_engine: "elevenlabs",
+            elevenlabs_voice_id: voiceId,
+            elevenlabs_api_key: ELEVENLABS_API_KEY,
+          },
         };
       }
 
