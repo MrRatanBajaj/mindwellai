@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Star } from "lucide-react";
+import { Sparkles, Waves } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 
 interface Note {
@@ -15,14 +15,14 @@ interface Note {
   created_at: string;
 }
 
-// Lantern glow palette — warm golds, blush pinks, sky blues, gentle violets
-const LANTERN_GLOWS = [
-  { core: "#FFE8A3", glow: "rgba(255, 200, 120, 0.55)" }, // candle gold
-  { core: "#FFD9B5", glow: "rgba(255, 170, 120, 0.5)" },  // peach
-  { core: "#FFC8DD", glow: "rgba(255, 150, 200, 0.45)" }, // blush
-  { core: "#BDE0FE", glow: "rgba(140, 200, 255, 0.5)" },  // sky
-  { core: "#D4C5F9", glow: "rgba(180, 160, 240, 0.5)" },  // lavender
-  { core: "#FFE5B4", glow: "rgba(255, 210, 140, 0.55)" }, // amber
+// Bioluminescent palette — soft glowing teals, pinks, violets, aquas
+const JELLY_HUES = [
+  { bell: "#7ee3ff", glow: "rgba(126, 227, 255, 0.55)", ink: "#062234" }, // aqua
+  { bell: "#ffb3e1", glow: "rgba(255, 179, 225, 0.5)", ink: "#3a0a2b" },  // pink
+  { bell: "#c0b3ff", glow: "rgba(192, 179, 255, 0.55)", ink: "#1a0d3a" }, // violet
+  { bell: "#a0ffd1", glow: "rgba(160, 255, 209, 0.55)", ink: "#053a25" }, // mint
+  { bell: "#ffd59e", glow: "rgba(255, 213, 158, 0.55)", ink: "#3a1f05" }, // amber
+  { bell: "#9ee0ff", glow: "rgba(158, 224, 255, 0.55)", ink: "#062f44" }, // sky
 ];
 
 const HANDWRITTEN_FONTS = [
@@ -79,42 +79,50 @@ const FeedbackWall = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      {/* ░░░ NIGHT SKY ░░░ */}
+      {/* ░░░ DEEP SEA ░░░ */}
       <section
         className="relative pt-28 pb-24 overflow-hidden"
         style={{
           background:
-            "radial-gradient(ellipse at top, #1a1f3a 0%, #0a0d1f 55%, #04050d 100%)",
+            "radial-gradient(ellipse at top, #0b2a4a 0%, #061a33 45%, #02091a 100%)",
         }}
       >
-        {/* Stars layer */}
+        {/* Rising plankton bubbles */}
         <div className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: 90 }).map((_, i) => (
-            <motion.span
-              key={i}
-              className="absolute rounded-full bg-white"
-              style={{
-                width: Math.random() < 0.85 ? 1.5 : 2.5,
-                height: Math.random() < 0.85 ? 1.5 : 2.5,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{ opacity: [0.2, 0.95, 0.2] }}
-              transition={{
-                duration: 2 + Math.random() * 4,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-              }}
-            />
-          ))}
+          {Array.from({ length: 60 }).map((_, i) => {
+            const size = 2 + Math.random() * 4;
+            const left = Math.random() * 100;
+            const duration = 8 + Math.random() * 10;
+            const delay = Math.random() * 8;
+            return (
+              <motion.span
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: size,
+                  height: size,
+                  left: `${left}%`,
+                  bottom: -10,
+                  background:
+                    "radial-gradient(circle, rgba(180,240,255,0.9), rgba(120,200,255,0.2))",
+                  boxShadow: "0 0 6px rgba(160,230,255,0.6)",
+                }}
+                animate={{
+                  y: ["0vh", "-110vh"],
+                  opacity: [0, 0.9, 0.9, 0],
+                }}
+                transition={{ duration, repeat: Infinity, delay, ease: "linear" }}
+              />
+            );
+          })}
         </div>
 
-        {/* Moon glow */}
+        {/* Caustic surface light */}
         <div
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[140%] h-[640px] pointer-events-none"
+          className="absolute -top-20 left-1/2 -translate-x-1/2 w-[140%] h-[400px] pointer-events-none"
           style={{
             background:
-              "radial-gradient(ellipse at center top, rgba(255,220,160,0.20), transparent 65%)",
+              "radial-gradient(ellipse at center top, rgba(160,230,255,0.18), transparent 65%)",
           }}
         />
 
@@ -126,40 +134,40 @@ const FeedbackWall = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-amber-100/80 text-xs font-medium mb-6 backdrop-blur-sm">
-              <Star className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-cyan-100/80 text-xs font-medium mb-6 backdrop-blur-sm">
+              <Waves className="w-3.5 h-3.5" />
               The Wall of Voices
             </div>
             <h1
-              className="text-4xl md:text-6xl text-amber-50 leading-tight mb-4"
+              className="text-4xl md:text-6xl text-cyan-50 leading-tight mb-4"
               style={{ fontFamily: "'DM Serif Display', serif" }}
             >
-              A sky full of{" "}
-              <span className="italic" style={{ color: "#FFD580" }}>
-                quiet lanterns
+              A quiet sea of{" "}
+              <span className="italic" style={{ color: "#8ee7ff" }}>
+                glowing voices
               </span>
             </h1>
-            <p className="text-amber-100/65 max-w-xl mx-auto leading-relaxed">
-              Each lantern is a real voice — released into the night by someone who paused, breathed, and shared a piece of their journey. Hover one to read it.
+            <p className="text-cyan-100/65 max-w-xl mx-auto leading-relaxed">
+              Each glow is a real voice — drifting gently through the deep, carrying a piece of someone's journey. Hover one to listen.
             </p>
           </motion.div>
 
-          {/* Lantern field */}
+          {/* Jellyfish field */}
           <div className="relative min-h-[640px]">
             {loading ? (
-              <p className="text-center text-amber-100/40">Lighting the lanterns…</p>
+              <p className="text-center text-cyan-100/40">Waking the deep…</p>
             ) : notes.length === 0 ? (
-              <p className="text-center text-amber-100/50 italic">
-                The sky is still. Be the first lantern — write a note below.
+              <p className="text-center text-cyan-100/50 italic">
+                The sea is still. Be the first glow — share a note below.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-12">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-8 gap-y-20">
                 {notes.map((note, i) => {
-                  const c = LANTERN_GLOWS[i % LANTERN_GLOWS.length];
+                  const c = JELLY_HUES[i % JELLY_HUES.length];
                   const font = HANDWRITTEN_FONTS[i % HANDWRITTEN_FONTS.length];
-                  const driftY = 6 + (i % 5) * 2;
-                  const sway = 1.5 + (i % 4) * 0.4;
-                  const delay = (i % 10) * 0.3;
+                  const drift = 8 + (i % 5) * 3;
+                  const sway = 2 + (i % 4) * 0.6;
+                  const delay = (i % 10) * 0.4;
                   return (
                     <motion.div
                       key={note.id}
@@ -168,90 +176,87 @@ const FeedbackWall = () => {
                       transition={{ delay: i * 0.05, duration: 0.8 }}
                       className="relative group flex flex-col items-center"
                     >
-                      {/* String to the heavens */}
-                      <div
-                        className="w-px h-8 bg-gradient-to-b from-transparent to-white/20"
-                        aria-hidden
-                      />
-
-                      {/* Lantern body — floats & sways */}
                       <motion.div
                         animate={{
-                          y: [0, -driftY, 0],
-                          rotate: [-sway, sway, -sway],
+                          y: [0, -drift, 0],
+                          x: [-sway, sway, -sway],
                         }}
                         transition={{
-                          duration: 4 + (i % 5),
+                          duration: 5 + (i % 5),
                           repeat: Infinity,
                           delay,
                           ease: "easeInOut",
                         }}
                         whileHover={{ scale: 1.12, zIndex: 20 }}
                         className="relative cursor-default"
-                        style={{ width: 140 }}
+                        style={{ width: 150 }}
                       >
-                        {/* Glow halo */}
-                        <div
-                          className="absolute inset-0 rounded-full blur-2xl"
+                        {/* Bioluminescent halo */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full blur-3xl"
                           style={{
                             background: `radial-gradient(circle, ${c.glow}, transparent 70%)`,
-                            transform: "scale(1.6)",
+                            transform: "scale(1.8)",
                           }}
+                          animate={{ opacity: [0.45, 0.85, 0.45] }}
+                          transition={{ duration: 3 + (i % 3), repeat: Infinity }}
                         />
 
-                        {/* Lantern paper */}
+                        {/* Jellyfish bell */}
                         <div
-                          className="relative rounded-[28px] px-4 py-5 backdrop-blur-sm border"
+                          className="relative px-4 pt-5 pb-4 backdrop-blur-md border"
                           style={{
-                            background: `linear-gradient(180deg, ${c.core}f0, ${c.core}d0)`,
-                            borderColor: "rgba(255,255,255,0.35)",
-                            boxShadow: `0 0 40px ${c.glow}, inset 0 -8px 16px rgba(0,0,0,0.08), inset 0 8px 12px rgba(255,255,255,0.4)`,
-                            minHeight: 130,
+                            background: `linear-gradient(180deg, ${c.bell}ee, ${c.bell}aa 70%, ${c.bell}55)`,
+                            borderColor: "rgba(255,255,255,0.45)",
+                            borderRadius: "50% 50% 38% 38% / 60% 60% 40% 40%",
+                            boxShadow: `0 0 50px ${c.glow}, inset 0 -10px 24px rgba(0,0,0,0.08), inset 0 10px 16px rgba(255,255,255,0.55)`,
+                            minHeight: 150,
                           }}
                         >
-                          {/* Top bamboo rim */}
+                          {/* Top shine */}
                           <div
-                            className="absolute top-1 left-3 right-3 h-1 rounded-full"
-                            style={{ background: "rgba(120,80,40,0.4)" }}
-                          />
-                          {/* Bottom bamboo rim */}
-                          <div
-                            className="absolute bottom-1 left-3 right-3 h-1 rounded-full"
-                            style={{ background: "rgba(120,80,40,0.4)" }}
-                          />
-                          {/* Tassel */}
-                          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-amber-900/40" />
-                          <div
-                            className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-                            style={{ background: c.core, boxShadow: `0 0 6px ${c.glow}` }}
+                            className="absolute top-2 left-6 w-10 h-3 rounded-full opacity-70"
+                            style={{ background: "rgba(255,255,255,0.7)", filter: "blur(2px)" }}
                           />
 
                           <p
-                            className="text-slate-800/90 text-xs md:text-sm leading-snug line-clamp-5 text-center"
-                            style={{ fontFamily: font }}
+                            className="text-xs md:text-sm leading-snug line-clamp-5 text-center relative z-10"
+                            style={{ fontFamily: font, color: c.ink }}
                           >
                             "{note.feedback}"
                           </p>
                           {note.name && (
                             <p
-                              className="text-slate-700/70 text-[11px] italic text-center mt-2"
-                              style={{ fontFamily: font }}
+                              className="text-[11px] italic text-center mt-2 relative z-10"
+                              style={{ fontFamily: font, color: c.ink, opacity: 0.75 }}
                             >
                               — {note.name}
                             </p>
                           )}
+                        </div>
 
-                          {/* Inner flame */}
-                          <motion.div
-                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-4 rounded-full pointer-events-none"
-                            style={{
-                              background:
-                                "radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,200,80,0.4), transparent 70%)",
-                              filter: "blur(2px)",
-                            }}
-                            animate={{ scale: [1, 1.18, 0.95, 1.1, 1] }}
-                            transition={{ duration: 1.4, repeat: Infinity }}
-                          />
+                        {/* Flowing tentacles */}
+                        <div className="absolute left-1/2 -translate-x-1/2 -bottom-16 flex gap-1.5">
+                          {Array.from({ length: 5 }).map((_, t) => (
+                            <motion.span
+                              key={t}
+                              className="block rounded-full"
+                              style={{
+                                width: 1.5,
+                                height: 56 + (t % 3) * 14,
+                                background: `linear-gradient(180deg, ${c.bell}cc, transparent)`,
+                                boxShadow: `0 0 6px ${c.glow}`,
+                                transformOrigin: "top center",
+                              }}
+                              animate={{ rotate: [-6, 6, -6] }}
+                              transition={{
+                                duration: 3 + t * 0.4,
+                                repeat: Infinity,
+                                delay: t * 0.2,
+                                ease: "easeInOut",
+                              }}
+                            />
+                          ))}
                         </div>
                       </motion.div>
                     </motion.div>
@@ -263,7 +268,7 @@ const FeedbackWall = () => {
         </div>
       </section>
 
-      {/* Release a lantern */}
+      {/* Release a voice */}
       <section className="py-20 bg-gradient-to-b from-background via-calm-sky/20 to-background">
         <div className="max-w-2xl mx-auto px-6">
           <motion.div
@@ -273,13 +278,13 @@ const FeedbackWall = () => {
             className="text-center mb-10"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
-              <Sparkles className="w-3.5 h-3.5" /> Release a lantern
+              <Sparkles className="w-3.5 h-3.5" /> Release a voice
             </div>
             <h2 className="text-3xl md:text-4xl font-display text-foreground mb-3">
-              Light one for someone tonight
+              Send your glow into the deep
             </h2>
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
-              Share a thought, a thank you, or a wish. It will rise and join the others.
+              Share a thought, a thank you, or a wish. It will drift with the others.
             </p>
           </motion.div>
           <FeedbackForm />
