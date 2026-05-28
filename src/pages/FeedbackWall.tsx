@@ -168,6 +168,28 @@ const FeedbackWall = () => {
                   const drift = 8 + (i % 5) * 3;
                   const sway = 2 + (i % 4) * 0.6;
                   const delay = (i % 10) * 0.4;
+
+                  const speak = () => {
+                    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+                    window.speechSynthesis.cancel();
+                    const text = `${note.feedback}${note.name ? `, by ${note.name}` : ""}`;
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.rate = 0.95;
+                    u.pitch = 1.05;
+                    u.lang = "en-IN";
+                    const voices = window.speechSynthesis.getVoices();
+                    const preferred =
+                      voices.find((v) => /female|samantha|google.*female|en-IN/i.test(v.name)) ||
+                      voices.find((v) => v.lang?.startsWith("en"));
+                    if (preferred) u.voice = preferred;
+                    window.speechSynthesis.speak(u);
+                  };
+                  const hush = () => {
+                    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                      window.speechSynthesis.cancel();
+                    }
+                  };
+
                   return (
                     <motion.div
                       key={note.id}
@@ -188,8 +210,12 @@ const FeedbackWall = () => {
                           ease: "easeInOut",
                         }}
                         whileHover={{ scale: 1.12, zIndex: 20 }}
-                        className="relative cursor-default"
+                        onHoverStart={speak}
+                        onHoverEnd={hush}
+                        onTap={speak}
+                        className="relative cursor-pointer"
                         style={{ width: 150 }}
+                        title="Hover to listen"
                       >
                         {/* Bioluminescent halo */}
                         <motion.div
