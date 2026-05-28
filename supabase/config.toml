@@ -100,6 +100,9 @@ verify_jwt = false
 [functions.content-moderation]
 verify_jwt = false
 
+[functions.naina-chat]
+verify_jwt = false
+
 [edge-runtime]
 enabled = true
 port = 54329

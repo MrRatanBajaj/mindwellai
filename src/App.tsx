@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { SubscriptionRoute } from "@/components/auth/SubscriptionRoute";
+import CookieBanner from "@/components/ui-custom/CookieBanner";
+import NainaChatbot from "@/components/ui-custom/NainaChatbot";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
@@ -24,6 +25,7 @@ import Subscription from "./pages/Subscription";
 import FeedbackWall from "./pages/FeedbackWall";
 import Referrals from "./pages/Referrals";
 import PhoneCounselor from "./pages/PhoneCounselor";
+import AdminFeedback from "./pages/AdminFeedback";
 
 const queryClient = new QueryClient();
 
@@ -44,10 +46,10 @@ const App = () => (
             <Route path="/plans" element={<Plans />} />
             <Route path="/feedback-wall" element={<FeedbackWall />} />
             {/* Protected routes */}
-            {/* Auth required, free for everyone */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+            <Route path="/admin/feedback" element={<ProtectedRoute><AdminFeedback /></ProtectedRoute>} />
             {/* Auth + active paid subscription required */}
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
@@ -56,6 +58,8 @@ const App = () => (
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieBanner />
+          <NainaChatbot />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
