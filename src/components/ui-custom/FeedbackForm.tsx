@@ -50,8 +50,8 @@ export const FeedbackForm = () => {
       }
       
       toast({
-        title: "Feedback Submitted!",
-        description: "Thank you for helping us improve WellMindAI.",
+        title: "Thank you ✨",
+        description: "Your note will appear on the Wall once our team approves it.",
       });
       
       // Reset form
