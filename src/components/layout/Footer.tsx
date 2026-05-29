@@ -38,6 +38,7 @@ const Footer = () => {
                 { to: "/self-help", label: "Self Help" },
                 { to: "/journal", label: "Journal" },
                 { to: "/consultation", label: "Book Counselor" },
+                { to: "/blog", label: "Blog" },
                 { to: "/about", label: "About" },
                 { to: "/feedback-wall", label: "Feedback Wall" },
               ].map((link) => (

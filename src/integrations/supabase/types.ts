@@ -181,6 +181,51 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author_email: string | null
+          body_markdown: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published: boolean
+          published_at: string | null
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_email?: string | null
+          body_markdown?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_email?: string | null
+          body_markdown?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published?: boolean
+          published_at?: string | null
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consultations: {
         Row: {
           concerns: string | null
@@ -1164,6 +1209,7 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_sessions: { Args: never; Returns: number }
+      is_blog_admin: { Args: { _email: string }; Returns: boolean }
       log_security_event: {
         Args: {
           p_event_type: string

@@ -26,6 +26,9 @@ import FeedbackWall from "./pages/FeedbackWall";
 import Referrals from "./pages/Referrals";
 import PhoneCounselor from "./pages/PhoneCounselor";
 import AdminFeedback from "./pages/AdminFeedback";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import AdminBlog from "./pages/AdminBlog";
 
 const queryClient = new QueryClient();
 
@@ -45,11 +48,14 @@ const App = () => (
             <Route path="/memorial-chat" element={<MemorialChat />} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/feedback-wall" element={<FeedbackWall />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             {/* Protected routes */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
             <Route path="/admin/feedback" element={<ProtectedRoute><AdminFeedback /></ProtectedRoute>} />
+            <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
             {/* Auth + active paid subscription required */}
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
