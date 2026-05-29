@@ -298,7 +298,7 @@ const Index = () => {
                 { k: "CAC", v: "₹78 (campus)" },
               ].map((x) => (
                 <div key={x.k} className="p-4 rounded-xl bg-foreground/5 border border-foreground/10">
-                  <div className="text-[10px] uppercase tracking-widest text-primary-foreground/60">{x.k}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{x.k}</div>
                   <div className="font-display text-xl mt-1">{x.v}</div>
                 </div>
               ))}
