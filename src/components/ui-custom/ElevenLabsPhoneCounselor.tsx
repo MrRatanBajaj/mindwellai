@@ -12,7 +12,12 @@ interface Props {
   specialty?: string;
   autoStart?: boolean;
   onEnd?: () => void;
+  /** Hinglish system prompt override for this call (e.g. from ARIA_PERSONAS). */
+  personaPrompt?: string;
+  /** Hinglish opening line spoken by Aria. */
+  firstMessage?: string;
 }
+
 
 /**
  * ElevenLabs-powered phone-call counselor.
@@ -24,7 +29,10 @@ const ElevenLabsPhoneCounselor = ({
   specialty = "AI Mental Wellness Counselor",
   autoStart = true,
   onEnd,
+  personaPrompt,
+  firstMessage,
 }: Props) => {
+
   const [phase, setPhase] = useState<"ringing" | "connecting" | "in-call" | "ended">("ringing");
   const [muted, setMuted] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -57,8 +65,22 @@ const ElevenLabsPhoneCounselor = ({
       if (error || !data?.signedUrl) {
         throw new Error(error?.message || "No signed URL");
       }
-      await conversation.startSession({ signedUrl: data.signedUrl });
+      const overrides =
+        personaPrompt || firstMessage
+          ? {
+              agent: {
+                ...(personaPrompt ? { prompt: { prompt: personaPrompt } } : {}),
+                ...(firstMessage ? { firstMessage } : {}),
+                language: "hi",
+              },
+            }
+          : undefined;
+      await conversation.startSession({
+        signedUrl: data.signedUrl,
+        ...(overrides ? { overrides } : {}),
+      } as Parameters<typeof conversation.startSession>[0]);
     } catch (e) {
+
       console.error(e);
       toast.error(
         e instanceof Error && /mic|permission|NotAllowed/i.test(e.message)
@@ -68,7 +90,7 @@ const ElevenLabsPhoneCounselor = ({
       setPhase("ended");
       started.current = false;
     }
-  }, [agentId, conversation]);
+  }, [agentId, conversation, personaPrompt, firstMessage]);
 
   // Auto-ring then connect
   useEffect(() => {

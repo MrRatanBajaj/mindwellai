@@ -39,8 +39,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { messages } = (await req.json()) as {
+    const { messages, personaPrompt } = (await req.json()) as {
       messages: { role: "user" | "assistant"; content: string; image?: string }[];
+      personaPrompt?: string;
     };
 
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -49,6 +50,12 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const systemContent =
+      typeof personaPrompt === "string" && personaPrompt.trim().length > 0
+        ? `${SYSTEM_PROMPT}\n\n--- ACTIVE PERSONA ---\n${personaPrompt.slice(0, 4000)}`
+        : SYSTEM_PROMPT;
+
 
     // Build OpenAI-compatible messages, supporting multimodal image_url for user messages
     const mapped = messages.slice(-12).map((m) => {
@@ -73,7 +80,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...mapped],
+        messages: [{ role: "system", content: systemContent }, ...mapped],
         temperature: 0.75,
         max_tokens: 400,
       }),
