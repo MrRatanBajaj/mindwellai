@@ -57,97 +57,90 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      {/* ░░░ HERO ░░░ */}
-      <section className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden">
+      {/* ░░░ HERO — Psychology-driven (Empathetic nightly companion) ░░░ */}
+      <section className="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-secondary/40 via-background to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 via-background to-background" />
           <motion.div
-            className="absolute -top-32 -left-24 w-[520px] h-[520px] rounded-full opacity-40"
-            style={{ background: "radial-gradient(circle, hsl(var(--primary) / 0.18), transparent 70%)" }}
-            animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 12, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute -bottom-40 -right-20 w-[600px] h-[600px] rounded-full opacity-30"
-            style={{ background: "radial-gradient(circle, hsl(var(--accent) / 0.25), transparent 70%)" }}
-            animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 14, repeat: Infinity, delay: 1 }}
+            className="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full opacity-50"
+            style={{ background: "radial-gradient(circle, hsl(var(--primary) / 0.14), transparent 70%)" }}
+            animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 14, repeat: Infinity }}
           />
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7">
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/20 text-foreground/80 text-xs font-medium mb-6 backdrop-blur">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                India's investor-backed mental wellness platform
+        <div className="max-w-2xl mx-auto px-6 text-center flex flex-col items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/30 text-foreground/80 text-xs font-medium mb-8 backdrop-blur"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+            Aria is online and ready to listen
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05 }}
+            className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.1] text-foreground mb-6 text-balance"
+          >
+            A quiet space for your racing thoughts, even <span className="serif-italic text-primary">at 3 AM.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }}
+            className="text-lg text-muted-foreground mb-10 max-w-lg leading-relaxed"
+          >
+            Aria is your private AI companion who listens without judgment. No waiting lists, no expensive fees — just a safe place to talk when you need it most.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 }}
+            className="w-full max-w-sm flex flex-col items-center gap-3 mb-10"
+          >
+            <NavLink to="/phone-counselor" className="w-full">
+              <Button size="lg" className="w-full px-8 h-14 text-base font-semibold rounded-2xl bg-primary hover:bg-primary/90 shadow-elegant">
+                Talk to Aria — it's free <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </NavLink>
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              100% private & confidential · No sign-up to start
+            </p>
+          </motion.div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-muted-foreground mb-12">
+            {[
+              { icon: Shield, label: "HIPAA-grade privacy" },
+              { icon: Clock, label: "24/7 available" },
+              { icon: CheckCircle2, label: "Evidence-based" },
+            ].map((s) => (
+              <div key={s.label} className="flex items-center gap-1.5">
+                <s.icon className="w-3.5 h-3.5 text-primary" /> {s.label}
               </div>
-
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[1.02] text-foreground mb-6">
-                Mental healthcare that <span className="serif-italic text-primary">picks up</span><br />
-                at 3 in the morning.
-              </h1>
-
-              <p className="text-lg text-muted-foreground mb-9 max-w-xl leading-relaxed">
-                23 specialist AI counselors. Auto-connecting phone calls. Evidence-based therapy at one-tenth the cost of a clinic — built for the 970M Indians without access to a therapist.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 mb-10">
-                <NavLink to="/auth">
-                  <Button size="lg" className="w-full sm:w-auto px-8 h-14 text-base font-semibold rounded-full bg-primary hover:bg-primary/90 shadow-elegant">
-                    Start free trial <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </NavLink>
-                <a href="#investors">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 h-14 text-base rounded-full border-primary/30 hover:bg-primary/5">
-                    <Briefcase className="w-5 h-5 mr-2 text-primary" /> For investors
-                  </Button>
-                </a>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
-                {[
-                  { icon: Shield, label: "HIPAA-grade privacy" },
-                  { icon: Clock, label: "24/7 available" },
-                  { icon: CheckCircle2, label: "Evidence-based" },
-                ].map((s) => (
-                  <div key={s.label} className="flex items-center gap-2">
-                    <s.icon className="w-4 h-4 text-primary" /> {s.label}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+            ))}
           </div>
 
-          {/* Right: investor metric card */}
+          {/* Soft testimonial trust whisper */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.15 }}
-            className="lg:col-span-5"
+            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="w-full max-w-md rounded-3xl bg-card/60 backdrop-blur border border-border/50 p-6 shadow-sm"
           >
-            <div className="relative">
-              <div className="absolute -inset-3 bg-gradient-to-br from-primary/15 to-accent/30 rounded-[2rem] blur-2xl" />
-              <div className="relative rounded-[2rem] bg-card/90 backdrop-blur-xl border border-border/50 shadow-elegant p-7">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
-                    <LineChart className="w-3.5 h-3.5 text-primary" /> Live traction
-                  </div>
-                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-accent/30 text-accent-foreground">
-                    FY26 · YTD
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {metrics.map((m) => (
-                    <div key={m.label} className="p-4 rounded-2xl bg-secondary/50 border border-border/40">
-                      <div className="text-2xl md:text-3xl font-display text-foreground">{m.value}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{m.label}</div>
-                      <div className="text-[10px] text-primary mt-1.5 font-medium">{m.trend}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-accent/15 text-xs text-foreground/80 border border-primary/15">
-                  Pre-seed open · ₹2.5 Cr SAFE · 18-mo runway
-                </div>
+            <div className="flex justify-center -space-x-2 mb-4">
+              {["bg-accent", "bg-secondary", "bg-primary/30"].map((bg, i) => (
+                <div key={i} className={`w-8 h-8 rounded-full border-2 border-background ${bg}`} />
+              ))}
+              <div className="h-8 px-2.5 rounded-full border-2 border-background bg-primary/15 flex items-center text-[10px] font-bold text-primary">
+                +10k
               </div>
             </div>
+            <p className="text-sm text-foreground/80 italic leading-relaxed">
+              "I was feeling so overwhelmed at midnight. Aria helped me breathe again when I felt like I had no one else to talk to."
+            </p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mt-4 opacity-70">
+              Trusted by 10,400+ people across India
+            </p>
           </motion.div>
         </div>
       </section>
