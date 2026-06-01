@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
+import EmotionalBrainMap from '@/components/ui-custom/EmotionalBrainMap';
 
 const moodToScore = (m: string) => (m === 'happy' ? 8 : m === 'sad' ? 2 : 5);
 const moodEmoji = (m: string) => (m === 'happy' ? '😊' : m === 'sad' ? '😔' : '😐');
