@@ -6,6 +6,7 @@ import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import VisionFeatureSection from "@/components/ui-custom/VisionFeatureSection";
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
 import CrowdfundingSection from "@/components/ui-custom/CrowdfundingSection";
+import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -144,6 +145,9 @@ const Index = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
+      <ProductDemoSection />
 
       {/* ░░░ THE PROBLEM ░░░ */}
       <section className="py-24 bg-secondary/30">
