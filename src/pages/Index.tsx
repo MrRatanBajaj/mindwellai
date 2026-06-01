@@ -146,6 +146,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
+      <ProductDemoSection />
+
       {/* ░░░ THE PROBLEM ░░░ */}
       <section className="py-24 bg-secondary/30">
         <div className="max-w-5xl mx-auto px-6 text-center">
