@@ -29,6 +29,8 @@ import AdminFeedback from "./pages/AdminFeedback";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminBlog from "./pages/AdminBlog";
+import MarketingAgentAdmin from "./pages/MarketingAgentAdmin";
+import InboundChatWidget from "@/components/ui-custom/InboundChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,7 @@ const App = () => (
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
             <Route path="/admin/feedback" element={<ProtectedRoute><AdminFeedback /></ProtectedRoute>} />
             <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
+            <Route path="/admin/marketing-agent" element={<ProtectedRoute><MarketingAgentAdmin /></ProtectedRoute>} />
             {/* Auth + active paid subscription required */}
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
