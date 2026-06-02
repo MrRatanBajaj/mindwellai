@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_runs: {
+        Row: {
+          completed_at: string | null
+          content_created: number | null
+          drafts_created: number | null
+          drafts_sent: number | null
+          error: string | null
+          id: string
+          leads_scored: number | null
+          run_kind: string
+          started_at: string
+          status: string
+          summary: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content_created?: number | null
+          drafts_created?: number | null
+          drafts_sent?: number | null
+          error?: string | null
+          id?: string
+          leads_scored?: number | null
+          run_kind: string
+          started_at?: string
+          status?: string
+          summary?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          content_created?: number | null
+          drafts_created?: number | null
+          drafts_sent?: number | null
+          error?: string | null
+          id?: string
+          leads_scored?: number | null
+          run_kind?: string
+          started_at?: string
+          status?: string
+          summary?: string | null
+        }
+        Relationships: []
+      }
+      agent_settings: {
+        Row: {
+          autonomy_level: string
+          brand_voice: string | null
+          daily_content_cap: number
+          daily_outbound_cap: number
+          id: number
+          kill_switch: boolean
+          updated_at: string
+        }
+        Insert: {
+          autonomy_level?: string
+          brand_voice?: string | null
+          daily_content_cap?: number
+          daily_outbound_cap?: number
+          id?: number
+          kill_switch?: boolean
+          updated_at?: string
+        }
+        Update: {
+          autonomy_level?: string
+          brand_voice?: string | null
+          daily_content_cap?: number
+          daily_outbound_cap?: number
+          id?: number
+          kill_switch?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_counseling_messages: {
         Row: {
           created_at: string
@@ -277,6 +349,45 @@ export type Database = {
         }
         Relationships: []
       }
+      content_drafts: {
+        Row: {
+          blog_post_id: string | null
+          body: string
+          created_at: string
+          hashtags: string[] | null
+          id: string
+          kind: string
+          published_at: string | null
+          status: string
+          title: string | null
+          topic: string
+        }
+        Insert: {
+          blog_post_id?: string | null
+          body: string
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          kind: string
+          published_at?: string | null
+          status?: string
+          title?: string | null
+          topic: string
+        }
+        Update: {
+          blog_post_id?: string | null
+          body?: string
+          created_at?: string
+          hashtags?: string[] | null
+          id?: string
+          kind?: string
+          published_at?: string | null
+          status?: string
+          title?: string | null
+          topic?: string
+        }
+        Relationships: []
+      }
       content_moderation_alerts: {
         Row: {
           ai_analysis: string | null
@@ -361,6 +472,48 @@ export type Database = {
         }
         Relationships: []
       }
+      inbound_chat_sessions: {
+        Row: {
+          booked_trial: boolean | null
+          created_at: string
+          id: string
+          intent: string | null
+          messages: Json
+          qualified: boolean | null
+          session_token: string
+          updated_at: string
+          visitor_email: string | null
+          visitor_name: string | null
+          visitor_phone: string | null
+        }
+        Insert: {
+          booked_trial?: boolean | null
+          created_at?: string
+          id?: string
+          intent?: string | null
+          messages?: Json
+          qualified?: boolean | null
+          session_token: string
+          updated_at?: string
+          visitor_email?: string | null
+          visitor_name?: string | null
+          visitor_phone?: string | null
+        }
+        Update: {
+          booked_trial?: boolean | null
+          created_at?: string
+          id?: string
+          intent?: string | null
+          messages?: Json
+          qualified?: boolean | null
+          session_token?: string
+          updated_at?: string
+          visitor_email?: string | null
+          visitor_name?: string | null
+          visitor_phone?: string | null
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           availability: string | null
@@ -430,6 +583,36 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_scores: {
+        Row: {
+          id: string
+          lead_id: string
+          next_action: string | null
+          reasoning: string | null
+          score: number
+          scored_at: string
+          temperature: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          next_action?: string | null
+          reasoning?: string | null
+          score?: number
+          scored_at?: string
+          temperature?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          next_action?: string | null
+          reasoning?: string | null
+          score?: number
+          scored_at?: string
+          temperature?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
@@ -493,6 +676,51 @@ export type Database = {
           utm_campaign?: string | null
           utm_medium?: string | null
           utm_source?: string | null
+        }
+        Relationships: []
+      }
+      marketing_drafts: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string
+          created_by: string
+          error: string | null
+          id: string
+          lead_id: string | null
+          recipient: string
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          body: string
+          channel: string
+          created_at?: string
+          created_by?: string
+          error?: string | null
+          id?: string
+          lead_id?: string | null
+          recipient: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string
+          created_by?: string
+          error?: string | null
+          id?: string
+          lead_id?: string | null
+          recipient?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
         }
         Relationships: []
       }
