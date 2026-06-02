@@ -69,6 +69,7 @@ const App = () => (
           </Routes>
           <CookieBanner />
           <NainaChatbot />
+          <InboundChatWidget />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
