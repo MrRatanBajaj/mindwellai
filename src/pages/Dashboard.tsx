@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts';
-import EmotionalBrainMap from '@/components/ui-custom/EmotionalBrainMap';
+import EmotionalIntelligenceEngine from '@/components/ui-custom/EmotionalIntelligenceEngine';
 
 const moodToScore = (m: string) => (m === 'happy' ? 8 : m === 'sad' ? 2 : 5);
 const moodEmoji = (m: string) => (m === 'happy' ? '😊' : m === 'sad' ? '😔' : '😐');
@@ -187,7 +187,7 @@ const Dashboard = () => {
 
           {/* ========== EMOTIONAL COLOR BRAIN MAP ========== */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
-            <EmotionalBrainMap />
+            <EmotionalIntelligenceEngine />
           </motion.div>
 
           {/* ========== BENTO GRID ========== */}
