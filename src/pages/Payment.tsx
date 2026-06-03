@@ -506,9 +506,11 @@ const Payment = () => {
                     className="w-full bg-mindwell-500 hover:bg-mindwell-600 text-white mt-6"
                     disabled={isProcessing}
                   >
-                    {isProcessing ? "Processing..." : selectedPlan.isFree 
-                      ? "Start Free Trial" 
-                      : `Pay ${selectedPlan.price}`}
+                    {isProcessing ? "Processing..." : selectedPlan.isFree
+                      ? "Start Free Trial"
+                      : useStripe
+                        ? `Pay ${PLAN_USD_PREVIEW[selectedPlan.id] || ""} with Stripe`
+                        : `Pay ${selectedPlan.price}`}
                   </Button>
                 </form>
               </div>
