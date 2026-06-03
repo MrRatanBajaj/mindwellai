@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, Lock, Smartphone, Wallet, History, Crown } from "lucide-react";
+import { Check, CreditCard, Calendar, Lock, Smartphone, Wallet, History, Crown, Globe2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentHistory from "@/components/ui-custom/PaymentHistory";
 import SubscriptionStatus from "@/components/ui-custom/SubscriptionStatus";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PLAN_USD_PREVIEW, detectIsInternational } from "@/lib/stripe";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
@@ -35,18 +36,34 @@ const Payment = () => {
   
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'wallet'>('upi');
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const [useStripe, setUseStripe] = useState(false);
+
   useEffect(() => {
     // If user directly navigates to payment without selecting a plan, redirect to plans
     if (!planId) {
       navigate("/plans");
     }
-    
+
     const plan = pricingPlans.find(plan => plan.id === planId);
     if (plan) {
       setSelectedPlan(plan);
     }
   }, [planId, navigate]);
+
+  useEffect(() => {
+    // Auto-suggest Stripe for non-Indian visitors.
+    detectIsInternational().then((intl) => {
+      if (intl) setUseStripe(true);
+    });
+    // Handle Stripe redirect result
+    const stripeStatus = searchParams.get("stripe");
+    if (stripeStatus === "success") {
+      toast.success("Payment successful! Your subscription is now active.");
+      setTimeout(() => navigate("/dashboard"), 1500);
+    } else if (stripeStatus === "cancelled") {
+      toast.error("Stripe checkout cancelled.");
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -72,6 +89,31 @@ const Payment = () => {
     if (!paymentDetails.name || !paymentDetails.email) {
       toast.error("Please fill in your name and email");
       return;
+    }
+
+    // International (Stripe) path
+    if (useStripe) {
+      setIsProcessing(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("stripe-checkout", {
+          body: {
+            planId: selectedPlan.id,
+            email: paymentDetails.email,
+            name: paymentDetails.name,
+            userId: user?.id || null,
+            currency: "usd",
+          },
+        });
+        if (error) throw error;
+        if (!data?.url) throw new Error("Stripe session not created");
+        window.location.href = data.url;
+        return;
+      } catch (err) {
+        console.error("Stripe checkout failed:", err);
+        toast.error("Could not start Stripe checkout. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
     }
 
     if (paymentMethod === 'card' && (!paymentDetails.cardNumber || !paymentDetails.cardName || !paymentDetails.expiryDate || !paymentDetails.cvv)) {
