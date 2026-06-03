@@ -328,6 +328,39 @@ const Payment = () => {
 
                   {!selectedPlan.isFree && (
                     <>
+                      {/* Region / Provider toggle */}
+                      <div className="rounded-lg border border-border bg-card/60 p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          <Globe2 className="w-4 h-4 text-primary" />
+                          Where are you paying from?
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            type="button"
+                            variant={!useStripe ? 'default' : 'outline'}
+                            onClick={() => setUseStripe(false)}
+                            className="flex flex-col items-start p-4 h-auto text-left"
+                          >
+                            <span className="text-sm font-semibold">🇮🇳 India (Razorpay)</span>
+                            <span className="text-xs opacity-80">UPI · Cards · Wallets · Netbanking — {selectedPlan.price}/mo</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={useStripe ? 'default' : 'outline'}
+                            onClick={() => setUseStripe(true)}
+                            className="flex flex-col items-start p-4 h-auto text-left"
+                          >
+                            <span className="text-sm font-semibold">🌍 International (Stripe)</span>
+                            <span className="text-xs opacity-80">
+                              Cards worldwide — {PLAN_USD_PREVIEW[selectedPlan.id] || "USD"} /mo
+                            </span>
+                          </Button>
+                        </div>
+                      </div>
+
+                      {!useStripe && (
+                      <>
+
                       {/* Payment Method Selection */}
                       <div className="space-y-3">
                         <Label>Choose Payment Method</Label>
