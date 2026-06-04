@@ -198,15 +198,10 @@ const Policy = () => {
                 please contact us:
               </p>
               <div className="space-y-2">
-                <p className="text-slate-600">
-                  <strong>Email:</strong> privacy@mindwellai.com
-                </p>
-                <p className="text-slate-600">
-                  <strong>Address:</strong> 123 Mental Health Drive, Wellness City, WC 12345
-                </p>
-                <p className="text-slate-600">
-                  <strong>Phone:</strong> +1 (555) 123-4567
-                </p>
+                <p className="text-slate-600"><strong>Privacy:</strong> privacy@wellmindai.in</p>
+                <p className="text-slate-600"><strong>Billing & Cancellation:</strong> billing@wellmindai.in</p>
+                <p className="text-slate-600"><strong>Grievance Officer (India):</strong> grievance@wellmindai.in</p>
+                <p className="text-slate-600"><strong>Registered Office:</strong> WellMindAI Technologies, Mumbai, India</p>
               </div>
               <p className="text-slate-500 text-sm mt-6">
                 Last updated: {new Date().toLocaleDateString()}
