@@ -34,49 +34,106 @@ const Policy = () => {
               <CardTitle className="text-2xl text-slate-900">Privacy Policy</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              <p className="text-slate-600 text-sm">
+                WellMindAI ("we", "us") is operated by WellMindAI Technologies, India. This policy applies
+                to users in India under the Digital Personal Data Protection Act, 2023 (DPDP Act) and to
+                international users under GDPR (EU/UK), CCPA (California) and equivalent regulations.
+              </p>
+
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Information We Collect</h3>
-                <p className="text-slate-600 mb-3">
-                  We collect information you provide directly to us, such as when you create an account, 
-                  schedule consultations, or communicate with our AI counselors. This may include:
-                </p>
                 <ul className="list-disc list-inside text-slate-600 space-y-1 ml-4">
-                  <li>Name, email address, and contact information</li>
-                  <li>Mental health information shared during sessions</li>
-                  <li>Usage data and session recordings for quality improvement</li>
-                  <li>Payment information (processed securely through third-party providers)</li>
+                  <li>Account details — name, email, phone, password hash</li>
+                  <li>Mental-health inputs — journal entries, mood, chat & call transcripts</li>
+                  <li>Device & usage data — IP, browser, session timestamps</li>
+                  <li>Payment metadata — handled by Razorpay (India) or Stripe (International). We never store full card numbers.</li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">How We Use Your Information</h3>
-                <p className="text-slate-600 mb-3">We use your information to:</p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">Legal Basis</h3>
                 <ul className="list-disc list-inside text-slate-600 space-y-1 ml-4">
-                  <li>Provide personalized mental health support and counseling services</li>
-                  <li>Improve our AI algorithms and therapeutic approaches</li>
-                  <li>Communicate with you about your appointments and our services</li>
-                  <li>Ensure platform security and prevent unauthorized access</li>
+                  <li><strong>India (DPDP Act):</strong> Processing on the basis of your free, specific, informed consent given at sign-up and cookie banner.</li>
+                  <li><strong>EU/UK (GDPR):</strong> Consent (Art. 6(1)(a)) plus contract performance (Art. 6(1)(b)). Health data is processed under Art. 9(2)(a) explicit consent.</li>
+                  <li><strong>California (CCPA/CPRA):</strong> We do not sell or share personal information. You may opt-out at privacy@wellmindai.in.</li>
                 </ul>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Data Security</h3>
                 <p className="text-slate-600">
-                  We implement industry-standard security measures to protect your personal and health information. 
-                  All data is encrypted in transit and at rest. We comply with HIPAA regulations and maintain 
-                  strict confidentiality protocols for all therapeutic interactions.
+                  HIPAA-grade safeguards: TLS 1.3 in transit, AES-256 at rest, row-level security per user,
+                  audit logging on every consultation, and per-user encryption keys for journal data. We do
+                  not train AI models on your personal therapy content.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Your Rights</h3>
-                <p className="text-slate-600 mb-3">You have the right to:</p>
                 <ul className="list-disc list-inside text-slate-600 space-y-1 ml-4">
-                  <li>Access, update, or delete your personal information</li>
-                  <li>Request a copy of your data</li>
-                  <li>Opt out of non-essential communications</li>
-                  <li>Withdraw consent for data processing</li>
+                  <li>Access, correct, port or erase your data (DPDP §11–14 / GDPR Art. 15–22)</li>
+                  <li>Withdraw consent at any time — write to privacy@wellmindai.in</li>
+                  <li>File a grievance with our Grievance Officer (India) within 30 days</li>
+                  <li>Lodge a complaint with the Data Protection Board (India) or your local DPA (EU)</li>
                 </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">International Data Transfer</h3>
+                <p className="text-slate-600">
+                  Data is stored on Supabase infrastructure (AWS Mumbai for Indian users, AWS Frankfurt for
+                  EU users where applicable). Cross-border transfers use Standard Contractual Clauses.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Subscription & Cancellation Policy */}
+          <Card className="border-primary/40">
+            <CardHeader>
+              <CardTitle className="text-2xl text-slate-900">Subscription, Cancellation & Refund Policy</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-slate-600 text-sm">
+                Applies to all paid plans (Student ₹99, Starter ₹299, Standard ₹499, Premium ₹999 — and USD
+                equivalents for international users).
+              </p>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">🇮🇳 For Users in India</h3>
+                <ul className="list-disc list-inside text-slate-600 space-y-1.5 ml-4">
+                  <li><strong>Auto-renewal:</strong> Subscriptions renew automatically per RBI e-mandate guidelines. You receive a 24-hour pre-debit SMS/email notification before every renewal.</li>
+                  <li><strong>Cancellation:</strong> Cancel anytime from Dashboard → Subscription → "Cancel Plan". Cancellation is effective at the end of the current billing cycle; you keep access until then.</li>
+                  <li><strong>Refund window:</strong> Full refund within <strong>7 days</strong> of first purchase if you have used less than 30 minutes of paid services. Processed to original Razorpay source in 5–7 business days.</li>
+                  <li><strong>No refund:</strong> After 7 days, or once a Tavus video / counselor session is consumed beyond the trial cap, the current billing cycle is non-refundable.</li>
+                  <li><strong>GST:</strong> 18% GST is included in the displayed INR price.</li>
+                  <li><strong>Grievance Officer (India):</strong> Mr. Ratan Bajaj — grievance@wellmindai.in — response within 15 days as per IT Rules 2021.</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">🌍 For International Users</h3>
+                <ul className="list-disc list-inside text-slate-600 space-y-1.5 ml-4">
+                  <li><strong>Auto-renewal:</strong> Subscriptions renew automatically via Stripe in USD. You receive an email receipt and renewal reminder 3 days before each cycle.</li>
+                  <li><strong>Cancellation:</strong> Cancel anytime from Dashboard → Subscription, or via the Stripe customer portal link in your receipt. Access continues until the end of the paid period.</li>
+                  <li><strong>EU / UK 14-day right of withdrawal:</strong> Per Consumer Rights Directive 2011/83/EU, EU/UK users may withdraw within 14 days of purchase for a full refund — provided digital services have not been substantially consumed. By starting a session within those 14 days you expressly waive the withdrawal right for that session's value.</li>
+                  <li><strong>Refund window (rest of world):</strong> Full refund within <strong>14 days</strong> if usage is under 30 minutes of paid services. Processed to original card in 5–10 business days.</li>
+                  <li><strong>Chargebacks:</strong> Please contact billing@wellmindai.in before raising a chargeback — we resolve 98% of issues within 48 hours.</li>
+                  <li><strong>Local taxes (VAT/GST/Sales Tax):</strong> Where applicable, taxes are added at checkout based on your billing country.</li>
+                </ul>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 p-4 border border-slate-200">
+                <h4 className="font-semibold text-slate-900 mb-2 text-sm">How to cancel — both regions</h4>
+                <ol className="list-decimal list-inside text-slate-600 text-sm space-y-1 ml-2">
+                  <li>Sign in → open Dashboard</li>
+                  <li>Click "Subscription" in the sidebar</li>
+                  <li>Press "Cancel Plan" and confirm</li>
+                  <li>You'll receive a confirmation email within 5 minutes</li>
+                </ol>
+                <p className="text-xs text-slate-500 mt-3">
+                  Need help cancelling? Email <strong>billing@wellmindai.in</strong> — we'll process within 24 hours.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -90,40 +147,29 @@ const Policy = () => {
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Service Description</h3>
                 <p className="text-slate-600">
-                  WellMindAI provides AI-powered mental health support and counseling services. Our platform 
-                  is designed to supplement, not replace, traditional therapy and professional mental health care.
+                  WellMindAI provides AI-powered mental health support. It supplements — not replaces —
+                  licensed clinical care. We are not a crisis service.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">User Responsibilities</h3>
                 <ul className="list-disc list-inside text-slate-600 space-y-1 ml-4">
-                  <li>Provide accurate and truthful information</li>
-                  <li>Use the service for its intended therapeutic purposes</li>
-                  <li>Respect the privacy and confidentiality of the platform</li>
-                  <li>Seek immediate professional help in case of mental health emergencies</li>
+                  <li>Provide accurate information at sign-up</li>
+                  <li>Use the platform for personal, non-commercial wellness</li>
+                  <li>Do not share your login credentials</li>
+                  <li>In an emergency, call iCall (India) 9152987821 or your local helpline immediately</li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">Limitations of Service</h3>
-                <p className="text-slate-600 mb-3">
-                  Our AI counseling service has limitations and is not suitable for:
-                </p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">Limitations</h3>
+                <p className="text-slate-600 mb-3">WellMindAI is not suitable for:</p>
                 <ul className="list-disc list-inside text-slate-600 space-y-1 ml-4">
-                  <li>Crisis intervention or emergency mental health situations</li>
-                  <li>Diagnosis of mental health conditions</li>
-                  <li>Prescription of medication</li>
-                  <li>Treatment of severe mental health disorders requiring professional intervention</li>
+                  <li>Crisis intervention or emergency situations</li>
+                  <li>Clinical diagnosis or medication prescription</li>
+                  <li>Treatment of severe psychiatric disorders</li>
                 </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">Payment and Refunds</h3>
-                <p className="text-slate-600">
-                  Payment for services is processed securely through our payment partners. Refunds are available 
-                  within 30 days of purchase, subject to our refund policy terms.
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -133,32 +179,11 @@ const Policy = () => {
             <CardHeader>
               <CardTitle className="text-2xl text-slate-900">Cookie Policy</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">What Are Cookies</h3>
-                <p className="text-slate-600">
-                  Cookies are small text files stored on your device that help us provide a better user experience. 
-                  We use cookies to remember your preferences, analyze usage patterns, and improve our services.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">Types of Cookies We Use</h3>
-                <ul className="list-disc list-inside text-slate-600 space-y-1 ml-4">
-                  <li><strong>Essential Cookies:</strong> Required for basic platform functionality</li>
-                  <li><strong>Performance Cookies:</strong> Help us understand how users interact with our platform</li>
-                  <li><strong>Functional Cookies:</strong> Remember your preferences and settings</li>
-                  <li><strong>Analytics Cookies:</strong> Provide insights into platform usage and performance</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">Managing Cookies</h3>
-                <p className="text-slate-600">
-                  You can control and manage cookies through your browser settings. However, disabling certain 
-                  cookies may affect the functionality of our platform.
-                </p>
-              </div>
+            <CardContent className="space-y-4">
+              <p className="text-slate-600">
+                We use essential cookies for sign-in & security, and analytics cookies (only with your
+                consent) to improve the product. Manage preferences via the cookie banner or your browser.
+              </p>
             </CardContent>
           </Card>
 
@@ -173,15 +198,10 @@ const Policy = () => {
                 please contact us:
               </p>
               <div className="space-y-2">
-                <p className="text-slate-600">
-                  <strong>Email:</strong> privacy@mindwellai.com
-                </p>
-                <p className="text-slate-600">
-                  <strong>Address:</strong> 123 Mental Health Drive, Wellness City, WC 12345
-                </p>
-                <p className="text-slate-600">
-                  <strong>Phone:</strong> +1 (555) 123-4567
-                </p>
+                <p className="text-slate-600"><strong>Privacy:</strong> privacy@wellmindai.in</p>
+                <p className="text-slate-600"><strong>Billing & Cancellation:</strong> billing@wellmindai.in</p>
+                <p className="text-slate-600"><strong>Grievance Officer (India):</strong> grievance@wellmindai.in</p>
+                <p className="text-slate-600"><strong>Registered Office:</strong> WellMindAI Technologies, Mumbai, India</p>
               </div>
               <p className="text-slate-500 text-sm mt-6">
                 Last updated: {new Date().toLocaleDateString()}

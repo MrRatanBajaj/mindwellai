@@ -7,6 +7,7 @@ import VisionFeatureSection from "@/components/ui-custom/VisionFeatureSection";
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
 import CrowdfundingSection from "@/components/ui-custom/CrowdfundingSection";
 import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
+import ProductShowcase from "@/components/ui-custom/ProductShowcase";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -148,6 +149,9 @@ const Index = () => {
 
       {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
       <ProductDemoSection />
+
+      {/* ░░░ PRODUCT SCREEN SHOWCASE — 10-second story ░░░ */}
+      <ProductShowcase />
 
       {/* ░░░ THE PROBLEM ░░░ */}
       <section className="py-24 bg-secondary/30">
