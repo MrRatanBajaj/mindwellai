@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
-import { Briefcase, Heart, Mail } from "lucide-react";
+import { Briefcase, Heart, Mail, Headphones, BadgeIndianRupee } from "lucide-react";
 import wellmindLogo from "@/assets/wellmind-logo.png";
 
-const CONTACT_EMAIL = "ratanbajaj@wellmindai.in";
+const SUPPORT_EMAIL = "support@wellmindai.in";
+const SALES_EMAIL = "sales@wellmindai.in";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -19,15 +20,24 @@ const Footer = () => {
               className="h-12 w-auto bg-white rounded-lg p-1.5 mb-4"
             />
             <p className="text-background/50 text-sm max-w-xs leading-relaxed mb-4">
-              Your companion for mental wellness. Journaling, self-help resources, and professional counselor booking — all in one place.
+              India's mental health AI platform — virtual AI companions and real human counselors, available 24/7.
             </p>
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="inline-flex items-center gap-2 text-background/70 hover:text-background text-sm transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5" />
-              {CONTACT_EMAIL}
-            </a>
+            <div className="space-y-2">
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
+                className="inline-flex items-center gap-2 text-background/70 hover:text-background text-sm transition-colors"
+              >
+                <Headphones className="w-3.5 h-3.5" />
+                Customer Support: {SUPPORT_EMAIL}
+              </a>
+              <a
+                href={`mailto:${SALES_EMAIL}`}
+                className="flex items-center gap-2 text-background/70 hover:text-background text-sm transition-colors"
+              >
+                <BadgeIndianRupee className="w-3.5 h-3.5" />
+                Sales & Partnerships: {SALES_EMAIL}
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
