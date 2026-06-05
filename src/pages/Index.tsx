@@ -427,16 +427,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Feedback */}
-      <section className="py-20 bg-secondary/30">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="font-display text-3xl text-foreground mb-2">Help us improve</h2>
-            <p className="text-muted-foreground text-sm">Your feedback shapes WellMindAI's roadmap.</p>
-          </div>
-          <FeedbackForm />
-        </div>
-      </section>
 
       <Footer />
     </div>
