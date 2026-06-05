@@ -5,38 +5,53 @@ import { Button } from "@/components/ui/button";
 import PricingCard, { PricingPlan } from "./PricingCard";
 import { cn } from "@/lib/utils";
 
-// Public plans (what guests / students see) — only 2 cards to keep it clean.
+// Starbucks-style tiered membership — Free / Plus / Premium
 const publicPlans: PricingPlan[] = [
   {
     id: "free-trial",
-    name: "Free Plan",
+    name: "Free",
     price: "₹0",
     description: "Start with the basics — forever free",
     features: [
+      "3 Virtual Human AI sessions / month",
+      "Max 10 minutes per session",
+      "Unlimited emotional check-ins",
       "Private Journaling (mood + streaks)",
-      "“Hide the Thought” quick-release tool",
-      "Full Self-Help library (NIMH / WHO)",
-      "1 free AI counseling session (one-time)",
-      "No card required",
+      "Emotional Color Brain Map",
     ],
     buttonText: "Start Free",
-    sessionsCount: 1,
+    sessionsCount: 3,
     isFree: true,
   },
   {
-    id: "premium",
-    name: "Student / Premium",
-    price: "₹149",
-    description: "Your AI counselor — in your pocket",
+    id: "plus",
+    name: "WellMindAI Plus",
+    price: "₹299",
+    description: "More time, more support",
     features: [
-      "AI Virtual Consultant (video + audio)",
-      "30 minutes of live Tavus video calls / month",
-      "Unlimited ElevenLabs phone-style calls",
-      "Top-up packs available (₹49 → +10 min)",
-      "Priority queue & full session history",
+      "10 Virtual Human AI sessions / month",
+      "Max 20 minutes per session",
+      "Unlimited text conversations",
+      "Voice conversations",
+      "Journaling insights + emotional dashboard",
+    ],
+    buttonText: "Get Plus",
+    isFeatured: true,
+    sessionsCount: 10,
+  },
+  {
+    id: "premium",
+    name: "WellMindAI Premium",
+    price: "₹599",
+    description: "Deep ongoing care",
+    features: [
+      "30 Virtual Human AI sessions / month",
+      "Max 30 minutes per session",
+      "Unlimited text + voice support",
+      "Advanced emotional insights",
+      "Future Self Reflection · Priority AI",
     ],
     buttonText: "Get Premium",
-    isFeatured: true,
     sessionsCount: 30,
   },
 ];
@@ -54,13 +69,13 @@ const pricingPlans: PricingPlan[] = [
     sessionsCount: 2,
   },
   {
-    id: "standard",
-    name: "Standard",
-    price: "₹499",
-    description: "Steady ongoing support",
-    features: ["6 sessions / month", "Personalized plan", "Priority support"],
-    buttonText: "Choose Standard",
-    sessionsCount: 6,
+    id: "test-1",
+    name: "Test (₹1)",
+    price: "₹1",
+    description: "Internal payment test plan",
+    features: ["1-day access for QA", "Verifies Razorpay + Stripe flow", "Auto-expires in 24h"],
+    buttonText: "Test ₹1",
+    sessionsCount: 1,
   },
 ];
 
@@ -98,7 +113,7 @@ const Pricing = () => {
           key="ind"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
         >
           {publicPlans.map((plan) => (
             <PricingCard key={plan.id} plan={plan} />

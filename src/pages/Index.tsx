@@ -2,12 +2,9 @@ import { useEffect } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { FeedbackForm } from "@/components/ui-custom/FeedbackForm";
 import VisionFeatureSection from "@/components/ui-custom/VisionFeatureSection";
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
-import CrowdfundingSection from "@/components/ui-custom/CrowdfundingSection";
 import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
-import ProductShowcase from "@/components/ui-custom/ProductShowcase";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -147,8 +144,6 @@ const Index = () => {
       {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
       <ProductDemoSection />
 
-      {/* ░░░ PRODUCT SCREEN SHOWCASE — 10-second story ░░░ */}
-      <ProductShowcase />
 
       {/* ░░░ THE PROBLEM ░░░ */}
       <section className="py-24 bg-secondary/30">
@@ -215,8 +210,6 @@ const Index = () => {
       {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
       <DigitalImmortalitySection />
 
-      {/* ░░░ CROWDFUND ░░░ */}
-      <CrowdfundingSection />
 
       {/* ░░░ INVESTORS SECTION ░░░ */}
       <section id="investors" className="py-24 bg-investor text-primary-foreground relative overflow-hidden">
@@ -434,16 +427,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Feedback */}
-      <section className="py-20 bg-secondary/30">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <h2 className="font-display text-3xl text-foreground mb-2">Help us improve</h2>
-            <p className="text-muted-foreground text-sm">Your feedback shapes WellMindAI's roadmap.</p>
-          </div>
-          <FeedbackForm />
-        </div>
-      </section>
 
       <Footer />
     </div>
