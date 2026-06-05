@@ -70,7 +70,7 @@ const Index = () => {
           />
         </div>
 
-        <div className="max-w-2xl mx-auto px-6 text-center flex flex-col items-center">
+        <div className="max-w-3xl mx-auto px-6 text-center flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/30 text-foreground/80 text-xs font-medium mb-8 backdrop-blur"
@@ -79,72 +79,69 @@ const Index = () => {
               <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            Aria is online and ready to listen
+            India's Mental Health AI Platform · Trusted by 10,400+
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05 }}
-            className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.1] text-foreground mb-6 text-balance"
+            className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.08] text-foreground mb-6 text-balance"
           >
-            A quiet space for your racing thoughts, even <span className="serif-italic text-primary">at 3 AM.</span>
+            Therapy that talks back — <span className="serif-italic text-primary">AI counselors</span> &amp; real human therapists, in one app.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }}
-            className="text-lg text-muted-foreground mb-10 max-w-lg leading-relaxed"
+            className="text-lg text-muted-foreground mb-8 max-w-xl leading-relaxed"
           >
-            Aria is your private AI companion who listens without judgment. No waiting lists, no expensive fees — just a safe place to talk when you need it most.
+            WellMindAI is a mental health platform combining 24/7 virtual AI counselors with verified human therapists — chat, voice, or video. Built for India. From <span className="font-semibold text-foreground">₹99/month</span>.
           </motion.p>
+
+          {/* 3-pillar clarity strip — "what we actually are" in 5 seconds */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
+            className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl mb-10"
+          >
+            {[
+              { k: "Virtual AI", v: "24/7 instant chat, voice & video — no waitlist." },
+              { k: "Real Humans", v: "Verified licensed counselors, on demand." },
+              { k: "Private", v: "HIPAA-grade, RLS-encrypted, India-hosted." },
+            ].map((p) => (
+              <div key={p.k} className="p-3 sm:p-4 rounded-2xl bg-card/70 border border-border/60 backdrop-blur text-left">
+                <div className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold text-primary mb-1">{p.k}</div>
+                <div className="text-[11px] sm:text-xs text-muted-foreground leading-snug">{p.v}</div>
+              </div>
+            ))}
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 }}
-            className="w-full max-w-sm flex flex-col items-center gap-3 mb-10"
+            className="w-full max-w-md flex flex-col sm:flex-row items-stretch gap-3 mb-8"
           >
-            <NavLink to="/phone-counselor" className="w-full">
-              <Button size="lg" className="w-full px-8 h-14 text-base font-semibold rounded-2xl bg-primary hover:bg-primary/90 shadow-elegant">
-                Talk to Aria — it's free <ArrowRight className="w-5 h-5 ml-2" />
+            <NavLink to="/phone-counselor" className="flex-1">
+              <Button size="lg" className="w-full px-6 h-14 text-base font-semibold rounded-2xl bg-primary hover:bg-primary/90 shadow-elegant">
+                Talk to AI free <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </NavLink>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5" />
-              100% private & confidential · No sign-up to start
-            </p>
+            <NavLink to="/consultation" className="flex-1">
+              <Button size="lg" variant="outline" className="w-full px-6 h-14 text-base font-semibold rounded-2xl border-2">
+                Book a human counselor
+              </Button>
+            </NavLink>
           </motion.div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-muted-foreground mb-12">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-muted-foreground mb-10">
             {[
               { icon: Shield, label: "HIPAA-grade privacy" },
               { icon: Clock, label: "24/7 available" },
-              { icon: CheckCircle2, label: "Evidence-based" },
+              { icon: CheckCircle2, label: "Evidence-based (NIMH · WHO)" },
             ].map((s) => (
               <div key={s.label} className="flex items-center gap-1.5">
                 <s.icon className="w-3.5 h-3.5 text-primary" /> {s.label}
               </div>
             ))}
           </div>
-
-          {/* Soft testimonial trust whisper */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="w-full max-w-md rounded-3xl bg-card/60 backdrop-blur border border-border/50 p-6 shadow-sm"
-          >
-            <div className="flex justify-center -space-x-2 mb-4">
-              {["bg-accent", "bg-secondary", "bg-primary/30"].map((bg, i) => (
-                <div key={i} className={`w-8 h-8 rounded-full border-2 border-background ${bg}`} />
-              ))}
-              <div className="h-8 px-2.5 rounded-full border-2 border-background bg-primary/15 flex items-center text-[10px] font-bold text-primary">
-                +10k
-              </div>
-            </div>
-            <p className="text-sm text-foreground/80 italic leading-relaxed">
-              "I was feeling so overwhelmed at midnight. Aria helped me breathe again when I felt like I had no one else to talk to."
-            </p>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mt-4 opacity-70">
-              Trusted by 10,400+ people across India
-            </p>
-          </motion.div>
         </div>
+
       </section>
 
       {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
