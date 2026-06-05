@@ -144,8 +144,6 @@ const Index = () => {
       {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
       <ProductDemoSection />
 
-      {/* ░░░ PRODUCT SCREEN SHOWCASE — 10-second story ░░░ */}
-      <ProductShowcase />
 
       {/* ░░░ THE PROBLEM ░░░ */}
       <section className="py-24 bg-secondary/30">
