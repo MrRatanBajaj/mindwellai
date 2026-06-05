@@ -50,13 +50,18 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[min(96%,1100px)] transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? "bg-background/80 backdrop-blur-2xl shadow-lg shadow-calm-sage/5"
-          : "bg-background/60 backdrop-blur-xl"
-      } border border-border/50 rounded-full`}
+          ? "bg-background/85 backdrop-blur-xl shadow-[0_1px_0_0_hsl(var(--border))] py-1"
+          : "bg-gradient-to-b from-background/95 to-background/70 backdrop-blur-md py-2"
+      }`}
     >
-      <div className="px-4 sm:px-6 py-2.5">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-calm-sage/40 to-transparent"
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+
         <div className="flex items-center justify-between gap-2">
           {/* Logo */}
           <NavLink to="/" className="flex items-center group flex-shrink-0 pl-1">
