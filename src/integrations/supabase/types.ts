@@ -1433,7 +1433,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      approved_feedback_public: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          feedback: string | null
+          id: string | null
+          name: string | null
+          rating: number | null
+          status: string | null
+          suggestions: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          feedback?: string | null
+          id?: string | null
+          name?: string | null
+          rating?: number | null
+          status?: string | null
+          suggestions?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          feedback?: string | null
+          id?: string | null
+          name?: string | null
+          rating?: number | null
+          status?: string | null
+          suggestions?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_expired_sessions: { Args: never; Returns: number }
