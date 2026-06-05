@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
-import { Briefcase, Heart, Mail } from "lucide-react";
+import { Briefcase, Heart, Mail, Headphones, BadgeIndianRupee } from "lucide-react";
 import wellmindLogo from "@/assets/wellmind-logo.png";
 
-const CONTACT_EMAIL = "ratanbajaj@wellmindai.in";
+const SUPPORT_EMAIL = "support@wellmindai.in";
+const SALES_EMAIL = "sales@wellmindai.in";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
