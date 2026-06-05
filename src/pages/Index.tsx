@@ -210,8 +210,6 @@ const Index = () => {
       {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
       <DigitalImmortalitySection />
 
-      {/* ░░░ CROWDFUND ░░░ */}
-      <CrowdfundingSection />
 
       {/* ░░░ INVESTORS SECTION ░░░ */}
       <section id="investors" className="py-24 bg-investor text-primary-foreground relative overflow-hidden">
