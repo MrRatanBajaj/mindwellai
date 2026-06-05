@@ -39,9 +39,9 @@ const generateCode = (email: string) => {
 
 const TIERS = [
   { name: "Cadet",     min: 0,   color: "text-muted-foreground", bg: "bg-muted/40",        icon: Star,    perks: ["7 free days per signup", "Ambassador kit (PDF)"] },
-  { name: "Advocate",  min: 5,   color: "text-primary",          bg: "bg-primary/10",      icon: Award,   perks: ["+15 days bonus", "WellMindAI swag", "LinkedIn certificate"] },
-  { name: "Leader",    min: 15,  color: "text-accent-foreground",bg: "bg-accent/25",       icon: Trophy,  perks: ["₹2,500 cash stipend / month", "Private founder AMA", "Featured on wall"] },
-  { name: "Captain",   min: 40,  color: "text-primary",          bg: "bg-gradient-to-br from-primary/15 to-accent/30", icon: Crown,   perks: ["₹7,500 stipend / month", "Internship offer", "Equity-track conversion"] },
+  { name: "Advocate",  min: 5,   color: "text-primary",          bg: "bg-primary/10",      icon: Award,   perks: ["+15 bonus days", "WellMindAI swag", "LinkedIn certificate"] },
+  { name: "Leader",    min: 15,  color: "text-accent-foreground",bg: "bg-accent/25",       icon: Trophy,  perks: ["Private founder AMA", "Featured on Wall of Champions", "Premium plan free 3 months"] },
+  { name: "Captain",   min: 40,  color: "text-primary",          bg: "bg-gradient-to-br from-primary/15 to-accent/30", icon: Crown,   perks: ["Internship offer letter", "Premium plan free 1 year", "Equity-track conversion"] },
 ];
 
 const Referrals = () => {

@@ -201,7 +201,7 @@ const Policy = () => {
                 <p className="text-slate-600"><strong>Privacy:</strong> privacy@wellmindai.in</p>
                 <p className="text-slate-600"><strong>Billing & Cancellation:</strong> billing@wellmindai.in</p>
                 <p className="text-slate-600"><strong>Grievance Officer (India):</strong> grievance@wellmindai.in</p>
-                <p className="text-slate-600"><strong>Registered Office:</strong> WellMindAI Technologies, Mumbai, India</p>
+                <p className="text-slate-600"><strong>Registered Office:</strong> WellMindAI Technologies, Purnia, Bihar, India</p>
               </div>
               <p className="text-slate-500 text-sm mt-6">
                 Last updated: {new Date().toLocaleDateString()}
