@@ -331,78 +331,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ░░░ VISION & MISSION ░░░ */}
-      <section className="py-24">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {[
-              { icon: Target, title: "Our vision", body: "A world where every person — regardless of income, geography, or language — has a calm, judgment-free space to care for their mind." },
-              { icon: Compass, title: "Our mission", body: "To make evidence-based mental healthcare feel as private and immediate as a phone call to someone who deeply understands you." },
-            ].map((v, i) => (
-              <motion.div key={v.title}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                className="p-9 rounded-3xl border border-border bg-card relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-accent/10 -mr-12 -mt-12" />
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
-                    <v.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-display text-2xl text-foreground mb-3">{v.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{v.body}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Vision/Mission and Partners/Testimonials removed for cleaner landing flow */}
 
-      {/* ░░░ PARTNERS ░░░ */}
-      <section className="py-20 bg-secondary/40">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">Backed by research</p>
-          <h2 className="font-display text-3xl text-foreground mb-10">Aligned with global mental-health authorities</h2>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {partners.map((p) => (
-              <div key={p} className="px-5 py-3 rounded-full bg-card border border-border/50 text-foreground/80 text-sm font-medium hover:border-primary/40 transition">
-                {p}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ░░░ TESTIMONIALS ░░░ */}
-      <section className="py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">Loved by 10,000+ users</p>
-            <h2 className="font-display text-4xl text-foreground mb-3">Real stories. Real change.</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {testimonials.map((t, i) => (
-              <motion.div key={t.name}
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                className="p-7 rounded-2xl bg-card border border-border hover-lift flex flex-col"
-              >
-                <Quote className="w-8 h-8 text-accent mb-4" />
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="w-3.5 h-3.5 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-foreground/90 leading-relaxed mb-5 flex-1 serif-italic text-lg">"{t.quote}"</p>
-                <div className="pt-4 border-t border-border/50">
-                  <div className="font-semibold text-foreground text-sm">{t.name}</div>
-                  <div className="text-xs text-muted-foreground">{t.role}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ░░░ CTA ░░░ */}
       <section className="py-24">

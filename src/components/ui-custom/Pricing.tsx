@@ -1,182 +1,222 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, GraduationCap, Mail, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Check, Loader2, Sparkles, Building2, Globe2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PricingCard, { PricingPlan } from "./PricingCard";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import {
+  PLANS, Plan, CurrencyCode, CURRENCIES,
+  detectCurrency, setStoredCurrency, formatPrice, priceSuffix,
+} from "@/lib/pricing";
 
-// Starbucks-style tiered membership — Free / Plus / Premium
-const publicPlans: PricingPlan[] = [
-  {
-    id: "free-trial",
-    name: "Free",
-    price: "₹0",
-    description: "Start with the basics — forever free",
-    features: [
-      "3 Virtual Human AI sessions / month",
-      "Max 10 minutes per session",
-      "Unlimited emotional check-ins",
-      "Private Journaling (mood + streaks)",
-      "Emotional Color Brain Map",
-    ],
-    buttonText: "Start Free",
-    sessionsCount: 3,
-    isFree: true,
-  },
-  {
-    id: "plus",
-    name: "WellMindAI Plus",
-    price: "₹299",
-    description: "More time, more support",
-    features: [
-      "10 Virtual Human AI sessions / month",
-      "Max 20 minutes per session",
-      "Unlimited text conversations",
-      "Voice conversations",
-      "Journaling insights + emotional dashboard",
-    ],
-    buttonText: "Get Plus",
-    isFeatured: true,
-    sessionsCount: 10,
-  },
-  {
-    id: "premium",
-    name: "WellMindAI Premium",
-    price: "₹599",
-    description: "Deep ongoing care",
-    features: [
-      "30 Virtual Human AI sessions / month",
-      "Max 30 minutes per session",
-      "Unlimited text + voice support",
-      "Advanced emotional insights",
-      "Future Self Reflection · Priority AI",
-    ],
-    buttonText: "Get Premium",
-    sessionsCount: 30,
-  },
-];
+// Re-export legacy shape so Payment.tsx keeps working.
+export interface PricingPlan {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  buttonText: string;
+  isFeatured?: boolean;
+  sessionsCount: number;
+  isFree?: boolean;
+}
 
-// Full ladder kept for the Payment page, admins, and old links.
-const pricingPlans: PricingPlan[] = [
-  ...publicPlans,
-  {
-    id: "student",
-    name: "Student (Verified)",
-    price: "₹99",
-    description: "For verified college students",
-    features: ["Verified .edu / college ID", "2 counselor sessions / month", "Self-Help + Journal"],
-    buttonText: "Choose Student",
-    sessionsCount: 2,
-  },
-  {
-    id: "test-1",
-    name: "Test (₹1)",
-    price: "₹1",
-    description: "Internal payment test plan",
-    features: ["1-day access for QA", "Verifies Razorpay + Stripe flow", "Auto-expires in 24h"],
-    buttonText: "Test ₹1",
-    sessionsCount: 1,
-  },
-];
+export const pricingPlans: PricingPlan[] = PLANS.map((p) => ({
+  id: p.id,
+  name: p.name,
+  price: formatPrice(p, "INR") + priceSuffix(p),
+  description: p.tagline,
+  features: p.features,
+  buttonText: p.cta,
+  isFeatured: p.isFeatured,
+  isFree: p.isFree,
+  sessionsCount:
+    p.id === "free" ? 1 : p.id === "plus" ? 4 : 100,
+}));
 
-const Pricing = () => {
-  const [audience, setAudience] = useState<"individual" | "corporate">("individual");
-
+const PlanCard = ({
+  plan, currency, onSelect, activating,
+}: {
+  plan: Plan;
+  currency: CurrencyCode;
+  onSelect: (p: Plan) => void;
+  activating: boolean;
+}) => {
+  const featured = plan.isFeatured;
   return (
-    <div className="py-8">
-      {/* Audience toggle */}
-      <div className="flex justify-center mb-10">
-        <div className="inline-flex p-1 rounded-full bg-secondary/60 border border-border">
-          {[
-            { id: "individual", label: "Individuals & Students", icon: GraduationCap },
-            { id: "corporate", label: "Organization / College", icon: Building2 },
-          ].map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setAudience(t.id as any)}
-              className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all",
-                audience === t.id
-                  ? "bg-primary text-primary-foreground shadow-elegant"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <t.icon className="w-4 h-4" />
-              {t.label}
-            </button>
-          ))}
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={cn(
+        "relative rounded-3xl p-8 flex flex-col transition-all",
+        featured
+          ? "bg-foreground text-background border border-foreground shadow-2xl md:scale-[1.03]"
+          : "bg-card text-foreground border border-border/60 hover:border-primary/30",
+      )}
+    >
+      {featured && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-accent text-accent-foreground text-[10px] uppercase tracking-widest font-bold">
+          Most Popular
+        </span>
+      )}
+
+      <div className="mb-6">
+        <h3 className={cn("font-display text-2xl mb-1", featured ? "text-background" : "text-foreground")}>
+          {plan.name}
+        </h3>
+        <p className={cn("text-sm", featured ? "text-background/70" : "text-muted-foreground")}>
+          {plan.tagline}
+        </p>
+      </div>
+
+      <div className="mb-8">
+        {plan.price.startingAt && (
+          <div className={cn("text-[11px] uppercase tracking-widest mb-1", featured ? "text-background/60" : "text-muted-foreground")}>
+            Starting at
+          </div>
+        )}
+        <div className="flex items-baseline gap-1">
+          <span className="font-display text-5xl">{formatPrice(plan, currency)}</span>
+          {!plan.isFree && (
+            <span className={cn("text-sm", featured ? "text-background/60" : "text-muted-foreground")}>
+              {priceSuffix(plan)}
+            </span>
+          )}
         </div>
       </div>
 
-      {audience === "individual" ? (
-        <motion.div
-          key="ind"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
-        >
-          {publicPlans.map((plan) => (
-            <PricingCard key={plan.id} plan={plan} />
-          ))}
-        </motion.div>
-      ) : (
-        <motion.div
-          key="corp"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-3xl mx-auto"
-        >
-          <div className="relative rounded-3xl bg-gradient-to-br from-primary/10 via-card to-accent/15 border border-primary/20 p-10 md:p-14 text-center shadow-elegant overflow-hidden">
-            <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-accent/20 blur-3xl" />
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 text-foreground/80 text-xs font-medium mb-5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                Workplace & Campus Wellness
-              </div>
-              <h3 className="font-display text-3xl md:text-4xl text-foreground mb-4">
-                Custom plans for offices & colleges
-              </h3>
-              <p className="text-muted-foreground mb-2 max-w-xl mx-auto leading-relaxed">
-                Per-Employee-Per-Month (PEPM) pricing. AI counseling, anonymized
-                wellness dashboards, and crisis escalation built-in.
-              </p>
-              <p className="text-muted-foreground/80 text-sm mb-8 max-w-xl mx-auto">
-                Includes 15 min Tavus AI counseling / employee / month, unlimited
-                self-help & journaling, and admin reporting.
-              </p>
+      <ul className="space-y-3 mb-8 flex-1">
+        {plan.features.map((f) => (
+          <li key={f} className="flex items-start gap-3 text-sm">
+            <Check className={cn("w-4 h-4 mt-0.5 shrink-0", featured ? "text-accent" : "text-primary")} />
+            <span className={featured ? "text-background/90" : "text-foreground/85"}>{f}</span>
+          </li>
+        ))}
+      </ul>
 
-              <div className="grid sm:grid-cols-3 gap-3 mb-8 max-w-xl mx-auto">
-                {[
-                  { k: "Tier 1", v: "Up to 100 seats" },
-                  { k: "Tier 2", v: "100 – 1,000 seats" },
-                  { k: "Enterprise", v: "1,000+ seats" },
-                ].map((t) => (
-                  <div key={t.k} className="p-4 rounded-2xl bg-card/70 border border-border/50">
-                    <div className="text-xs uppercase tracking-widest text-primary font-semibold mb-1">{t.k}</div>
-                    <div className="text-sm text-foreground">{t.v}</div>
-                  </div>
-                ))}
-              </div>
+      <Button
+        onClick={() => onSelect(plan)}
+        disabled={activating}
+        size="lg"
+        className={cn(
+          "w-full h-12 rounded-full font-semibold",
+          featured
+            ? "bg-accent text-accent-foreground hover:bg-accent/90"
+            : plan.isFree
+              ? "bg-secondary text-foreground hover:bg-secondary/80"
+              : "bg-primary text-primary-foreground hover:bg-primary/90",
+        )}
+      >
+        {activating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Activating…</> : plan.cta}
+      </Button>
+    </motion.div>
+  );
+};
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="mailto:enterprise@wellmindai.in?subject=WellMindAI%20—%20Organization%20demo">
-                  <Button size="lg" className="w-full sm:w-auto px-8 h-14 rounded-full bg-primary hover:bg-primary/90 shadow-elegant">
-                    <Mail className="w-5 h-5 mr-2" /> Book a Demo
-                  </Button>
-                </a>
-                <a href="mailto:enterprise@wellmindai.in">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 h-14 rounded-full border-primary/30">
-                    Contact Sales
-                  </Button>
-                </a>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
+const Pricing = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [currency, setCurrency] = useState<CurrencyCode>("INR");
+  const [activating, setActivating] = useState<string | null>(null);
+
+  useEffect(() => {
+    detectCurrency().then(setCurrency);
+  }, []);
+
+  const handleCurrencyChange = (c: CurrencyCode) => {
+    setCurrency(c);
+    setStoredCurrency(c);
+  };
+
+  const handleSelect = async (plan: Plan) => {
+    if (plan.id === "free") {
+      if (!user) {
+        toast.info("Sign up to start your free plan.");
+        navigate("/auth?redirect=/dashboard");
+        return;
+      }
+      setActivating(plan.id);
+      try {
+        const { data: existing } = await supabase
+          .from("subscriptions").select("id").eq("user_id", user.id).maybeSingle();
+        if (!existing) {
+          await supabase.from("subscriptions").insert({
+            user_id: user.id, plan_id: "free", status: "active",
+            sessions_remaining: 1,
+            current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+          });
+        }
+        toast.success("Free plan activated!");
+        navigate("/dashboard");
+      } catch (e: any) {
+        toast.error(e?.message || "Could not activate free plan.");
+      } finally { setActivating(null); }
+      return;
+    }
+
+    if (plan.id === "business") {
+      window.location.href = "mailto:sales@wellmindai.in?subject=WellMindAI%20Business%20%E2%80%94%20Demo%20request";
+      return;
+    }
+
+    // Plus → payment
+    navigate(`/payment?plan=${plan.id}&currency=${currency}`);
+  };
+
+  return (
+    <div className="py-6">
+      {/* Currency selector — minimal, top-right */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-10 max-w-5xl mx-auto px-2">
+        <p className="text-xs text-muted-foreground flex items-center gap-2">
+          <Globe2 className="w-3.5 h-3.5" />
+          Prices shown in your local currency based on your region.
+        </p>
+        <Select value={currency} onValueChange={(v) => handleCurrencyChange(v as CurrencyCode)}>
+          <SelectTrigger className="w-[180px] h-9 rounded-full text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.values(CURRENCIES).map((c) => (
+              <SelectItem key={c.code} value={c.code}>
+                {c.flag} {c.code} — {c.symbol}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {PLANS.map((plan) => (
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            currency={currency}
+            onSelect={handleSelect}
+            activating={activating === plan.id}
+          />
+        ))}
+      </div>
+
+      {/* Soft business note */}
+      <div className="mt-10 max-w-3xl mx-auto px-2 text-center">
+        <p className="text-xs text-muted-foreground">
+          Business plan includes 15 min AI counseling / employee / month, anonymized wellness dashboards,
+          and crisis escalation. Custom seats available.{" "}
+          <a href="mailto:sales@wellmindai.in" className="text-primary underline-offset-2 hover:underline">
+            sales@wellmindai.in
+          </a>
+        </p>
+      </div>
     </div>
   );
 };
 
-export { pricingPlans };
 export default Pricing;

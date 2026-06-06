@@ -19,79 +19,54 @@ const Plans = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-10 px-6">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* Hero — minimal */}
+      <section className="pt-32 pb-6 px-6">
+        <div className="max-w-3xl mx-auto text-center">
           {gated && (
             <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-sm">
               <Lock className="w-4 h-4" />
-              <span>This feature requires an active plan. Pick one below to continue.</span>
+              <span>This feature requires an active plan.</span>
             </div>
           )}
-          <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6 animate-fade-in">
-            Choose Your Plan
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance animate-fade-in">
-            Start Your Mental Wellness Journey
+          <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4 tracking-tight">
+            Simple, honest pricing.
           </h1>
-          <p className="text-slate-600 text-lg mb-6 max-w-2xl mx-auto text-balance animate-fade-in">
-            Select the plan that fits your needs. Begin with a free trial or choose one of our premium plans for comprehensive mental health support.
+          <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
+            Start free. Upgrade only when you need more time with your AI counselor.
           </p>
         </div>
       </section>
 
-      
-      {/* Pricing Section */}
-      <section className="py-10 px-6 mb-20 flex-grow">
+      {/* Pricing */}
+      <section className="py-10 px-6 mb-16 flex-grow">
         <div className="max-w-7xl mx-auto">
           <Pricing />
         </div>
       </section>
-      
-      {/* FAQ Section */}
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <span className="inline-block py-1 px-3 rounded-full bg-mindwell-50 text-mindwell-700 font-medium text-xs mb-6">
-              Frequently Asked Questions
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-balance">
-              Common Questions About Our Plans
-            </h2>
-          </div>
-          
-          <div className="space-y-6 animate-fade-in">
+
+      {/* FAQ — slim */}
+      <section className="py-16 px-6 bg-secondary/30">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="font-display text-2xl md:text-3xl text-center mb-10">Questions, answered.</h2>
+          <div className="space-y-3">
             {[
-              {
-                question: "What's included in the free trial?",
-                answer: "The free trial includes 3 full counseling sessions with our AI therapist, a basic mental health assessment, and access to our meditation resources. It's a great way to experience the benefits of WellMindAI before committing to a paid plan."
-              },
-              {
-                question: "Can I cancel my subscription at any time?",
-                answer: "Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees. Your subscription will remain active until the end of your current billing period."
-              },
-              {
-                question: "How are the AI counseling sessions conducted?",
-                answer: "Our AI counseling sessions are conducted through secure video calls with our virtual human avatars. The avatars use advanced natural language processing to provide personalized support and guidance for your mental health needs."
-              },
-              {
-                question: "Is my information kept confidential?",
-                answer: "Absolutely. We take your privacy seriously. All sessions and personal information are encrypted and kept strictly confidential. We comply with all relevant data protection regulations."
-              },
-              {
-                question: "What if I need more than the allotted sessions?",
-                answer: "If you need more sessions than your current plan allows, you can upgrade to a higher-tier plan at any time. The Premium Plan offers unlimited counseling sessions for those who need comprehensive support."
-              }
-            ].map((faq, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
-                <p className="text-slate-600">{faq.answer}</p>
-              </div>
+              { q: "Can I cancel anytime?", a: "Yes. Cancel from your dashboard — no fees, no calls. Your plan stays active until the end of the period." },
+              { q: "What happens when my session time runs out?", a: "You'll see a 60-second warning, then the session ends automatically. Upgrade or wait for next month's allowance." },
+              { q: "Is my data private?", a: "All sessions are encrypted, RLS-protected per user, and never used to train models. HIPAA-grade." },
+              { q: "Does pricing change with exchange rates?", a: "No. Prices are fixed per region so you always know what you'll pay." },
+            ].map((f) => (
+              <details key={f.q} className="group bg-card rounded-2xl border border-border/50 p-5 open:shadow-sm">
+                <summary className="cursor-pointer font-medium text-foreground flex items-center justify-between">
+                  {f.q}
+                  <span className="text-muted-foreground group-open:rotate-45 transition">+</span>
+                </summary>
+                <p className="text-muted-foreground text-sm mt-3 leading-relaxed">{f.a}</p>
+              </details>
             ))}
           </div>
         </div>
       </section>
-      
+
       <Footer />
     </div>
   );
