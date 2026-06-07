@@ -5,9 +5,10 @@ import { Infinity as InfinityIcon, Sparkles, Brain, Heart, MessageCircle, ArrowR
 
 export default function DigitalImmortalitySection() {
   return (
-    <section className="py-32 relative overflow-hidden bg-investor text-primary-foreground">
+    <section className="py-32 relative overflow-hidden bg-investor text-primary-foreground isolate">
       {/* Deep cosmic field */}
-      <div className="absolute inset-0 -z-0">
+      <div className="absolute inset-0 -z-0 overflow-hidden">
+
         <div className="absolute inset-0 bg-gradient-to-b from-investor via-investor to-black" />
         {/* Starfield */}
         {Array.from({ length: 80 }).map((_, i) => (
