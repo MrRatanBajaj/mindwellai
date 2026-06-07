@@ -42,11 +42,10 @@ const BlogPost = () => {
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data } = await supabase
-        .from("blog_posts")
+      const { data } = await (supabase as any)
+        .from("published_blog_posts")
         .select("*")
         .eq("slug", slug)
-        .eq("published", true)
         .maybeSingle();
       if (!data) {
         setNotFound(true);

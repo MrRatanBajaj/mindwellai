@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import VisionFeatureSection from "@/components/ui-custom/VisionFeatureSection";
+
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
 import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
 import { motion } from "framer-motion";
@@ -204,11 +204,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ░░░ VISION IN MOTION ░░░ */}
-      <VisionFeatureSection />
-
       {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
       <DigitalImmortalitySection />
+
+
 
 
       {/* ░░░ INVESTORS SECTION ░░░ */}

@@ -31,10 +31,9 @@ const Blog = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("blog_posts")
+      const { data } = await (supabase as any)
+        .from("published_blog_posts")
         .select("id, slug, title, excerpt, cover_image_url, tags, published_at, created_at")
-        .eq("published", true)
         .order("published_at", { ascending: false })
         .limit(60);
       setPosts((data as Post[]) || []);
