@@ -205,24 +205,8 @@ export default function DigitalImmortalitySection() {
               </motion.div>
             </div>
 
-            {/* Floating labels */}
-            {[
-              { text: "MEMORY", angle: -30 },
-              { text: "VOICE", angle: 90 },
-              { text: "PRESENCE", angle: 210 },
-            ].map((l, i) => (
-              <motion.div
-                key={l.text}
-                className="absolute top-1/2 left-1/2 text-[10px] tracking-[0.3em] text-accent/80 font-mono"
-                style={{
-                  transform: `rotate(${l.angle}deg) translateX(180px) rotate(${-l.angle}deg) translate(-50%, -50%)`,
-                }}
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity, delay: i * 0.8 }}
-              >
-                {l.text}
-              </motion.div>
-            ))}
+            {/* Floating labels removed — caused horizontal layout shake */}
+
           </div>
         </motion.div>
       </div>
