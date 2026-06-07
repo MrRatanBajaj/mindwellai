@@ -5,12 +5,13 @@ import { Infinity as InfinityIcon, Sparkles, Brain, Heart, MessageCircle, ArrowR
 
 export default function DigitalImmortalitySection() {
   return (
-    <section className="py-32 relative overflow-hidden bg-investor text-primary-foreground">
+    <section className="py-32 relative overflow-hidden bg-investor text-primary-foreground isolate">
       {/* Deep cosmic field */}
-      <div className="absolute inset-0 -z-0">
+      <div className="absolute inset-0 -z-0 overflow-hidden">
+
         <div className="absolute inset-0 bg-gradient-to-b from-investor via-investor to-black" />
         {/* Starfield */}
-        {Array.from({ length: 80 }).map((_, i) => (
+        {Array.from({ length: 30 }).map((_, i) => (
           <motion.span
             key={`star-${i}`}
             className="absolute rounded-full bg-white"
@@ -27,16 +28,7 @@ export default function DigitalImmortalitySection() {
         {/* Nebula glow */}
         <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full bg-accent/20 blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-primary-glow/30 blur-[120px]" />
-        {/* Grid floor */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-1/2 opacity-[0.08]"
-          style={{
-            backgroundImage: "linear-gradient(hsl(var(--accent)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--accent)) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-            transform: "perspective(600px) rotateX(60deg)",
-            transformOrigin: "bottom",
-          }}
-        />
+
       </div>
 
       <div className="relative max-w-6xl mx-auto px-6 grid lg:grid-cols-2 gap-14 items-center">
@@ -213,24 +205,8 @@ export default function DigitalImmortalitySection() {
               </motion.div>
             </div>
 
-            {/* Floating labels */}
-            {[
-              { text: "MEMORY", angle: -30 },
-              { text: "VOICE", angle: 90 },
-              { text: "PRESENCE", angle: 210 },
-            ].map((l, i) => (
-              <motion.div
-                key={l.text}
-                className="absolute top-1/2 left-1/2 text-[10px] tracking-[0.3em] text-accent/80 font-mono"
-                style={{
-                  transform: `rotate(${l.angle}deg) translateX(180px) rotate(${-l.angle}deg) translate(-50%, -50%)`,
-                }}
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity, delay: i * 0.8 }}
-              >
-                {l.text}
-              </motion.div>
-            ))}
+            {/* Floating labels removed — caused horizontal layout shake */}
+
           </div>
         </motion.div>
       </div>

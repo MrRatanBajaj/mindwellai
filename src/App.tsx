@@ -24,6 +24,7 @@ import Payment from "./pages/Payment";
 import Subscription from "./pages/Subscription";
 import FeedbackWall from "./pages/FeedbackWall";
 import Referrals from "./pages/Referrals";
+import Research from "./pages/Research";
 import PhoneCounselor from "./pages/PhoneCounselor";
 import AdminFeedback from "./pages/AdminFeedback";
 import Blog from "./pages/Blog";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/memorial-chat" element={<MemorialChat />} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/feedback-wall" element={<FeedbackWall />} />
+            <Route path="/research" element={<Research />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             {/* Protected routes */}
