@@ -51,6 +51,7 @@ const Footer = () => {
                 { to: "/blog", label: "Blog" },
                 { to: "/about", label: "About" },
                 { to: "/feedback-wall", label: "Feedback Wall" },
+                { to: "/research", label: "Research Papers" },
               ].map((link) => (
                 <li key={link.to}>
                   <NavLink to={link.to} className="text-background/50 hover:text-background text-sm transition-colors">
