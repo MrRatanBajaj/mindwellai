@@ -1466,6 +1466,48 @@ export type Database = {
         }
         Relationships: []
       }
+      published_blog_posts: {
+        Row: {
+          body_markdown: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          excerpt: string | null
+          id: string | null
+          published: boolean | null
+          published_at: string | null
+          slug: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          body_markdown?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string | null
+          published?: boolean | null
+          published_at?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          body_markdown?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string | null
+          published?: boolean | null
+          published_at?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_expired_sessions: { Args: never; Returns: number }

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import VisionFeatureSection from "@/components/ui-custom/VisionFeatureSection";
+
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
 import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
 import { motion } from "framer-motion";
@@ -204,11 +204,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ░░░ VISION IN MOTION ░░░ */}
-      <VisionFeatureSection />
-
       {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
       <DigitalImmortalitySection />
+
+
 
 
       {/* ░░░ INVESTORS SECTION ░░░ */}
@@ -216,16 +215,10 @@ const Index = () => {
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(hsl(var(--accent) / 0.4) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
         <div className="relative max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/30 text-accent-foreground text-xs font-medium mb-4 backdrop-blur">
-              <Briefcase className="w-3.5 h-3.5" /> For investors
-            </div>
-            <h2 className="font-display text-4xl md:text-5xl mb-4 text-balance">
-              The investment thesis.
-            </h2>
-            <p className="text-primary-foreground/75 max-w-2xl mx-auto text-lg">
-              Mental health is India's next 10x healthcare category. We're building the infrastructure layer.
-            </p>
+            <p className="text-accent text-xs uppercase tracking-widest font-semibold mb-2">Traction & business</p>
+            <h2 className="font-display text-3xl md:text-4xl mb-2 text-balance">By the numbers.</h2>
           </div>
+
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             {traction.map((t) => (
