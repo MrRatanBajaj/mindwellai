@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/memorial-chat" element={<MemorialChat />} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/feedback-wall" element={<FeedbackWall />} />
+            <Route path="/research" element={<Research />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             {/* Protected routes */}
