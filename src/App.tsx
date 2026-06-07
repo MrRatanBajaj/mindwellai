@@ -24,6 +24,7 @@ import Payment from "./pages/Payment";
 import Subscription from "./pages/Subscription";
 import FeedbackWall from "./pages/FeedbackWall";
 import Referrals from "./pages/Referrals";
+import Research from "./pages/Research";
 import PhoneCounselor from "./pages/PhoneCounselor";
 import AdminFeedback from "./pages/AdminFeedback";
 import Blog from "./pages/Blog";
