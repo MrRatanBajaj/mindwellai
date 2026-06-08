@@ -68,6 +68,8 @@ const Header = () => {
             <img
               src={wellmindLogo}
               alt="WellMind AI"
+              width="32"
+              height="32"
               className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"
             />
           </NavLink>
