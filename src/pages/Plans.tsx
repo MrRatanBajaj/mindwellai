@@ -15,9 +15,52 @@ const Plans = () => {
     path: "/plans",
   });
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Can I cancel anytime?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Cancel from your dashboard — no fees, no calls. Your plan stays active until the end of the period.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What happens when my session time runs out?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "You'll see a 60-second warning, then the session ends automatically. Upgrade or wait for next month's allowance.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is my data private?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "All sessions are encrypted, RLS-protected per user, and never used to train models. HIPAA-grade.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Does pricing change with exchange rates?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "No. Prices are fixed per region so you always know what you'll pay.",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
 
       {/* Hero — minimal */}
       <section className="pt-32 pb-6 px-6">
