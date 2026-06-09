@@ -253,6 +253,127 @@ export type Database = {
         }
         Relationships: []
       }
+      b2b_companies: {
+        Row: {
+          admin_email: string
+          admin_user_id: string
+          company_name: string
+          created_at: string
+          domain: string
+          employee_tier: string
+          id: string
+          is_active: boolean
+          monthly_price_inr: number
+          plan: string
+          seats: number
+          updated_at: string
+        }
+        Insert: {
+          admin_email: string
+          admin_user_id: string
+          company_name: string
+          created_at?: string
+          domain: string
+          employee_tier: string
+          id?: string
+          is_active?: boolean
+          monthly_price_inr?: number
+          plan?: string
+          seats?: number
+          updated_at?: string
+        }
+        Update: {
+          admin_email?: string
+          admin_user_id?: string
+          company_name?: string
+          created_at?: string
+          domain?: string
+          employee_tier?: string
+          id?: string
+          is_active?: boolean
+          monthly_price_inr?: number
+          plan?: string
+          seats?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      b2b_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          company_id: string
+          created_at: string
+          email: string
+          id: string
+          invited_by: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          id?: string
+          invited_by: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          invited_by?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "b2b_invites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "b2b_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      b2b_members: {
+        Row: {
+          company_id: string
+          email: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          email: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          email?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "b2b_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "b2b_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author_email: string | null
