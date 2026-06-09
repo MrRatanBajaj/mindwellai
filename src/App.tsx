@@ -30,6 +30,8 @@ import AdminFeedback from "./pages/AdminFeedback";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminBlog from "./pages/AdminBlog";
+import Business from "./pages/Business";
+import BusinessJoin from "./pages/BusinessJoin";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +54,8 @@ const App = () => (
             <Route path="/research" element={<Research />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/business" element={<Business />} />
+            <Route path="/business/join" element={<BusinessJoin />} />
             {/* Protected routes */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
