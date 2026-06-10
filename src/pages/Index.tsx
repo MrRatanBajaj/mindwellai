@@ -207,7 +207,80 @@ const Index = () => {
       {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
       <DigitalImmortalitySection />
 
-      {/* Investors / Traction section removed per request */}
+      {/* ░░░ PARTNERSHIPS & ECOSYSTEM ░░░ */}
+      <section className="py-24 bg-secondary/30">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">Partnerships & Ecosystem</p>
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 text-balance">
+              Backed by the best in <span className="serif-italic text-primary">tech & wellness</span>.
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We partner with leading platforms to bring you world-class infrastructure, exclusive deals, and clinical credibility.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* YC Deals — featured */}
+            <motion.a
+              href="https://deals.ycombinator.com/deals/6782"
+              target="_blank" rel="noreferrer"
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="group p-8 rounded-3xl bg-card border-2 border-[#ff6600]/30 hover:border-[#ff6600] transition shadow-elegant flex flex-col"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <img
+                  src="https://www.ycombinator.com/favicon.ico"
+                  alt="Y Combinator logo"
+                  width={56} height={56}
+                  className="w-14 h-14 rounded-xl bg-[#ff6600] p-2"
+                />
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-[#ff6600] font-bold">Y Combinator</div>
+                  <div className="font-display text-2xl text-foreground">YC Deals Partner</div>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">
+                WellMindAI is featured on the official Y Combinator Deals page — giving YC-backed startups exclusive access to our mental wellness platform for their teams.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#ff6600] group-hover:gap-2.5 transition-all">
+                View YC Deal <ArrowRight className="w-4 h-4" />
+              </span>
+            </motion.a>
+
+            {/* Ecosystem grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { name: "NIMH", desc: "Evidence-based frameworks", icon: Shield },
+                { name: "WHO",  desc: "Crisis protocols",          icon: Globe },
+                { name: "ElevenLabs", desc: "Voice AI",            icon: Sparkles },
+                { name: "Tavus", desc: "Video AI",                 icon: Brain },
+                { name: "Razorpay", desc: "Payments (India)",      icon: PiggyBank },
+                { name: "Stripe", desc: "Payments (Global)",       icon: Briefcase },
+              ].map((p) => (
+                <div key={p.name} className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col items-start">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <p.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="font-display text-sm text-foreground">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">{p.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-10">
+            <NavLink to="/business">
+              <Button variant="outline" className="rounded-full gap-2">
+                Partner with WellMindAI <ArrowRight className="w-4 h-4" />
+              </Button>
+            </NavLink>
+          </div>
+        </div>
+      </section>
+
+
 
 
 
