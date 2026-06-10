@@ -1,7 +1,12 @@
+import { useEffect, useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { FileText, ExternalLink, BookOpen } from "lucide-react";
+
+interface AdminPaper {
+  id: string; title: string; venue: string; summary: string; tags: string; url: string;
+}
 
 const papers = [
   {
@@ -46,6 +51,23 @@ export default function Research() {
     path: "/research",
   });
 
+  const [adminPapers, setAdminPapers] = useState<AdminPaper[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("wm_research_papers_v1");
+      if (raw) setAdminPapers(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const allPapers = [
+    ...adminPapers.map((p) => ({
+      title: p.title, venue: p.venue, summary: p.summary,
+      tags: p.tags ? p.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+      url: p.url,
+    })),
+    ...papers,
+  ];
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -64,7 +86,7 @@ export default function Research() {
           </div>
 
           <div className="space-y-4">
-            {papers.map((p) => (
+            {allPapers.map((p) => (
               <a
                 key={p.title}
                 href={p.url}
