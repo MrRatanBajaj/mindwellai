@@ -1,387 +1,359 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { NavLink } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, Mail, Check, Copy, Trash2, Loader2, ShieldCheck } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useSEO } from "@/hooks/useSEO";
-import { z } from "zod";
+import {
+  Building2, Users, Calendar, ShieldCheck, TrendingDown, Sparkles,
+  CheckCircle2, ArrowRight, Mail, Phone, Globe2, Award, Lock, Headphones,
+} from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-type Tier = "1-50" | "51-500" | "500+";
+// ─────────────────── Realtime pricing engine ───────────────────
+const BASE_PER_USER_INR = 99; // ₹99 / user / month base
 
-const TIER_PRICING: Record<Tier, { seats: number; price: number; label: string }> = {
-  "1-50":   { seats: 50,  price: 14999, label: "Small Team" },
-  "51-500": { seats: 500, price: 79999, label: "Growing Company" },
-  "500+":   { seats: 2000, price: 199999, label: "Enterprise" },
+function volumeDiscount(emp: number) {
+  if (emp >= 500) return 0.30;
+  if (emp >= 200) return 0.20;
+  if (emp >= 50)  return 0.10;
+  return 0;
+}
+function durationDiscount(months: number) {
+  if (months >= 24) return 0.25;
+  if (months >= 12) return 0.15;
+  if (months >= 6)  return 0.05;
+  return 0;
+}
+
+const FREE_DOMAINS = new Set([
+  "gmail.com","yahoo.com","yahoo.co.in","hotmail.com","outlook.com",
+  "live.com","icloud.com","aol.com","proton.me","protonmail.com","rediffmail.com",
+]);
+const isBusinessEmail = (email: string) => {
+  const d = email.split("@")[1]?.toLowerCase().trim();
+  if (!d) return false;
+  return !FREE_DOMAINS.has(d);
 };
 
-const signupSchema = z.object({
-  companyName: z.string().trim().min(2).max(120),
-  adminEmail: z.string().trim().email().max(255),
-  tier: z.enum(["1-50", "51-500", "500+"]),
-});
-
-interface Company {
-  id: string;
-  company_name: string;
-  domain: string;
-  employee_tier: Tier;
-  seats: number;
-  monthly_price_inr: number;
-  is_active: boolean;
-}
-
-interface Invite {
-  id: string;
-  email: string;
-  status: string;
-  token: string;
-  created_at: string;
-}
-
 export default function Business() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [company, setCompany] = useState<Company | null>(null);
-  const [invites, setInvites] = useState<Invite[]>([]);
-
-  // signup form
-  const [companyName, setCompanyName] = useState("");
-  const [adminEmail, setAdminEmail] = useState(user?.email ?? "");
-  const [tier, setTier] = useState<Tier>("51-500");
-  const [submitting, setSubmitting] = useState(false);
-
-  // invite form
-  const [inviteEmail, setInviteEmail] = useState("");
-
   useSEO({
-    title: "WellMind AI for Business — Mental Health for Your Team",
-    description: "Give your whole team affordable AI-powered mental health support. Verified business email signup, employee invites, simple seat pricing in INR.",
+    title: "WellMindAI for Business — Employee Mental Wellness Plans",
+    description: "Custom B2B mental wellness plans for companies, universities & startups. Realtime pricing by team size and duration. From ₹69/user/month.",
     path: "/business",
   });
 
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    (async () => {
-      const { data: companies } = await supabase
-        .from("b2b_companies")
-        .select("*")
-        .eq("admin_user_id", user.id)
-        .limit(1);
-      if (companies && companies[0]) {
-        setCompany(companies[0] as Company);
-        const { data: inv } = await supabase
-          .from("b2b_invites")
-          .select("*")
-          .eq("company_id", companies[0].id)
-          .order("created_at", { ascending: false });
-        setInvites((inv as Invite[]) ?? []);
-      }
-      setLoading(false);
-    })();
-  }, [user]);
+  const [employees, setEmployees] = useState(50);
+  const [months, setMonths] = useState(12);
+  const [companyName, setCompanyName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      toast.error("Please sign in first.");
-      navigate("/auth?redirect=/business");
-      return;
-    }
-    const parsed = signupSchema.safeParse({ companyName, adminEmail, tier });
-    if (!parsed.success) {
-      toast.error("Please check the form fields.");
+  const pricing = useMemo(() => {
+    const vd = volumeDiscount(employees);
+    const dd = durationDiscount(months);
+    const combinedDisc = 1 - (1 - vd) * (1 - dd); // stacked
+    const monthlyList = BASE_PER_USER_INR * employees;
+    const monthlyEffective = Math.round(monthlyList * (1 - vd) * (1 - dd));
+    const perUserEffective = Math.round(BASE_PER_USER_INR * (1 - vd) * (1 - dd));
+    const total = monthlyEffective * months;
+    const saved = (monthlyList * months) - total;
+    return { vd, dd, combinedDisc, monthlyList, monthlyEffective, perUserEffective, total, saved };
+  }, [employees, months]);
+
+  const tier = useMemo(() => {
+    if (employees >= 500) return { label: "Enterprise", color: "bg-primary/15 text-primary" };
+    if (employees >= 200) return { label: "Scale",      color: "bg-accent/30 text-foreground" };
+    if (employees >= 50)  return { label: "Growth",     color: "bg-secondary text-secondary-foreground" };
+    return { label: "Starter", color: "bg-muted text-muted-foreground" };
+  }, [employees]);
+
+  const submit = async () => {
+    if (!companyName.trim()) { toast.error("Enter company / institution name"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) { toast.error("Enter a valid email"); return; }
+    if (!isBusinessEmail(adminEmail)) {
+      toast.error("Use a work email (gmail / yahoo / hotmail not allowed)");
       return;
     }
     setSubmitting(true);
     try {
-      // 1. Verify domain via edge function
-      const { data: verify, error: verifyErr } = await supabase.functions.invoke("b2b-verify-domain", {
-        body: { email: adminEmail },
-      });
-      if (verifyErr) throw verifyErr;
-      if (!verify?.valid) {
-        toast.error(verify?.message ?? "Email rejected.");
-        return;
-      }
-      // 2. Insert company
-      const pricing = TIER_PRICING[tier];
-      const { data: inserted, error: insertErr } = await supabase
-        .from("b2b_companies")
-        .insert({
-          admin_user_id: user.id,
-          admin_email: adminEmail.toLowerCase().trim(),
-          company_name: companyName.trim(),
-          domain: verify.domain,
-          employee_tier: tier,
-          seats: pricing.seats,
-          monthly_price_inr: pricing.price,
-        })
-        .select()
-        .single();
-      if (insertErr) {
-        if (insertErr.code === "23505") {
-          toast.error(`Domain ${verify.domain} is already registered. Contact your admin.`);
-        } else {
-          toast.error(insertErr.message);
-        }
-        return;
-      }
-      setCompany(inserted as Company);
-      toast.success("Company verified and registered! You can now invite employees.");
+      const domain = adminEmail.split("@")[1].toLowerCase();
+      const tierStr =
+        employees >= 500 ? "500+" : employees >= 50 ? "51-500" : "1-50";
+
+      // Best-effort insert into existing b2b_companies table
+      const { error } = await supabase.from("b2b_companies").insert({
+        company_name: companyName.trim(),
+        domain,
+        employee_tier: tierStr,
+        plan: "business",
+        seats: employees,
+        monthly_price_inr: pricing.monthlyEffective,
+        is_active: false,
+      } as any);
+      if (error) throw error;
+      toast.success("Quote saved. Our team will email you within 24h to activate.");
+      // Also notify sales via mailto for instant manual follow-up
+      const subject = `New B2B quote: ${companyName} (${employees} users, ${months} mo)`;
+      const body = `Company: ${companyName}\nAdmin email: ${adminEmail}\nEmployees: ${employees}\nDuration: ${months} months\nMonthly: ₹${pricing.monthlyEffective.toLocaleString()}\nTotal contract: ₹${pricing.total.toLocaleString()}\n`;
+      window.open(`mailto:sales@wellmindai.in?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    } catch (e: any) {
+      toast.error(e?.message || "Could not save. Please email sales@wellmindai.in");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const sendInvite = async () => {
-    if (!company) return;
-    const email = inviteEmail.trim().toLowerCase();
-    if (!email.includes("@")) {
-      toast.error("Invalid email.");
-      return;
-    }
-    if (!email.endsWith("@" + company.domain)) {
-      toast.error(`Employee email must be on your verified domain (@${company.domain}).`);
-      return;
-    }
-    const { data, error } = await supabase
-      .from("b2b_invites")
-      .insert({ company_id: company.id, email, invited_by: user!.id })
-      .select()
-      .single();
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    setInvites([data as Invite, ...invites]);
-    setInviteEmail("");
-    toast.success("Invite created. Share the link below.");
-  };
-
-  const revokeInvite = async (id: string) => {
-    const { error } = await supabase.from("b2b_invites").update({ status: "revoked" }).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    setInvites(invites.map(i => i.id === id ? { ...i, status: "revoked" } : i));
-  };
-
-  const copyLink = (token: string) => {
-    const url = `${window.location.origin}/business/join?token=${token}`;
-    navigator.clipboard.writeText(url);
-    toast.success("Invite link copied!");
-  };
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="pt-24 pb-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <header className="text-center mb-12">
-            <Badge variant="secondary" className="mb-4">
-              <Building2 className="w-3 h-3 mr-1" /> For Business
-            </Badge>
-            <h1 className="font-serif text-4xl md:text-5xl mb-4">
-              Mental Health Care for Your Whole Team
+
+      <main className="flex-1 pt-28 pb-20">
+        {/* HERO */}
+        <section className="max-w-5xl mx-auto px-6 text-center mb-12">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+              <Building2 className="w-3.5 h-3.5" /> WellMindAI for Business
+            </div>
+            <h1 className="font-display text-4xl md:text-6xl text-foreground mb-4 text-balance">
+              Mental wellness for every <span className="serif-italic text-primary">employee, student</span>, or member.
             </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Verified business email signup. Invite employees on your company domain. Pay per seat in INR.
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Custom enterprise plans for companies, universities and coaching institutes. Realtime pricing — adjust team size and duration, see your number change instantly.
             </p>
-          </header>
+          </motion.div>
+        </section>
 
-          {loading ? (
-            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin" /></div>
-          ) : company ? (
-            <AdminDashboard
-              company={company}
-              invites={invites}
-              inviteEmail={inviteEmail}
-              setInviteEmail={setInviteEmail}
-              sendInvite={sendInvite}
-              revokeInvite={revokeInvite}
-              copyLink={copyLink}
-            />
-          ) : (
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Pricing preview */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif">Simple Seat Pricing</CardTitle>
-                  <CardDescription>Monthly, billed annually. INR.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {(Object.keys(TIER_PRICING) as Tier[]).map((t) => {
-                    const p = TIER_PRICING[t];
-                    return (
-                      <div key={t} className={`p-4 rounded-lg border ${tier === t ? "border-calm-sage bg-calm-sage/5" : "border-border"}`}>
-                        <div className="flex justify-between items-baseline">
-                          <div>
-                            <div className="font-medium">{p.label}</div>
-                            <div className="text-xs text-muted-foreground">{t} employees · up to {p.seats} seats</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-semibold">₹{p.price.toLocaleString("en-IN")}</div>
-                            <div className="text-xs text-muted-foreground">/month</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-                    <ShieldCheck className="w-4 h-4 text-calm-sage" />
-                    All data HIPAA-style audit logged & RLS protected.
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Signup form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif">Register Your Company</CardTitle>
-                  <CardDescription>Use your business email (no Gmail / Yahoo).</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    <div>
-                      <Label htmlFor="cn">Company Name</Label>
-                      <Input id="cn" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required maxLength={120} placeholder="Acme Pvt Ltd" />
-                    </div>
-                    <div>
-                      <Label htmlFor="ae">Your Work Email</Label>
-                      <Input id="ae" type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} required placeholder="you@yourcompany.com" />
-                      <p className="text-xs text-muted-foreground mt-1">Your domain will be auto-verified.</p>
-                    </div>
-                    <div>
-                      <Label>Employee Count</Label>
-                      <Select value={tier} onValueChange={(v) => setTier(v as Tier)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1-50">1 – 50 employees</SelectItem>
-                          <SelectItem value="51-500">51 – 500 employees</SelectItem>
-                          <SelectItem value="500+">500+ employees</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button type="submit" className="w-full" disabled={submitting || !user}>
-                      {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Building2 className="w-4 h-4 mr-2" />}
-                      {user ? "Verify & Register" : "Sign in to continue"}
-                    </Button>
-                    {!user && (
-                      <p className="text-xs text-center text-muted-foreground">
-                        <button type="button" onClick={() => navigate("/auth?redirect=/business")} className="underline">Sign in</button> to register your company.
-                      </p>
-                    )}
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-function AdminDashboard({
-  company, invites, inviteEmail, setInviteEmail, sendInvite, revokeInvite, copyLink,
-}: {
-  company: Company; invites: Invite[];
-  inviteEmail: string; setInviteEmail: (s: string) => void;
-  sendInvite: () => void; revokeInvite: (id: string) => void; copyLink: (t: string) => void;
-}) {
-  const accepted = invites.filter(i => i.status === "accepted").length;
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle className="font-serif">{company.company_name}</CardTitle>
-              <CardDescription>Verified domain: @{company.domain}</CardDescription>
-            </div>
-            <Badge className="bg-calm-sage text-white"><Check className="w-3 h-3 mr-1" /> Verified</Badge>
+        {/* TRUST STRIP */}
+        <section className="max-w-5xl mx-auto px-6 mb-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { icon: ShieldCheck, k: "HIPAA-grade", v: "RLS encrypted" },
+              { icon: Lock,        k: "ISO-aligned", v: "Audit logging" },
+              { icon: Headphones,  k: "24/7 SLA",   v: "<2h response" },
+              { icon: Award,       k: "120+ campuses", v: "Live deployments" },
+            ].map((t) => (
+              <div key={t.k} className="p-4 rounded-2xl bg-card border border-border/60 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <t.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-foreground leading-tight">{t.k}</div>
+                  <div className="text-xs text-muted-foreground">{t.v}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4">
-          <Stat icon={Users} label="Seats" value={`${accepted}/${company.seats}`} />
-          <Stat icon={Mail} label="Pending Invites" value={String(invites.filter(i => i.status === "pending").length)} />
-          <Stat icon={Building2} label="Plan" value={`₹${company.monthly_price_inr.toLocaleString("en-IN")}/mo`} />
-        </CardContent>
-      </Card>
+        </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-serif text-lg">Invite Employees</CardTitle>
-          <CardDescription>Only emails on @{company.domain} can be invited.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input
-              placeholder={`employee@${company.domain}`}
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendInvite()}
-            />
-            <Button onClick={sendInvite}><Mail className="w-4 h-4 mr-2" /> Invite</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="font-serif text-lg">Invites ({invites.length})</CardTitle></CardHeader>
-        <CardContent>
-          {invites.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No invites yet. Send the first one above.</p>
-          ) : (
-            <div className="space-y-2">
-              {invites.map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg border">
+        {/* CALCULATOR */}
+        <section className="max-w-5xl mx-auto px-6 mb-16">
+          <Card className="border-primary/20 shadow-elegant overflow-hidden">
+            <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/10 border-b border-border/40">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Sparkles className="w-5 h-5 text-primary" /> Realtime price calculator
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Slide to your team size and contract length — pricing updates live.
+              </p>
+            </CardHeader>
+            <CardContent className="p-6 md:p-8">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Inputs */}
+                <div className="space-y-7">
                   <div>
-                    <div className="text-sm font-medium">{inv.email}</div>
-                    <div className="text-xs text-muted-foreground capitalize">{inv.status} · {new Date(inv.created_at).toLocaleDateString()}</div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="flex items-center gap-2 text-sm font-medium">
+                        <Users className="w-4 h-4 text-primary" /> Employees / Students
+                      </Label>
+                      <Badge className={tier.color}>{tier.label}</Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="number" min={1} max={10000}
+                        value={employees}
+                        onChange={(e) => setEmployees(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))}
+                        className="w-28 font-mono"
+                      />
+                      <Slider
+                        value={[employees]} min={1} max={1000} step={1}
+                        onValueChange={(v) => setEmployees(v[0])}
+                        className="flex-1"
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-muted-foreground mt-2 uppercase tracking-widest">
+                      <span>1</span><span>50 (-10%)</span><span>200 (-20%)</span><span>500+ (-30%)</span>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {inv.status === "pending" && (
-                      <>
-                        <Button size="sm" variant="outline" onClick={() => copyLink(inv.token)}>
-                          <Copy className="w-3 h-3 mr-1" /> Link
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => revokeInvite(inv.id)}>
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </>
+
+                  <div>
+                    <Label className="flex items-center gap-2 text-sm font-medium mb-3">
+                      <Calendar className="w-4 h-4 text-primary" /> Contract duration
+                    </Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[3, 6, 12, 24].map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setMonths(m)}
+                          className={`p-3 rounded-xl border-2 text-sm font-semibold transition ${
+                            months === m
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border hover:border-primary/40 text-foreground"
+                          }`}
+                        >
+                          {m} mo
+                          {durationDiscount(m) > 0 && (
+                            <div className="text-[10px] text-primary font-normal mt-0.5">
+                              -{Math.round(durationDiscount(m) * 100)}%
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-border/40 space-y-2">
+                    {pricing.vd > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                          <TrendingDown className="w-3.5 h-3.5 text-primary" /> Volume discount
+                        </span>
+                        <span className="font-semibold text-primary">-{Math.round(pricing.vd * 100)}%</span>
+                      </div>
                     )}
-                    {inv.status === "accepted" && <Badge variant="secondary"><Check className="w-3 h-3 mr-1" /> Joined</Badge>}
-                    {inv.status === "revoked" && <Badge variant="outline">Revoked</Badge>}
+                    {pricing.dd > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground flex items-center gap-1.5">
+                          <TrendingDown className="w-3.5 h-3.5 text-primary" /> Duration discount
+                        </span>
+                        <span className="font-semibold text-primary">-{Math.round(pricing.dd * 100)}%</span>
+                      </div>
+                    )}
+                    {pricing.saved > 0 && (
+                      <div className="flex items-center justify-between text-xs pt-1.5">
+                        <span className="text-muted-foreground">You save</span>
+                        <span className="font-semibold text-foreground">₹{Math.round(pricing.saved).toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
-function Stat({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
-  return (
-    <div className="p-4 rounded-lg bg-muted/50">
-      <Icon className="w-4 h-4 text-calm-sage mb-2" />
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-lg font-semibold">{value}</div>
+                {/* Live total */}
+                <motion.div
+                  layout
+                  className="rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground p-7 flex flex-col justify-between shadow-elegant"
+                >
+                  <div>
+                    <div className="text-xs uppercase tracking-widest opacity-80 mb-2">Effective price</div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-display text-5xl md:text-6xl">₹{pricing.perUserEffective}</span>
+                      <span className="opacity-80 text-sm">/user/month</span>
+                    </div>
+                    {pricing.perUserEffective < BASE_PER_USER_INR && (
+                      <div className="text-xs opacity-70 mt-1">
+                        <span className="line-through">₹{BASE_PER_USER_INR}</span> list price
+                      </div>
+                    )}
+
+                    <div className="mt-6 space-y-2 text-sm">
+                      <div className="flex justify-between opacity-90">
+                        <span>Monthly invoice</span>
+                        <span className="font-semibold">₹{pricing.monthlyEffective.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between opacity-90">
+                        <span>Total contract ({months} mo)</span>
+                        <span className="font-semibold">₹{pricing.total.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-primary-foreground/20 space-y-1.5 text-xs opacity-90">
+                    {[
+                      "Everything in Plus for every seat",
+                      "Org admin dashboard + anonymized reports",
+                      "Crisis escalation + 24/7 SLA",
+                      "Dedicated account manager",
+                    ].map((p) => (
+                      <div key={p} className="flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> {p}
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Activate form */}
+              <div className="mt-8 pt-8 border-t border-border/40">
+                <h3 className="font-display text-xl text-foreground mb-1">Activate for your organization</h3>
+                <p className="text-sm text-muted-foreground mb-5">
+                  Quote saved instantly. Our team activates within 24h after KYC + payment.
+                </p>
+                <div className="grid md:grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <Label className="text-xs mb-1.5">Company / Institution</Label>
+                    <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Acme Corp / IIT Delhi" />
+                  </div>
+                  <div>
+                    <Label className="text-xs mb-1.5">Work email</Label>
+                    <Input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="hr@acme.com" />
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button onClick={submit} disabled={submitting} className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 flex-1">
+                    {submitting ? "Saving…" : <>Activate plan <ArrowRight className="w-4 h-4" /></>}
+                  </Button>
+                  <a href="mailto:sales@wellmindai.in" className="flex-1">
+                    <Button variant="outline" className="w-full gap-2">
+                      <Mail className="w-4 h-4" /> Email sales
+                    </Button>
+                  </a>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-3">
+                  Work email required (gmail / yahoo / hotmail not accepted). GST invoice provided.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* WHO IT'S FOR */}
+        <section className="max-w-5xl mx-auto px-6 mb-16">
+          <h2 className="font-display text-3xl text-foreground mb-6 text-center">Built for these teams</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { icon: Building2, t: "Companies & Startups", d: "Reduce burnout, retain talent, hit ESG/wellness OKRs." },
+              { icon: Globe2,    t: "Universities & Schools", d: "Counselor shortage solved — 24/7 AI + on-call humans." },
+              { icon: Phone,     t: "Coaching Institutes",   d: "Pre-exam anxiety support for thousands of students." },
+            ].map((c) => (
+              <div key={c.t} className="p-6 rounded-2xl bg-card border border-border hover-lift">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <c.icon className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-display text-lg mb-1.5">{c.t}</h3>
+                <p className="text-sm text-muted-foreground">{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="max-w-3xl mx-auto px-6 text-center">
+          <NavLink to="/research">
+            <Button variant="outline" size="sm" className="gap-2">
+              Read our research papers <ArrowRight className="w-4 h-4" />
+            </Button>
+          </NavLink>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 }

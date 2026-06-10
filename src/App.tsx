@@ -31,7 +31,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminBlog from "./pages/AdminBlog";
 import Business from "./pages/Business";
-import BusinessJoin from "./pages/BusinessJoin";
+import AdminResearch from "./pages/AdminResearch";
 
 const queryClient = new QueryClient();
 
@@ -52,10 +52,11 @@ const App = () => (
             <Route path="/plans" element={<Plans />} />
             <Route path="/feedback-wall" element={<FeedbackWall />} />
             <Route path="/research" element={<Research />} />
+            <Route path="/business" element={<Business />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/business" element={<Business />} />
-            <Route path="/business/join" element={<BusinessJoin />} />
+            {/* Protected routes */}
+            <Route path="/admin/research" element={<ProtectedRoute><AdminResearch /></ProtectedRoute>} />
             {/* Protected routes */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />

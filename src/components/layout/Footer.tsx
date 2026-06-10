@@ -48,11 +48,12 @@ const Footer = () => {
                 { to: "/self-help", label: "Self Help" },
                 { to: "/journal", label: "Journal" },
                 { to: "/consultation", label: "Book Counselor" },
+                { to: "/business", label: "For Business" },
                 { to: "/blog", label: "Blog" },
                 { to: "/about", label: "About" },
                 { to: "/feedback-wall", label: "Feedback Wall" },
                 { to: "/research", label: "Research Papers" },
-                { to: "/business", label: "For Business" },
+                { to: "/admin/research", label: "Admin · Publish Research" },
               ].map((link) => (
                 <li key={link.to}>
                   <NavLink to={link.to} className="text-background/50 hover:text-background text-sm transition-colors">
