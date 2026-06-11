@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AdminNav from "@/components/layout/AdminNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,9 +95,12 @@ export default function AdminResearch() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1 pt-28 pb-20">
+      <main className="flex-1 pt-4 pb-20">
+        <AdminNav />
         <div className="max-w-3xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Upload className="w-6 h-6 text-primary" />
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
               <Upload className="w-6 h-6 text-primary" />
             </div>
