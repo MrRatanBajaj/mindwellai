@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Building2, Users, Calendar, ShieldCheck, TrendingDown, Sparkles,
   CheckCircle2, ArrowRight, Mail, Phone, Globe2, Award, Lock, Headphones,
@@ -50,6 +51,9 @@ export default function Business() {
     path: "/business",
   });
 
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [employees, setEmployees] = useState(50);
   const [months, setMonths] = useState(12);
   const [companyName, setCompanyName] = useState("");
@@ -82,14 +86,20 @@ export default function Business() {
       toast.error("Use a work email (gmail / yahoo / hotmail not allowed)");
       return;
     }
+    if (!user) {
+      toast.info("Please sign in with your work email to activate the plan.");
+      navigate(`/auth?redirect=/business`);
+      return;
+    }
     setSubmitting(true);
     try {
       const domain = adminEmail.split("@")[1].toLowerCase();
       const tierStr =
         employees >= 500 ? "500+" : employees >= 50 ? "51-500" : "1-50";
 
-      // Best-effort insert into existing b2b_companies table
       const { error } = await supabase.from("b2b_companies").insert({
+        admin_user_id: user.id,
+        admin_email: adminEmail.trim().toLowerCase(),
         company_name: companyName.trim(),
         domain,
         employee_tier: tierStr,
@@ -97,10 +107,9 @@ export default function Business() {
         seats: employees,
         monthly_price_inr: pricing.monthlyEffective,
         is_active: false,
-      } as any);
+      });
       if (error) throw error;
       toast.success("Quote saved. Our team will email you within 24h to activate.");
-      // Also notify sales via mailto for instant manual follow-up
       const subject = `New B2B quote: ${companyName} (${employees} users, ${months} mo)`;
       const body = `Company: ${companyName}\nAdmin email: ${adminEmail}\nEmployees: ${employees}\nDuration: ${months} months\nMonthly: ₹${pricing.monthlyEffective.toLocaleString()}\nTotal contract: ₹${pricing.total.toLocaleString()}\n`;
       window.open(`mailto:sales@wellmindai.in?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);

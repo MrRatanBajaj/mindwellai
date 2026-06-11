@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AdminNav from "@/components/layout/AdminNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -172,7 +173,8 @@ const AdminBlog = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-24">
+      <AdminNav />
+      <main className="flex-1 max-w-6xl mx-auto w-full px-6 pt-4 pb-24">
         <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
           <div>
             <div className="flex items-center gap-2 text-xs text-primary font-semibold uppercase tracking-widest mb-2">
