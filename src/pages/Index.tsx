@@ -4,7 +4,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
-import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
