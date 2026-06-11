@@ -4,7 +4,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 import DigitalImmortalitySection from "@/components/ui-custom/DigitalImmortalitySection";
-import ProductDemoSection from "@/components/ui-custom/ProductDemoSection";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -121,7 +120,7 @@ const Index = () => {
             </NavLink>
             <NavLink to="/consultation" className="flex-1">
               <Button size="lg" variant="outline" className="w-full px-6 h-14 text-base font-semibold rounded-2xl border-2">
-                Book a human counselor
+                Talk to a real therapist
               </Button>
             </NavLink>
           </motion.div>
@@ -141,8 +140,8 @@ const Index = () => {
 
       </section>
 
-      {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
-      <ProductDemoSection />
+
+
 
 
       {/* ░░░ THE PROBLEM ░░░ */}
@@ -207,78 +206,45 @@ const Index = () => {
       {/* ░░░ DIGITAL IMMORTALITY ░░░ */}
       <DigitalImmortalitySection />
 
-      {/* ░░░ PARTNERSHIPS & ECOSYSTEM ░░░ */}
-      <section className="py-24 bg-secondary/30">
+      {/* ░░░ A DAY WITH WELLMINDAI — distinctive narrative flow ░░░ */}
+      <section className="py-24 bg-secondary/20">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">Partnerships & Ecosystem</p>
-            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 text-balance">
-              Backed by the best in <span className="serif-italic text-primary">tech & wellness</span>.
+          <div className="text-center mb-14">
+            <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">A day with WellMindAI</p>
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-3 text-balance">
+              Three quiet moments. <span className="serif-italic text-primary">One calmer mind.</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              We partner with leading platforms to bring you world-class infrastructure, exclusive deals, and clinical credibility.
-            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
-            {/* YC Deals — featured */}
-            <motion.a
-              href="https://deals.ycombinator.com/deals/6782"
-              target="_blank" rel="noreferrer"
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="group p-8 rounded-3xl bg-card border-2 border-[#ff6600]/30 hover:border-[#ff6600] transition shadow-elegant flex flex-col"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src="https://www.ycombinator.com/favicon.ico"
-                  alt="Y Combinator logo"
-                  width={56} height={56}
-                  className="w-14 h-14 rounded-xl bg-[#ff6600] p-2"
-                />
-                <div>
-                  <div className="text-[10px] uppercase tracking-widest text-[#ff6600] font-bold">Y Combinator</div>
-                  <div className="font-display text-2xl text-foreground">YC Deals Partner</div>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-5 flex-1">
-                WellMindAI is featured on the official Y Combinator Deals page — giving YC-backed startups exclusive access to our mental wellness platform for their teams.
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#ff6600] group-hover:gap-2.5 transition-all">
-                View YC Deal <ArrowRight className="w-4 h-4" />
-              </span>
-            </motion.a>
-
-            {/* Ecosystem grid */}
-            <div className="grid grid-cols-2 gap-3">
+          <div className="relative">
+            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent -translate-x-1/2" />
+            <div className="space-y-10">
               {[
-                { name: "NIMH", desc: "Evidence-based frameworks", icon: Shield },
-                { name: "WHO",  desc: "Crisis protocols",          icon: Globe },
-                { name: "ElevenLabs", desc: "Voice AI",            icon: Sparkles },
-                { name: "Tavus", desc: "Video AI",                 icon: Brain },
-                { name: "Razorpay", desc: "Payments (India)",      icon: PiggyBank },
-                { name: "Stripe", desc: "Payments (Global)",       icon: Briefcase },
-              ].map((p) => (
-                <div key={p.name} className="p-4 rounded-2xl bg-card border border-border/60 flex flex-col items-start">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
-                    <p.icon className="w-4 h-4 text-primary" />
+                { time: "7:42 AM", title: "Morning check-in", body: "A 90-second mood log. Your journal notices a pattern before you do." },
+                { time: "1:15 PM", title: "Phone a counselor", body: "Tap once. An AI specialist picks up in seconds — voice that listens, never rushes." },
+                { time: "11:08 PM", title: "Wind-down ritual", body: "Guided breathing, a CBT reframe, and tomorrow feels a little lighter." },
+              ].map((m, i) => (
+                <motion.div
+                  key={m.time}
+                  initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className={`md:grid md:grid-cols-2 md:gap-10 items-center ${i % 2 ? "md:[&>*:first-child]:order-2" : ""}`}
+                >
+                  <div className="p-6 rounded-2xl bg-card border border-border">
+                    <div className="text-[10px] uppercase tracking-widest text-primary font-bold mb-2">{m.time}</div>
+                    <h3 className="font-display text-2xl text-foreground mb-1.5">{m.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{m.body}</p>
                   </div>
-                  <div className="font-display text-sm text-foreground">{p.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{p.desc}</div>
-                </div>
+                  <div className="hidden md:flex justify-center">
+                    <div className="w-3 h-3 rounded-full bg-primary ring-4 ring-primary/15" />
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
-
-          <div className="text-center mt-10">
-            <NavLink to="/business">
-              <Button variant="outline" className="rounded-full gap-2">
-                Partner with WellMindAI <ArrowRight className="w-4 h-4" />
-              </Button>
-            </NavLink>
-          </div>
         </div>
       </section>
+
 
 
 
