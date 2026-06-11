@@ -121,7 +121,7 @@ const Index = () => {
             </NavLink>
             <NavLink to="/consultation" className="flex-1">
               <Button size="lg" variant="outline" className="w-full px-6 h-14 text-base font-semibold rounded-2xl border-2">
-                Book a human counselor
+                Talk to a real therapist
               </Button>
             </NavLink>
           </motion.div>
@@ -141,8 +141,8 @@ const Index = () => {
 
       </section>
 
-      {/* ░░░ PRODUCT DEMO VIDEO ░░░ */}
-      <ProductDemoSection />
+
+
 
 
       {/* ░░░ THE PROBLEM ░░░ */}
