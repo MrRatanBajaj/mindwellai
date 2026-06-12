@@ -26,12 +26,11 @@ import FeedbackWall from "./pages/FeedbackWall";
 import Referrals from "./pages/Referrals";
 import Research from "./pages/Research";
 import PhoneCounselor from "./pages/PhoneCounselor";
-import AdminFeedback from "./pages/AdminFeedback";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
-import AdminBlog from "./pages/AdminBlog";
 import Business from "./pages/Business";
-import AdminResearch from "./pages/AdminResearch";
+import Admin from "./pages/Admin";
+import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -55,14 +54,17 @@ const App = () => (
             <Route path="/business" element={<Business />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            {/* Protected routes */}
-            <Route path="/admin/research" element={<ProtectedRoute><AdminResearch /></ProtectedRoute>} />
+            {/* Unified admin console */}
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/admin/blog" element={<Navigate to="/admin?tab=blog" replace />} />
+            <Route path="/admin/research" element={<Navigate to="/admin?tab=research" replace />} />
+            <Route path="/admin/feedback" element={<Navigate to="/admin?tab=feedback" replace />} />
+            <Route path="/admin/leads" element={<Navigate to="/admin?tab=leads" replace />} />
             {/* Protected routes */}
             <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
-            <Route path="/admin/feedback" element={<ProtectedRoute><AdminFeedback /></ProtectedRoute>} />
-            <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
+
             
             {/* Auth + active paid subscription required */}
             <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
