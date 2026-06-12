@@ -369,13 +369,13 @@ function B2BPanel() {
     setCompanies(data || []); setLoading(false);
   };
   useEffect(() => { load(); }, []);
-  const setStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("b2b_companies").update({ status }).eq("id", id);
+  const setActive = async (id: string, is_active: boolean) => {
+    const { error } = await supabase.from("b2b_companies").update({ is_active }).eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success(`Marked ${status}`); load();
+    toast.success(is_active ? "Activated" : "Deactivated"); load();
   };
-  const totalSeats = companies.reduce((s, c) => s + (c.headcount || 0), 0);
-  const totalMRR = companies.filter((c) => c.status === "active").reduce((s, c) => s + (c.monthly_total_inr || 0), 0);
+  const totalSeats = companies.reduce((s, c) => s + (c.seats || 0), 0);
+  const totalMRR = companies.filter((c) => c.is_active).reduce((s, c) => s + (c.monthly_price_inr || 0), 0);
 
   return (
     <div>
@@ -385,7 +385,7 @@ function B2BPanel() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Companies</div><div className="text-2xl font-semibold">{companies.length}</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Active</div><div className="text-2xl font-semibold">{companies.filter((c) => c.status === "active").length}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Active</div><div className="text-2xl font-semibold">{companies.filter((c) => c.is_active).length}</div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Total seats</div><div className="text-2xl font-semibold">{totalSeats}</div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">MRR (₹)</div><div className="text-2xl font-semibold">{totalMRR.toLocaleString("en-IN")}</div></CardContent></Card>
       </div>
@@ -403,15 +403,16 @@ function B2BPanel() {
                     <Building2 className="w-4 h-4 text-primary" />
                     <span className="font-semibold text-foreground">{c.company_name}</span>
                     <Badge variant="outline" className="text-[10px]">{c.domain}</Badge>
-                    <Badge className={`text-[10px] capitalize ${c.status === "active" ? "bg-emerald-500/15 text-emerald-700 border border-emerald-300" : c.status === "trial" ? "bg-sky-500/15 text-sky-700 border border-sky-300" : "bg-amber-500/15 text-amber-700 border border-amber-300"}`}>{c.status || "pending"}</Badge>
+                    <Badge className={`text-[10px] capitalize ${c.is_active ? "bg-emerald-500/15 text-emerald-700 border border-emerald-300" : "bg-amber-500/15 text-amber-700 border border-amber-300"}`}>{c.is_active ? "active" : "pending"}</Badge>
+                    <Badge variant="secondary" className="text-[10px] capitalize">{c.plan}</Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">Admin: {c.admin_email} · {c.headcount} seats · {c.duration_months || 12}mo · ₹{(c.monthly_total_inr || 0).toLocaleString("en-IN")}/mo</div>
+                  <div className="text-xs text-muted-foreground mt-1">Admin: {c.admin_email} · {c.seats} seats · tier {c.employee_tier} · ₹{(c.monthly_price_inr || 0).toLocaleString("en-IN")}/mo</div>
                   <div className="text-[11px] text-muted-foreground mt-1">{new Date(c.created_at).toLocaleString()}</div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  {c.status !== "active" && <Button size="sm" onClick={() => setStatus(c.id, "active")}>Activate</Button>}
-                  {c.status !== "trial" && <Button size="sm" variant="outline" onClick={() => setStatus(c.id, "trial")}>Trial</Button>}
-                  {c.status !== "cancelled" && <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setStatus(c.id, "cancelled")}>Cancel</Button>}
+                  {!c.is_active
+                    ? <Button size="sm" onClick={() => setActive(c.id, true)}>Activate</Button>
+                    : <Button size="sm" variant="outline" onClick={() => setActive(c.id, false)}>Deactivate</Button>}
                 </div>
               </div>
             </li>
@@ -421,6 +422,7 @@ function B2BPanel() {
     </div>
   );
 }
+
 
 // ═════════════════════════ MAIN PAGE ═════════════════════════
 const TABS = [
