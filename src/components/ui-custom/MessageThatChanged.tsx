@@ -166,7 +166,7 @@ export default function MessageThatChanged() {
               <motion.div
                 className="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
                 style={{
-                  background: `linear-gradient(180deg, hsl(28 ${30 + t * 30}% ${${''}55 + t * 15}%), hsl(28 ${30 + t * 20}% ${40 + t * 10}%))`.replace('${\'\'}',''),
+                  background: `linear-gradient(180deg, hsl(28 ${30 + t * 30}% ${55 + t * 15}%), hsl(28 ${30 + t * 20}% ${40 + t * 10}%))`,
                 }}
                 animate={{ rotate: revealed ? 0 : [-1.5, 1.5, -1.5] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
