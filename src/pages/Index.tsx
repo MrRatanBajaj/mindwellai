@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import TrialChat from "@/components/ui-custom/TrialChat";
-import emptyChairHero from "@/assets/empty-chair-hero.jpg";
+import MessageThatChanged from "@/components/ui-custom/MessageThatChanged";
 import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,8 +15,8 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   useSEO({
-    title: "WellMindAI — Someone is always here to listen.",
-    description: "A free, anonymous 2-minute chat with an AI counselor who speaks your language. No signup. Even at 2:37 AM.",
+    title: "WellMindAI — Everyone needs someone who listens.",
+    description: "Talk instantly with an AI counselor. No registration. Any language. 24/7. Free 2-minute conversation.",
     path: "/",
   });
 
@@ -29,67 +28,36 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      {/* ░░░ HERO — The Empty Chair ░░░ */}
-      <section className="relative pt-24 md:pt-28 pb-20 md:pb-28 overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={emptyChairHero}
-            alt="An empty wooden chair softly lit by a single lamp in a quiet room at night"
-            width={1920}
-            height={1080}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/55 to-background" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/30 to-transparent md:from-background/80 md:via-background/20" />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-14 items-center min-h-[78vh]">
-          {/* Left: words */}
-          <div className="text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/70 backdrop-blur border border-border/50 text-xs text-foreground/80 mb-7"
-            >
-              <Moon className="w-3.5 h-3.5 text-primary" />
-              Even at 2:37 AM
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.1 }}
-              className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05] text-foreground mb-5 text-balance"
-            >
-              Someone is <span className="serif-italic text-primary">always here</span><br/> to listen.
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.2 }}
-              className="text-lg text-muted-foreground mb-7 max-w-md leading-relaxed"
-            >
-              Pull up a chair. No signup. No judgement. Two free minutes of real conversation — in any language you think in.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground"
-            >
-              <span className="flex items-center gap-1.5"><Languages className="w-3.5 h-3.5 text-primary" /> Any language</span>
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-primary" /> 24/7, instant</span>
-              <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-primary" /> Private &amp; encrypted</span>
-            </motion.div>
-          </div>
-
-          {/* Right: chat */}
+      {/* ░░░ HERO — The Message That Changed Everything ░░░ */}
+      <section className="relative pt-24 md:pt-28 pb-16 md:pb-20 overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-secondary/30 via-background to-background" />
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.25 }}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
+            className="text-center mb-8"
           >
-            <TrialChat />
-            <p className="text-center text-xs text-muted-foreground/80 mt-4">
-              Start typing — the timer only begins on your first message.
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/80 backdrop-blur border border-border/50 text-xs text-foreground/80 mb-5">
+              <Moon className="w-3.5 h-3.5 text-primary" />
+              2:37 AM · Somewhere, someone needs you
+            </div>
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl leading-[1.1] text-foreground mb-3 text-balance max-w-3xl mx-auto">
+              The message that <span className="serif-italic text-primary">changed everything</span>.
+            </h1>
+            <p className="text-base text-muted-foreground max-w-xl mx-auto">
+              Type a reply. Watch the room change. See what one kind sentence can do.
             </p>
           </motion.div>
+
+          <MessageThatChanged />
+
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground mt-7">
+            <span className="flex items-center gap-1.5"><Languages className="w-3.5 h-3.5 text-primary" /> Any language</span>
+            <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-primary" /> 24/7, instant</span>
+            <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-primary" /> Private &amp; encrypted</span>
+          </div>
         </div>
       </section>
+
 
       {/* ░░░ ONE QUIET PROMISE ░░░ */}
       <section className="py-20 bg-secondary/30 border-y border-border/40">
