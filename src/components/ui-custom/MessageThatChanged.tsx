@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Heart, Sparkles, ArrowRight } from "lucide-react";
+import { Send, Heart, Sparkles, ArrowRight, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
+import studentSad from "@/assets/student-3d-sad.png";
+import studentHappy from "@/assets/student-3d-happy.png";
 
 /**
  * "The Message That Changed Everything"
- * A dark 3D-ish room scene. The visitor types replies in the chat panel on the right.
- * Each reply brightens the room, warms the music cue, greens the plant, and the student smiles.
- * After 3 exchanges, WellMindAI is revealed.
+ * Visitor types replies; each reply brightens the room and the 3D student
+ * crossfades from sad → hopeful. Student messages are spoken aloud via
+ * the browser's SpeechSynthesis (toggleable).
  */
 
 type Msg = { from: "student" | "you" | "ai"; text: string };
 
-// Scripted student replies, played one by one after each visitor message.
 const STUDENT_BEATS = [
   "Thank you.",
   "Nobody asked me that today.",
@@ -23,7 +24,7 @@ const STUDENT_BEATS = [
 const FINAL_LINE = "Imagine if someone was always available to listen.";
 
 export default function MessageThatChanged() {
-  const [step, setStep] = useState(0); // 0..3 visitor messages sent
+  const [step, setStep] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     { from: "student", text: "Is anyone there?" },
@@ -31,14 +32,66 @@ export default function MessageThatChanged() {
     { from: "student", text: "Today was really hard." },
   ]);
   const [input, setInput] = useState("");
+  const [audioOn, setAudioOn] = useState(true);
+  const audioOnRef = useRef(audioOn);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // brightness 0..1 derived from step
-  const t = Math.min(1, step / 3);
+  const spokenRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
+    audioOnRef.current = audioOn;
+    if (!audioOn && typeof window !== "undefined") {
+      window.speechSynthesis?.cancel();
+    }
+  }, [audioOn]);
+
+  const t = Math.min(1, step / 3);
+
+  // Speak helper
+  const speak = (text: string, opts: { voice?: "student" | "ai" } = {}) => {
+    if (!audioOnRef.current || typeof window === "undefined" || !window.speechSynthesis) return;
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = opts.voice === "ai" ? 0.95 : 0.92;
+      u.pitch = opts.voice === "ai" ? 1.05 : 0.95;
+      u.volume = 0.9;
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find((v) =>
+        opts.voice === "ai"
+          ? /female|samantha|google.*en|zira/i.test(v.name)
+          : /male|daniel|alex|google.*uk|david/i.test(v.name)
+      );
+      if (preferred) u.voice = preferred;
+      window.speechSynthesis.speak(u);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Speak new student/ai messages once
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    messages.forEach((m, i) => {
+      if (spokenRef.current.has(i)) return;
+      if (m.from === "student" || m.from === "ai") {
+        spokenRef.current.add(i);
+        // small delay so it lines up with the bubble appearing
+        setTimeout(() => speak(m.text, { voice: m.from === "ai" ? "ai" : "student" }), 150);
+      } else {
+        spokenRef.current.add(i);
+      }
+    });
   }, [messages]);
+
+  useEffect(() => {
+    // prime voices list on some browsers
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+    return () => {
+      if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   const send = () => {
     const txt = input.trim();
@@ -46,15 +99,16 @@ export default function MessageThatChanged() {
     setInput("");
     setMessages((m) => [...m, { from: "you", text: txt }]);
 
-    // schedule student reply
     const next = step;
     setTimeout(() => {
-      setMessages((m) => [...m, { from: "student", text: STUDENT_BEATS[next] ?? STUDENT_BEATS[STUDENT_BEATS.length - 1] }]);
+      setMessages((m) => [
+        ...m,
+        { from: "student", text: STUDENT_BEATS[next] ?? STUDENT_BEATS[STUDENT_BEATS.length - 1] },
+      ]);
       setStep((s) => s + 1);
     }, 900);
 
     if (next + 1 >= 3) {
-      // final reveal
       setTimeout(() => {
         setMessages((m) => [...m, { from: "student", text: FINAL_LINE }]);
       }, 2200);
@@ -65,8 +119,6 @@ export default function MessageThatChanged() {
     }
   };
 
-  const quickReplies = ["You'll be okay.", "Tell me what happened.", "I'm listening."];
-
   return (
     <div className="relative w-full max-w-6xl mx-auto rounded-3xl overflow-hidden border border-border/40 shadow-elegant">
       <div className="grid md:grid-cols-[1.15fr_1fr] min-h-[640px]">
@@ -74,7 +126,6 @@ export default function MessageThatChanged() {
         <div
           className="relative overflow-hidden transition-colors duration-[1500ms] ease-out"
           style={{
-            // dark night → warm dawn
             background: `linear-gradient(160deg,
               hsl(232 35% ${6 + t * 8}%) 0%,
               hsl(228 30% ${10 + t * 12}%) 45%,
@@ -90,13 +141,11 @@ export default function MessageThatChanged() {
                 hsl(${220 - t * 190} ${50 + t * 20}% ${15 + t * 35}%))`,
             }}
           >
-            {/* moon */}
             <motion.div
               className="absolute w-10 h-10 rounded-full bg-yellow-100/90 shadow-[0_0_30px_rgba(255,240,200,0.6)]"
               animate={{ top: 16 + t * 130, left: 18 + t * 60, opacity: 1 - t * 0.4 }}
               transition={{ duration: 1.5 }}
             />
-            {/* window cross */}
             <div className="absolute inset-0 flex">
               <div className="flex-1 border-r-2 border-black/40" />
               <div className="flex-1" />
@@ -104,16 +153,24 @@ export default function MessageThatChanged() {
             <div className="absolute inset-x-0 top-1/2 border-t-2 border-black/40" />
           </div>
 
-          {/* clock */}
-          <div className="absolute top-8 right-8 text-right">
+          {/* clock + audio toggle */}
+          <div className="absolute top-8 right-8 text-right flex flex-col items-end gap-2">
+            <button
+              onClick={() => setAudioOn((v) => !v)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 hover:bg-black/60 text-white/90 text-[11px] backdrop-blur transition"
+              aria-label={audioOn ? "Mute voices" : "Unmute voices"}
+            >
+              {audioOn ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+              {audioOn ? "Voice on" : "Muted"}
+            </button>
             <div
-              className="text-xs uppercase tracking-[0.25em] transition-colors"
+              className="text-[10px] uppercase tracking-[0.25em] transition-colors"
               style={{ color: `hsla(0,0%,100%,${0.4 + t * 0.4})` }}
             >
               {revealed ? "Sunrise" : "Night"}
             </div>
             <div
-              className="font-display text-3xl md:text-4xl tabular-nums transition-colors"
+              className="font-display text-2xl md:text-3xl tabular-nums transition-colors"
               style={{ color: `hsla(0,0%,100%,${0.7 + t * 0.3})` }}
             >
               {revealed ? "5:58 AM" : "2:37 AM"}
@@ -124,75 +181,42 @@ export default function MessageThatChanged() {
           <motion.div
             className="absolute pointer-events-none"
             style={{
-              top: "32%",
-              right: "18%",
-              width: 320,
-              height: 320,
+              top: "28%",
+              left: "50%",
+              width: 420,
+              height: 420,
+              marginLeft: -210,
               borderRadius: "9999px",
               background: "radial-gradient(circle, hsla(36,90%,70%,0.55) 0%, transparent 65%)",
-              filter: "blur(8px)",
+              filter: "blur(10px)",
             }}
-            animate={{ opacity: 0.35 + t * 0.6, scale: 1 + t * 0.15 }}
+            animate={{ opacity: 0.3 + t * 0.55, scale: 1 + t * 0.15 }}
             transition={{ duration: 1.2 }}
           />
 
-          {/* desk lamp */}
-          <div className="absolute" style={{ bottom: "32%", right: "22%" }}>
-            <div className="w-1 h-16 bg-black/70 mx-auto" />
-            <div
-              className="w-10 h-6 rounded-t-full"
-              style={{
-                background: `hsl(36 ${40 + t * 40}% ${30 + t * 30}%)`,
-                boxShadow: `0 6px 18px hsla(36,90%,60%,${0.3 + t * 0.5})`,
-              }}
-            />
-          </div>
-
-          {/* student silhouette (chair + figure) */}
-          <div className="absolute" style={{ bottom: "10%", left: "20%" }}>
-            {/* chair back */}
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-40 h-6 rounded-md bg-black/70" />
-            <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 w-2 h-7 bg-black/70" />
-            {/* body */}
-            <motion.div
-              className="relative w-40 h-44 rounded-t-[40%]"
-              style={{
-                background: `linear-gradient(180deg, hsl(220 25% ${15 + t * 10}%), hsl(220 30% ${8 + t * 6}%))`,
-              }}
-              animate={{ y: revealed ? 0 : [0, -2, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-            >
-              {/* head */}
-              <motion.div
-                className="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full"
-                style={{
-                  background: `linear-gradient(180deg, hsl(28 ${30 + t * 30}% ${55 + t * 15}%), hsl(28 ${30 + t * 20}% ${40 + t * 10}%))`,
-                }}
-                animate={{ rotate: revealed ? 0 : [-1.5, 1.5, -1.5] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              >
-                {/* eyes */}
-                <div className="absolute top-6 left-3.5 w-1.5 h-1.5 rounded-full bg-black/80" />
-                <div className="absolute top-6 right-3.5 w-1.5 h-1.5 rounded-full bg-black/80" />
-                {/* mouth — sad → calm → smile */}
-                <motion.div
-                  className="absolute left-1/2 -translate-x-1/2 bg-black/80"
-                  style={{ width: 18, height: 2, top: 38, borderRadius: 4 }}
-                  animate={
-                    revealed
-                      ? { borderTopLeftRadius: 12, borderTopRightRadius: 12, height: 5, top: 36 }
-                      : t > 0.5
-                      ? { height: 2, top: 39 }
-                      : { borderBottomLeftRadius: 10, borderBottomRightRadius: 10, height: 4, top: 38 }
-                  }
-                  transition={{ duration: 0.8 }}
-                />
-              </motion.div>
-            </motion.div>
+          {/* 3D student character — crossfade sad → happy */}
+          <div className="absolute inset-x-0 bottom-0 flex justify-center pointer-events-none">
+            <div className="relative w-[78%] max-w-[420px] aspect-square">
+              <motion.img
+                src={studentSad}
+                alt="Student feeling lonely at 2:37 AM"
+                className="absolute inset-0 w-full h-full object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.55)]"
+                animate={{ opacity: 1 - t, y: revealed ? 0 : [0, -3, 0] }}
+                transition={{ opacity: { duration: 1 }, y: { duration: 4, repeat: Infinity } }}
+              />
+              <motion.img
+                src={studentHappy}
+                alt="Student feeling hopeful at sunrise"
+                className="absolute inset-0 w-full h-full object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.4)]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: t }}
+                transition={{ duration: 1 }}
+              />
+            </div>
           </div>
 
           {/* plant — browns → greens */}
-          <div className="absolute" style={{ bottom: "12%", right: "8%" }}>
+          <div className="absolute" style={{ bottom: "14%", right: "6%" }}>
             <div className="w-14 h-10 rounded-b-2xl bg-stone-700" />
             <motion.div
               className="absolute -top-10 left-1/2 -translate-x-1/2 w-3 h-12 rounded-full"
@@ -210,7 +234,7 @@ export default function MessageThatChanged() {
           </div>
 
           {/* floor shadow */}
-          <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
 
           {/* floating thought from student */}
           <AnimatePresence>
@@ -218,12 +242,12 @@ export default function MessageThatChanged() {
               <motion.div
                 key={`thought-${step}`}
                 initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 0.9, y: 0 }}
+                animate={{ opacity: 0.95, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6 }}
-                className="absolute left-8 top-1/2 -translate-y-1/2 md:left-12 max-w-[16rem]"
+                className="absolute left-6 top-[42%] max-w-[15rem]"
               >
-                <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm bg-white/90 text-stone-900 text-sm shadow-lg backdrop-blur">
+                <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm bg-white/95 text-stone-900 text-sm shadow-lg backdrop-blur">
                   {messages.filter((m) => m.from === "student").slice(-1)[0]?.text}
                 </div>
               </motion.div>
@@ -267,12 +291,17 @@ export default function MessageThatChanged() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">A stranger</p>
-              <p className="text-[11px] text-muted-foreground">{revealed ? "Calmer now · thanks to you" : "Online · needs someone"}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {revealed ? "Calmer now · thanks to you" : "Online · needs someone"}
+              </p>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Anonymous</span>
           </div>
 
-          <div ref={scrollRef} className="flex-1 px-4 py-4 space-y-3 overflow-y-auto bg-background/40 min-h-[380px] max-h-[460px]">
+          <div
+            ref={scrollRef}
+            className="flex-1 px-4 py-4 space-y-3 overflow-y-auto bg-background/40 min-h-[420px] max-h-[500px]"
+          >
             <AnimatePresence initial={false}>
               {messages.map((m, i) => (
                 <motion.div
@@ -284,7 +313,9 @@ export default function MessageThatChanged() {
                 >
                   {m.from === "ai" ? (
                     <div className="max-w-[85%] px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm bg-gradient-to-br from-primary/15 to-accent/15 text-foreground border border-primary/20">
-                      <span className="text-[10px] uppercase tracking-widest text-primary font-semibold block mb-1">WellMindAI</span>
+                      <span className="text-[10px] uppercase tracking-widest text-primary font-semibold block mb-1">
+                        WellMindAI
+                      </span>
                       {m.text}
                     </div>
                   ) : (
@@ -304,64 +335,30 @@ export default function MessageThatChanged() {
           </div>
 
           {!revealed && (
-            <>
-              {step < 3 && (
-                <div className="px-4 pt-3 flex flex-wrap gap-2">
-                  {quickReplies.map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => {
-                        setInput(q);
-                        setTimeout(() => {
-                          setInput("");
-                          setMessages((m) => [...m, { from: "you", text: q }]);
-                          const next = step;
-                          setTimeout(() => {
-                            setMessages((m) => [...m, { from: "student", text: STUDENT_BEATS[next] ?? STUDENT_BEATS[STUDENT_BEATS.length - 1] }]);
-                            setStep((s) => s + 1);
-                          }, 900);
-                          if (next + 1 >= 3) {
-                            setTimeout(() => setMessages((m) => [...m, { from: "student", text: FINAL_LINE }]), 2200);
-                            setTimeout(() => {
-                              setMessages((m) => [...m, { from: "ai", text: "Hi, I'm here for you too." }]);
-                              setRevealed(true);
-                            }, 3600);
-                          }
-                        }, 50);
-                      }}
-                      className="px-3 py-1.5 rounded-full bg-secondary/70 hover:bg-secondary text-xs text-foreground border border-border/60 transition"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  send();
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                send();
+              }}
+              className="p-3 border-t border-border/60 flex items-end gap-2"
+            >
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
                 }}
-                className="p-3 border-t border-border/60 flex items-end gap-2"
-              >
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      send();
-                    }
-                  }}
-                  rows={1}
-                  placeholder="Type a reply… any language"
-                  className="flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/70 max-h-24"
-                />
-                <Button type="submit" size="icon" className="rounded-full shrink-0" disabled={!input.trim()}>
-                  <Send className="w-4 h-4" />
-                </Button>
-              </form>
-            </>
+                rows={1}
+                placeholder="Type a reply… any language"
+                className="flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/70 max-h-24"
+              />
+              <Button type="submit" size="icon" className="rounded-full shrink-0" disabled={!input.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </form>
           )}
 
           {revealed && (
