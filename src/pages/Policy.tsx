@@ -141,7 +141,7 @@ const Policy = () => {
           {/* Terms of Service */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-slate-900">Terms of Service</CardTitle>
+              <h2 className="text-2xl font-semibold text-slate-900">Terms of Service</h2>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -177,7 +177,7 @@ const Policy = () => {
           {/* Cookie Policy */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-slate-900">Cookie Policy</CardTitle>
+              <h2 className="text-2xl font-semibold text-slate-900">Cookie Policy</h2>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-slate-600">
@@ -190,7 +190,7 @@ const Policy = () => {
           {/* Contact Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-slate-900">Contact Us</CardTitle>
+              <h2 className="text-2xl font-semibold text-slate-900">Contact Us</h2>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 mb-4">

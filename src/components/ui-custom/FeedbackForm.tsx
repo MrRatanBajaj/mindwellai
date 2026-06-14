@@ -225,12 +225,13 @@ export const FeedbackForm = () => {
                   <Label className="text-slate-700 font-medium">Rating</Label>
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <motion.button
+                    <motion.button
                         key={star}
                         type="button"
                         onClick={() => handleRatingClick(star)}
                         whileHover={{ scale: 1.2 }}
                         whileTap={{ scale: 0.9 }}
+                        aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
                         className="p-1 focus:outline-none"
                       >
                         <Star
