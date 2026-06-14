@@ -20,7 +20,7 @@ interface Post {
 
 const Blog = () => {
   useSEO({
-    title: "Mental Health Blog — Therapy, Self-Care & AI Counseling | WellMind AI",
+    title: "Mental Health Blog | WellMind AI",
     description:
       "Evidence-based articles on therapy, anxiety, depression, mindfulness, AI counseling and affordable mental health support in India.",
     path: "/blog",
