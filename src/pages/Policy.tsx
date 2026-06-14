@@ -31,7 +31,7 @@ const Policy = () => {
           {/* Privacy Policy */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl text-slate-900">Privacy Policy</CardTitle>
+              <h2 className="text-2xl font-semibold text-slate-900">Privacy Policy</h2>
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-slate-600 text-sm">
