@@ -91,7 +91,7 @@ const Policy = () => {
           {/* Subscription & Cancellation Policy */}
           <Card className="border-primary/40">
             <CardHeader>
-              <CardTitle className="text-2xl text-slate-900">Subscription, Cancellation & Refund Policy</CardTitle>
+              <h2 className="text-2xl font-semibold text-slate-900">Subscription, Cancellation & Refund Policy</h2>
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-slate-600 text-sm">
