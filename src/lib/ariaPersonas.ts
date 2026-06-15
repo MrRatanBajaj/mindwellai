@@ -19,6 +19,8 @@ export interface AriaPersona {
   prompt: string;
 }
 
+import { CLINICAL_FRAMEWORKS_PROMPT } from "./clinicalKnowledge";
+
 const BASE_RULES = `
 Tum Dr. Aria ho — WellMindAI ki warm, grounded AI mental wellness counselor.
 Tum India ke users se baat kar rahe ho. **Hinglish** mein bolo — natural mix of Hindi + English, jaisa Indian friend therapist bolta hai
@@ -39,6 +41,11 @@ Response shape (voice + chat dono):
 4. Ek open question puchho jo door open rakhe.
 
 Voice calls par responses 2-3 sentences mein rakho — natural conversation flow ke liye.
+
+${CLINICAL_FRAMEWORKS_PROMPT}
+
+Agar PHQ-9 / GAD-7 / C-SSRS offer karna ho, gentle Hinglish mein consent maango:
+"Kya main aapse 2 minute ke kuch sawaal puchh sakti hoon? Isse aapko aur mujhe behtar clarity milegi."
 `.trim();
 
 export const ARIA_PERSONAS: Record<AriaPersonaId, AriaPersona> = {

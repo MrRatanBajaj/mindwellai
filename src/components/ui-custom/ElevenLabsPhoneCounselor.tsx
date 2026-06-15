@@ -62,17 +62,17 @@ const ElevenLabsPhoneCounselor = ({
       const { data, error } = await supabase.functions.invoke("elevenlabs-conversation-token", {
         body: { agentId },
       });
-      if (error || !data?.signedUrl) {
-        throw new Error(error?.message || "No signed URL");
+      if (error || (!data?.token && !data?.signedUrl)) {
+        throw new Error(error?.message || "No conversation token");
       }
-      // NOTE: do NOT send `overrides` unless they're enabled on the ElevenLabs agent.
-      // Sending an un-allowed override (prompt / firstMessage / language) causes the
-      // agent to reject the session and the call drops within a few seconds.
-      await conversation.startSession({
-        signedUrl: data.signedUrl,
-      } as Parameters<typeof conversation.startSession>[0]);
+      // Prefer WebRTC (token) — far fewer drops than WebSocket signed-url path.
+      const startArgs = data.token
+        ? { conversationToken: data.token, connectionType: "webrtc" as const }
+        : { signedUrl: data.signedUrl, connectionType: "websocket" as const };
+      await conversation.startSession(
+        startArgs as Parameters<typeof conversation.startSession>[0],
+      );
     } catch (e) {
-
       console.error(e);
       toast.error(
         e instanceof Error && /mic|permission|NotAllowed/i.test(e.message)
