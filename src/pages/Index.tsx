@@ -144,7 +144,7 @@ const Index = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 1 }}
-            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-white/55 mt-9 uppercase tracking-[0.15em]"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-white/75 mt-9 uppercase tracking-[0.15em]"
           >
             <span className="flex items-center gap-1.5"><Languages className="w-3.5 h-3.5" /> Any language</span>
             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 24 / 7</span>
