@@ -84,7 +84,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 backdrop-blur-md text-[11px] uppercase tracking-[0.18em] text-white/80 mb-6"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 backdrop-blur-md text-[11px] uppercase tracking-[0.18em] text-white/90 mb-6"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             2:37 AM · Somewhere, someone needs you
@@ -94,10 +94,10 @@ const Index = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.9 }}
-            className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto"
+            className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto drop-shadow-[0_0_24px_rgba(34,211,238,0.35)]"
           >
             Someone is always{" "}
-            <span className="serif-italic bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-200 bg-clip-text text-transparent">
+            <span className="serif-italic bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-200 bg-clip-text text-transparent drop-shadow-none">
               here to listen
             </span>
             .
@@ -107,7 +107,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.9 }}
-            className="text-base md:text-lg text-white/75 max-w-xl mx-auto mb-9 leading-relaxed"
+            className="text-base md:text-lg text-white max-w-xl mx-auto mb-9 leading-relaxed"
           >
             Even at 2:37 AM. Talk to a clinically-trained AI counselor in any language —
             free, instant, no sign-up. Two minutes can change a night.
@@ -144,7 +144,7 @@ const Index = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 1 }}
-            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-white/55 mt-9 uppercase tracking-[0.15em]"
+            className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-white/75 mt-9 uppercase tracking-[0.15em]"
           >
             <span className="flex items-center gap-1.5"><Languages className="w-3.5 h-3.5" /> Any language</span>
             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 24 / 7</span>
