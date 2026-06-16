@@ -107,7 +107,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.9 }}
-            className="text-base md:text-lg text-white/75 max-w-xl mx-auto mb-9 leading-relaxed"
+            className="text-base md:text-lg text-white max-w-xl mx-auto mb-9 leading-relaxed"
           >
             Even at 2:37 AM. Talk to a clinically-trained AI counselor in any language —
             free, instant, no sign-up. Two minutes can change a night.
