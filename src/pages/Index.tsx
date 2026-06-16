@@ -94,10 +94,10 @@ const Index = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.9 }}
-            className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto"
+            className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto drop-shadow-[0_0_24px_rgba(34,211,238,0.35)]"
           >
             Someone is always{" "}
-            <span className="serif-italic bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-200 bg-clip-text text-transparent">
+            <span className="serif-italic bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-200 bg-clip-text text-transparent drop-shadow-none">
               here to listen
             </span>
             .
