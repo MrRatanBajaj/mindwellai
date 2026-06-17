@@ -45,10 +45,13 @@ const Index = () => {
             height={1080}
             className="w-full h-full object-cover"
           />
-          {/* Cinematic graded overlays */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_60%,rgba(34,211,238,0.18),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_30%,rgba(245,158,11,0.12),transparent_55%)]" />
+          {/* Cinematic graded overlays — deeper for legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/65 to-background" />
+          <div className="absolute inset-0 bg-black/35" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_60%,rgba(34,211,238,0.22),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_30%,rgba(245,158,11,0.14),transparent_55%)]" />
+          {/* Vignette — cinematic loneliness */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]" />
           {/* Subtle scanline grid */}
           <div
             className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
@@ -94,10 +97,10 @@ const Index = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.9 }}
-            className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto drop-shadow-[0_0_24px_rgba(34,211,238,0.35)]"
+            className="font-display text-4xl sm:text-6xl md:text-7xl leading-[1.02] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto [text-shadow:0_2px_24px_rgba(0,0,0,0.9),0_0_16px_rgba(34,211,238,0.18)]"
           >
             Someone is always{" "}
-            <span className="serif-italic bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-200 bg-clip-text text-transparent drop-shadow-none">
+            <span className="serif-italic bg-gradient-to-r from-cyan-200 via-sky-100 to-amber-200 bg-clip-text text-transparent">
               here to listen
             </span>
             .
