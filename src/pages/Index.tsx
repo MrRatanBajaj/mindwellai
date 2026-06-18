@@ -338,18 +338,18 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {PARTNERS.map((p, i) => (
+          <div className="flex justify-center">
+            {PARTNERS.map((p) => (
               <motion.div
                 key={p.name}
                 initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className={`relative rounded-2xl border border-white/10 p-6 bg-gradient-to-br ${p.hue} hover:border-amber-300/30 transition group overflow-hidden`}
+                className={`relative rounded-2xl border border-amber-300/30 p-8 bg-gradient-to-br ${p.hue} hover:border-amber-300/50 transition group overflow-hidden max-w-md w-full text-center`}
               >
-                <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/[0.03] group-hover:bg-amber-300/5 transition" />
+                <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-amber-300/10 group-hover:bg-amber-300/20 transition" />
                 <div className="relative">
-                  <div className="font-display text-lg text-slate-50 mb-1.5">{p.name}</div>
-                  <div className="text-xs text-slate-400">{p.tag}</div>
+                  <HeartHandshake className="w-7 h-7 text-amber-300 mx-auto mb-3" />
+                  <div className="font-display text-2xl text-slate-50 mb-2">{p.name}</div>
+                  <div className="text-sm text-slate-400">{p.tag}</div>
                 </div>
               </motion.div>
             ))}
