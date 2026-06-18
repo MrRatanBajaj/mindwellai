@@ -39,12 +39,17 @@ const COMPARE = [
 
 /* ───────────────── NGO impact partners ───────────────── */
 const PARTNERS = [
-  { name: "iCall · TISS",          tag: "Free codes for survivors",      hue: "from-amber-500/20 to-amber-200/5" },
-  { name: "Vandrevala Foundation", tag: "Crisis line co-distribution",   hue: "from-cyan-500/20 to-cyan-200/5" },
-  { name: "YourDOST Campus",       tag: "Tier-2 college students",       hue: "from-emerald-500/20 to-emerald-200/5" },
-  { name: "Sangath",               tag: "Rural mental-health outreach",  hue: "from-fuchsia-500/20 to-fuchsia-200/5" },
-  { name: "Live Love Laugh",       tag: "Adolescent wellbeing grants",   hue: "from-sky-500/20 to-sky-200/5" },
-  { name: "MINDS Foundation",      tag: "Village-level access codes",    hue: "from-rose-500/20 to-rose-200/5" },
+  { name: "Bajaj Foundation", tag: "Flagship CSR partner · free access codes for underserved communities", hue: "from-amber-500/20 to-amber-200/5" },
+];
+
+/* ───────────────── Clinical frameworks ───────────────── */
+const FRAMEWORKS = [
+  { code: "DSM-5",  label: "Diagnostic Standards" },
+  { code: "ICD-11", label: "Global Classification" },
+  { code: "PHQ-9",  label: "Depression Scale" },
+  { code: "GAD-7",  label: "Anxiety Scale" },
+  { code: "PCL-5",  label: "PTSD Checklist" },
+  { code: "C-SSRS", label: "Suicide Severity Rating" },
 ];
 
 const Index = () => {
