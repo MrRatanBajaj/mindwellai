@@ -14,7 +14,6 @@ const Footer = () => {
         { to: "/self-help", label: "Self Help" },
         { to: "/journal", label: "Journal" },
         { to: "/consultation", label: "Book Counselor" },
-        { to: "/business", label: "For Business" },
       ],
     },
     {

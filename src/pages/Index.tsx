@@ -1,90 +1,61 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSEO } from "@/hooks/useSEO";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import MessageThatChanged from "@/components/ui-custom/MessageThatChanged";
-import ClinicalScreener from "@/components/ui-custom/ClinicalScreener";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  ArrowRight, Shield, Clock, Globe2, Heart, MessageCircle, Languages, Phone,
-  Activity, Brain, Sparkles, Waves, User, Building2, Stethoscope, Trophy,
-  GraduationCap, Plane, TrendingDown, BarChart3, Lock, CheckCircle2, Zap,
-  Users, LineChart, AlertCircle, Palette,
+  ArrowRight, Shield, Lock, Sparkles, Send, Waves, RefreshCw,
+  CheckCircle2, X, Timer, Wind, HeartHandshake, Zap, Brain,
 } from "lucide-react";
-import heroImage from "@/assets/cinematic-hero.jpg";
 
-type Audience = "individual" | "institution" | "clinic";
-
-const AUDIENCES: Record<Audience, {
-  label: string; sub: string; icon: any; hook: string; sub_hook: string;
-  bullets: { icon: any; k: string; v: string }[]; cta: string; ctaTo: string;
-}> = {
-  individual: {
-    label: "मैं अपने लिए आया हूँ",
-    sub: "Individual · B2C",
-    icon: User,
-    hook: "अकेलापन या एंग्जायटी महसूस कर रहे हैं?",
-    sub_hook: "2-मिनट का फ्री Color Brain Mapping टेस्ट लीजिए — अपने मूड का पैटर्न समझिए, फिर AI काउंसलर से बात कीजिए।",
-    bullets: [
-      { icon: Brain, k: "Color Brain Mapping", v: "जैसे-जैसे आप जर्नल लिखेंगे, आपका माइंड मैप शांत नीला/हरा होता जाएगा।" },
-      { icon: MessageCircle, k: "2 सेकंड में जवाब", v: "कोई वेटिंग रूम नहीं — AI काउंसलर तुरंत सुनती है।" },
-      { icon: Lock, k: "100% प्राइवेट", v: "एंड-टू-एंड इनक्रिप्टेड। कोई आपकी बात नहीं पढ़ सकता।" },
-    ],
-    cta: "5-मिनट फ्री AI थेरेपी शुरू करें",
-    ctaTo: "/phone-counselor",
-  },
-  institution: {
-    label: "संस्थान / कॉर्पोरेट के लिए",
-    sub: "Universities · Startups · EdTech",
-    icon: Building2,
-    hook: "स्टूडेंट ड्रॉप-आउट और एम्प्लोयी बर्नआउट को 40% तक कम करें।",
-    sub_hook: "Anonymous aggregated AI डैशबोर्ड से अपनी टीम या कैंपस की मेंटल हेल्थ को रियल-टाइम ट्रैक करें — privacy-first, ROI-ready।",
-    bullets: [
-      { icon: BarChart3, k: "Anonymous Aggregated Data", v: "“इस हफ्ते आपके 15% एम्प्लोयी बर्नआउट के कगार पर हैं।”" },
-      { icon: TrendingDown, k: "−40% Drop-out / Attrition", v: "Early-warning alerts before crisis points." },
-      { icon: Shield, k: "HIPAA + DPDP Compliant", v: "Individual identities never exposed. Auditable RLS logs." },
-    ],
-    cta: "Book a 15-min Demo",
-    ctaTo: "/business",
-  },
-  clinic: {
-    label: "डॉक्टर / क्लिनिक्स के लिए",
-    sub: "Therapy Clinics · Partners",
-    icon: Stethoscope,
-    hook: "अपने पेशेंट्स को सेशन के बीच में भी ट्रैक करें।",
-    sub_hook: "हमारा AI between-session data आपके clinical diagnosis को आसान बनाता है — DSM-5, ICD-11, PHQ-9, GAD-7 aligned।",
-    bullets: [
-      { icon: AlertCircle, k: "Real-time Patient Alerts", v: "“पेशेंट #24 का anxiety level कल रात 11 बजे spike हुआ था।”" },
-      { icon: LineChart, k: "Structured Screening Reports", v: "PHQ-9 · GAD-7 · PCL-5 · C-SSRS — auto-scored, exportable." },
-      { icon: Users, k: "Care-team Collaboration", v: "Share notes securely with co-therapists & supervisors." },
-    ],
-    cta: "Partner with WellMindAI",
-    ctaTo: "/consultation",
-  },
+/* ───────────────── Stress-aware micro-copy ───────────────── */
+const stressCopy = (n: number) => {
+  if (n <= 3) return { tag: "Light load", line: "Mind feels mostly clear. Let's keep it that way.", color: "from-emerald-400 to-emerald-200" };
+  if (n <= 6) return { tag: "Building up", line: "Some noise in there. 2 minutes of venting will tidy it.", color: "from-amber-400 to-amber-200" };
+  if (n <= 8) return { tag: "Heavy", line: "It's a lot. Let it out — no one is judging.", color: "from-orange-500 to-amber-300" };
+  return { tag: "Overflowing", line: "Don't carry this alone. Type one sentence — we'll take the rest.", color: "from-rose-500 to-orange-300" };
 };
 
-const VERTICAL_HOOKS = [
-  { icon: GraduationCap, t: "University / EdTech", v: "Students के exam stress और drop-out को 40% कम करें।" },
-  { icon: Building2, t: "Corporate · Startup Founders", v: "Founder burnout और employee stress को रोकें — live AI wellness data।" },
-  { icon: Trophy, t: "Athletes & Coaches", v: "Performance pressure को game-winning mindset में बदलिए।" },
-  { icon: Plane, t: "Study Abroad Consultants", v: "विदेश जा रहे students की cultural shock और homesickness manage कीजिए।" },
-  { icon: Stethoscope, t: "Therapy Clinics", v: "Between-session AI tracking आपके diagnosis को sharper बनाती है।" },
-  { icon: User, t: "Individuals", v: "अकेलेपन और anxiety के लिए — 2 सेकंड में किसी से बात करें।" },
+/* ───────────────── How it works ───────────────── */
+const STEPS = [
+  { n: "01", icon: Send, title: "Vent", body: "Start typing. Any language. No script, no rules.", accent: "text-amber-300" },
+  { n: "02", icon: Waves, title: "AI Unpacks", body: "We name the feeling, find the pattern, hold the weight.", accent: "text-amber-300" },
+  { n: "03", icon: RefreshCw, title: "Reset", body: "Walk away with a 60-second toolkit made for this moment.", accent: "text-amber-300" },
+];
+
+/* ───────────────── Comparison rows ───────────────── */
+const COMPARE = [
+  { k: "Time to relief",       a: "20–40 min audio session",     b: "120 seconds of typing" },
+  { k: "Format",                a: "Pre-recorded, one-size-fits", b: "Live, hyper-personalised reply" },
+  { k: "Feels like",            a: "A chore between meetings",    b: "Texting your most honest friend" },
+  { k: "Signup wall",           a: "Account + paywall up front",  b: "Try it before you tell us your name" },
+  { k: "When you're in crisis", a: "Schedule next week",          b: "Reply in under 3 seconds, 24/7" },
+];
+
+/* ───────────────── NGO impact partners ───────────────── */
+const PARTNERS = [
+  { name: "iCall · TISS",          tag: "Free codes for survivors",      hue: "from-amber-500/20 to-amber-200/5" },
+  { name: "Vandrevala Foundation", tag: "Crisis line co-distribution",   hue: "from-cyan-500/20 to-cyan-200/5" },
+  { name: "YourDOST Campus",       tag: "Tier-2 college students",       hue: "from-emerald-500/20 to-emerald-200/5" },
+  { name: "Sangath",               tag: "Rural mental-health outreach",  hue: "from-fuchsia-500/20 to-fuchsia-200/5" },
+  { name: "Live Love Laugh",       tag: "Adolescent wellbeing grants",   hue: "from-sky-500/20 to-sky-200/5" },
+  { name: "MINDS Foundation",      tag: "Village-level access codes",    hue: "from-rose-500/20 to-rose-200/5" },
 ];
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [screener, setScreener] = useState<"phq9" | "gad7" | "cssrs" | null>(null);
-  const [audience, setAudience] = useState<Audience>("individual");
+  const [stress, setStress] = useState(6);
+  const [vent, setVent] = useState("");
+  const copy = useMemo(() => stressCopy(stress), [stress]);
 
   useSEO({
-    title: "WellMindAI — तनाव, एंग्जायटी, अकेलेपन से मुकाबला AI + Experts के साथ",
-    description: "Personalized Color Brain Mapping + 2-second AI counselor in any language. Free 2-minute trial. 24/7. 100% private. For individuals, universities, corporates & clinics.",
+    title: "WellMindAI — Vent for 2 minutes. Reset your mind.",
+    description: "Skip the meditation chore. WellMindAI is a 2-minute AI venting companion — anonymous, instant, judgment-free. Try it now without signing up.",
     path: "/",
   });
 
@@ -92,377 +63,325 @@ const Index = () => {
     if (!loading && user) navigate("/dashboard", { replace: true });
   }, [user, loading, navigate]);
 
-  const A = AUDIENCES[audience];
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-[#0b0d12] text-slate-100">
       <Header />
 
-      {/* ░░░ CINEMATIC HERO — Neutral, multi-audience ░░░ */}
-      <section className="relative min-h-[100svh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 -z-20">
-          <img
-            src={heroImage}
-            alt="A lone figure looking out over a quiet, glowing city at night"
-            width={1920} height={1080}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/65 to-background" />
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_60%,rgba(34,211,238,0.22),transparent_60%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_30%,rgba(245,158,11,0.14),transparent_55%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]" />
-          <div
-            className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-              backgroundSize: "48px 48px",
-            }}
-          />
+      {/* ░░░ HERO ░░░ */}
+      <section className="relative pt-28 md:pt-32 pb-20 overflow-hidden">
+        {/* ambient backdrop */}
+        <div aria-hidden className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(245,158,11,0.10),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(56,189,248,0.08),transparent_55%)]" />
+          <div className="absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.6) 1px,transparent 1px)", backgroundSize: "56px 56px" }} />
         </div>
 
-        {/* Floating HUD chips */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="hidden md:flex absolute top-28 right-10 z-10 items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-400/30 bg-black/40 backdrop-blur text-[10px] uppercase tracking-[0.2em] text-cyan-300/90"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          Online · 2.7s avg pickup · 11 languages
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="hidden md:flex absolute bottom-32 left-10 z-10 items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-black/40 backdrop-blur text-[10px] uppercase tracking-[0.2em] text-amber-300/90"
-        >
-          <Palette className="w-3 h-3" /> Color Brain Mapping · Live
-        </motion.div>
-
-        <div className="relative z-10 max-w-5xl mx-auto px-6 py-24 md:py-28 w-full text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 backdrop-blur-md text-[11px] uppercase tracking-[0.18em] text-white/90 mb-6"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            2:37 AM · कोई आपकी सुनने के लिए हमेशा है
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.9 }}
-            className="font-display text-3xl sm:text-5xl md:text-6xl leading-[1.05] tracking-tight text-white mb-5 text-balance max-w-4xl mx-auto [text-shadow:0_2px_24px_rgba(0,0,0,0.9),0_0_16px_rgba(34,211,238,0.18)]"
-          >
-            तनाव, एंग्जायटी और अकेलेपन से मुकाबला —{" "}
-            <span className="serif-italic bg-gradient-to-r from-cyan-200 via-sky-100 to-amber-200 bg-clip-text text-transparent">
-              अब AI और Experts के साथ
-            </span>
-            .
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.9 }}
-            className="text-base md:text-lg text-white max-w-2xl mx-auto mb-8 leading-relaxed"
-          >
-            Personalized <span className="text-cyan-300 font-semibold">Color Brain Mapping</span> तकनीक से अपने
-            मानसिक स्वास्थ्य को track कीजिए — और सही guidance पाइए।
-            <span className="block text-white/80 text-sm mt-2">CBT · DBT · ACT · DSM-5 · PHQ-9 trained · Any language · 24/7</span>
-          </motion.p>
-
-          {/* Segmentation Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.9 }}
-            className="mb-8"
-          >
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/60 mb-3">Choose your path · आप कौन हैं?</p>
-            <div className="inline-flex flex-wrap justify-center gap-2 p-1.5 rounded-full bg-white/5 backdrop-blur-md border border-white/15">
-              {(Object.keys(AUDIENCES) as Audience[]).map((k) => {
-                const A2 = AUDIENCES[k];
-                const active = audience === k;
-                return (
-                  <button
-                    key={k}
-                    onClick={() => {
-                      setAudience(k);
-                      document.getElementById("audience-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs md:text-sm font-medium transition-all ${
-                      active
-                        ? "bg-white text-black shadow-[0_0_30px_-5px_rgba(34,211,238,0.6)]"
-                        : "text-white/80 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    <A2.icon className="w-4 h-4" />
-                    {A2.label}
-                  </button>
-                );
-              })}
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left — emotional hook */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/25 bg-amber-400/5 text-amber-200 text-[11px] uppercase tracking-[0.18em] mb-6">
+              <Sparkles className="w-3 h-3" /> 2-minute mental reset
             </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55, duration: 0.9 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3"
-          >
-            <NavLink to="/phone-counselor">
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[64px] leading-[1.04] tracking-tight text-slate-50 mb-5">
+              Meditation feels like a <span className="line-through decoration-rose-400/70 decoration-[3px]">chore</span>?
+              <br />
+              <span className="bg-gradient-to-r from-amber-200 via-amber-300 to-amber-100 bg-clip-text text-transparent">
+                Try venting.
+              </span>
+            </h1>
+
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-xl mb-7">
+              Flush out overthinking in <span className="text-amber-300 font-semibold">120 seconds</span>.
+              Type whatever's loud in your head — our AI listens, unpacks, and hands back a clean mind.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
               <Button
                 size="lg"
-                className="group h-14 px-7 text-base font-semibold rounded-full bg-white text-black hover:bg-white/90 shadow-[0_0_60px_-10px_rgba(34,211,238,0.6)]"
+                onClick={() => document.getElementById("vent-demo")?.scrollIntoView({ behavior: "smooth" })}
+                className="group h-14 px-7 rounded-full text-base font-semibold bg-amber-300 text-slate-950 hover:bg-amber-200 shadow-[0_0_60px_-12px_rgba(245,158,11,0.55)]"
               >
-                <Phone className="w-5 h-5 mr-2" />
-                5-मिनट फ्री AI थेरेपी
-                <ArrowRight className="w-5 h-5 ml-2 transition group-hover:translate-x-0.5" />
+                Start venting <ArrowRight className="w-5 h-5 ml-1.5 transition group-hover:translate-x-0.5" />
               </Button>
-            </NavLink>
 
-            <Button
-              size="lg" variant="outline"
-              onClick={() => setScreener("phq9")}
-              className="h-14 px-7 text-base font-semibold rounded-full bg-white/5 border-white/20 text-white hover:bg-white/10 backdrop-blur"
-            >
-              <Activity className="w-5 h-5 mr-2" /> 2-min Mind Check-in
-            </Button>
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-emerald-400/30 bg-emerald-400/5 text-emerald-300 text-xs font-medium">
+                <Lock className="w-3.5 h-3.5" />
+                🔒 100% Anonymous Mode Active
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-400 uppercase tracking-[0.16em]">
+              <span className="flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" /> 120 sec</span>
+              <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> No signup to try</span>
+              <span className="flex items-center gap-1.5"><Brain className="w-3.5 h-3.5" /> CBT · DBT · ACT trained</span>
+            </div>
           </motion.div>
 
+          {/* Right — interactive vent mockup */}
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ delay: 0.75, duration: 1 }}
-            className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-white/75 mt-8 uppercase tracking-[0.15em]"
+            id="vent-demo"
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
+            className="relative"
           >
-            <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> 100% Private</span>
-            <span className="flex items-center gap-1.5"><Languages className="w-3.5 h-3.5" /> Any language</span>
-            <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 24 / 7</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> No sign-up</span>
+            <div className="absolute -inset-6 bg-gradient-to-br from-amber-400/15 via-transparent to-cyan-400/10 blur-2xl -z-10" />
+            <div className="rounded-[28px] border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+              {/* window chrome */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400/70" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300/70" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/70" />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Anonymous · End-to-end
+                </span>
+              </div>
+
+              <div className="p-6">
+                <label className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Vent box · 120s</label>
+                <div className="relative mt-2">
+                  <textarea
+                    value={vent}
+                    onChange={(e) => setVent(e.target.value)}
+                    placeholder="Type how you feel right now…"
+                    rows={6}
+                    className="w-full resize-none rounded-2xl bg-slate-950/60 border border-white/10 px-4 py-3 text-[15px] leading-relaxed text-slate-100 placeholder:text-slate-500 outline-none focus:border-amber-300/50 focus:ring-2 focus:ring-amber-300/20 transition"
+                  />
+                  {!vent && (
+                    <motion.span
+                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6, repeat: Infinity, repeatType: "reverse", duration: 1.6 }}
+                      className="pointer-events-none absolute left-4 top-3 text-slate-500 text-[15px]"
+                    >
+                      Type how you feel right now<span className="text-amber-300">_</span>
+                    </motion.span>
+                  )}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                    <Wind className="w-3.5 h-3.5 text-amber-300" /> One honest sentence is enough.
+                  </div>
+                  <NavLink to="/phone-counselor">
+                    <Button size="sm" className="rounded-full bg-amber-300 text-slate-950 hover:bg-amber-200 h-9 px-4 font-semibold">
+                      Send <Send className="w-3.5 h-3.5 ml-1.5" />
+                    </Button>
+                  </NavLink>
+                </div>
+
+                {/* Stress slider micro-block */}
+                <div className="mt-7 rounded-2xl border border-white/10 bg-slate-950/40 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Stress level</span>
+                    <span className={`text-xs font-semibold bg-gradient-to-r ${copy.color} bg-clip-text text-transparent`}>
+                      {stress}/10 · {copy.tag}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[stress]}
+                    onValueChange={(v) => setStress(v[0])}
+                    min={1} max={10} step={1}
+                    className="[&_[role=slider]]:bg-amber-300 [&_[role=slider]]:border-amber-300 [&_.bg-primary]:bg-gradient-to-r [&_.bg-primary]:from-amber-400 [&_.bg-primary]:to-rose-400"
+                  />
+                  <motion.p
+                    key={copy.line}
+                    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 text-sm text-slate-300"
+                  >
+                    {copy.line}
+                  </motion.p>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ░░░ AUDIENCE PANEL — changes based on segmentation ░░░ */}
-      <section id="audience-panel" className="relative py-20 md:py-24 bg-gradient-to-b from-background via-secondary/15 to-background">
-        <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={audience}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4 }}
-            >
-              <div className="text-center mb-10">
-                <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-bold mb-3">
-                  For {A.sub}
-                </p>
-                <h2 className="font-display text-3xl md:text-5xl text-foreground mb-3 text-balance max-w-3xl mx-auto">
-                  {A.hook}
-                </h2>
-                <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                  {A.sub_hook}
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-5 mb-10">
-                {A.bullets.map((b, i) => (
-                  <motion.div
-                    key={b.k}
-                    initial={{ opacity: 0, y: 14 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08 }}
-                    className="p-6 rounded-2xl bg-card border border-border hover-lift"
-                  >
-                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                      <b.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <h3 className="font-display text-lg text-foreground mb-1.5">{b.k}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{b.v}</p>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="text-center">
-                <NavLink to={A.ctaTo}>
-                  <Button size="lg" className="h-13 px-8 rounded-full bg-primary hover:bg-primary/90 shadow-elegant">
-                    {A.cta} <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </NavLink>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
-
-      {/* ░░░ COLOR BRAIN MAPPING SHOWCASE ░░░ */}
-      <section className="py-20 bg-card/30 border-y border-border/40">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-bold mb-3">Signature feature</p>
-            <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 text-balance">
-              Color Brain Mapping — <span className="serif-italic text-primary">अपने मूड का रंग देखिए</span>
-            </h2>
-            <p className="text-muted-foreground mb-5 leading-relaxed">
-              जैसे-जैसे आप journal लिखते हैं, हमारा AI आपके emotional patterns को colors में translate करता है —
-              <span className="text-foreground font-semibold"> लाल</span> = stress,
-              <span className="text-amber-500 font-semibold"> पीला</span> = anxiety,
-              <span className="text-emerald-500 font-semibold"> हरा</span> = balance,
-              <span className="text-sky-500 font-semibold"> नीला</span> = calm।
-              समय के साथ आपका mind map शांत होते देखिए।
-            </p>
-            <ul className="space-y-2.5 mb-6">
-              {[
-                "Real-time emotional fingerprint",
-                "Anonymous aggregated view for institutions",
-                "Between-session insights for therapists",
-                "Clinically aligned with PHQ-9 & GAD-7 scores",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" /> {t}
-                </li>
-              ))}
-            </ul>
-            <NavLink to="/journal">
-              <Button variant="outline" className="rounded-full">
-                <Palette className="w-4 h-4 mr-2" /> Try Color Mapping
-              </Button>
-            </NavLink>
-          </div>
-
-          {/* Live mock visualization */}
-          <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-background to-card border border-border overflow-hidden shadow-elegant">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(239,68,68,0.35),transparent_45%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(245,158,11,0.35),transparent_45%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_75%,rgba(16,185,129,0.4),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_80%,rgba(59,130,246,0.35),transparent_45%)]" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <motion.div
-                animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 4, repeat: Infinity }}
-                className="w-32 h-32 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-              >
-                <Brain className="w-14 h-14 text-white" />
-              </motion.div>
-            </div>
-            <div className="absolute bottom-4 left-4 right-4 flex justify-between text-[10px] uppercase tracking-wider text-white/80">
-              <span>Mon · Stress 78%</span>
-              <span>Sun · Calm 64%</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ░░░ MESSAGE THAT CHANGED ░░░ */}
-      <section className="relative py-20 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <div className="text-center mb-10">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-bold mb-3">Live scene</p>
-            <h2 className="font-display text-3xl md:text-5xl text-foreground mb-3 text-balance max-w-2xl mx-auto">
-              एक kind sentence लिखिए. <span className="serif-italic text-primary">देखिए कमरा बदलता है.</span>
-            </h2>
-            <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto">
-              This is what we do — except in real life, you're not the one typing. We are.
-            </p>
-          </div>
-          <MessageThatChanged />
-        </div>
-      </section>
-
-      {/* ░░░ VERTICAL HOOKS GRID — every audience ░░░ */}
-      <section className="py-20 bg-card/30 border-y border-border/40">
+      {/* ░░░ HOW IT WORKS ░░░ */}
+      <section className="py-24 border-t border-white/5 bg-[#0a0c11]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-primary font-bold mb-3">One platform · Many lives</p>
-            <h2 className="font-display text-3xl md:text-4xl text-foreground mb-3 text-balance max-w-2xl mx-auto">
-              हर इंसान, हर role के लिए mental health support
+          <div className="text-center mb-14">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-amber-300/80 mb-3">How it works</p>
+            <h2 className="font-display text-3xl md:text-5xl text-slate-50 mb-3">
+              Three steps. One <span className="text-amber-300">cleaner</span> mind.
             </h2>
+            <p className="text-slate-400 max-w-xl mx-auto">No onboarding wizard. No 20-question intake. Just type, breathe, reset.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            {VERTICAL_HOOKS.map((h, i) => (
+
+          <div className="grid md:grid-cols-3 gap-5 relative">
+            <div className="hidden md:block absolute top-16 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-amber-300/40 to-transparent" />
+            {STEPS.map((s, i) => (
               <motion.div
-                key={h.t}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="p-5 rounded-2xl bg-background border border-border hover-lift"
+                key={s.n}
+                initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.12 }}
+                className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-slate-900/80 to-slate-950/60 p-7 hover:border-amber-300/30 transition"
               >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <h.icon className="w-4.5 h-4.5 text-primary" />
+                <div className="flex items-center justify-between mb-5">
+                  <span className="text-[11px] tracking-[0.25em] text-slate-500">{s.n}</span>
+                  <div className="w-12 h-12 rounded-2xl bg-amber-300/10 border border-amber-300/20 flex items-center justify-center">
+                    <s.icon className={`w-5 h-5 ${s.accent}`} />
                   </div>
-                  <h3 className="font-display text-base text-foreground">{h.t}</h3>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{h.v}</p>
+                <h3 className="font-display text-2xl text-slate-50 mb-2">{s.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{s.body}</p>
+
+                {/* tiny visual */}
+                {i === 0 && (
+                  <div className="mt-5 rounded-xl bg-slate-950/70 border border-white/5 p-3 text-xs text-slate-400 font-mono">
+                    today felt heavy<span className="animate-pulse text-amber-300">▍</span>
+                  </div>
+                )}
+                {i === 1 && (
+                  <div className="mt-5 flex items-end gap-1 h-10">
+                    {[14, 24, 18, 32, 22, 36, 20, 28, 16].map((h, k) => (
+                      <motion.span
+                        key={k}
+                        animate={{ height: [h, h + 10, h] }}
+                        transition={{ duration: 1.4, repeat: Infinity, delay: k * 0.08 }}
+                        className="w-1.5 rounded-full bg-gradient-to-t from-amber-300 to-amber-100"
+                        style={{ height: h }}
+                      />
+                    ))}
+                  </div>
+                )}
+                {i === 2 && (
+                  <div className="mt-5 flex flex-wrap gap-1.5">
+                    {["Box breath", "Reframe", "Walk 5m"].map((t) => (
+                      <span key={t} className="px-2.5 py-1 rounded-full text-[11px] bg-amber-300/10 text-amber-200 border border-amber-300/20">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ░░░ CLINICAL TRUST STRIP ░░░ */}
-      <section className="py-14 bg-background">
+      {/* ░░░ COMPARISON MATRIX ░░░ */}
+      <section className="py-24 border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6">
-          <p className="text-center text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-6">
-            Trained on the same frameworks your therapist uses
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-xs font-semibold text-foreground/70">
-            {["CBT", "DBT", "ACT", "Motivational Interviewing", "Positive Psychology", "Crisis Intervention", "PHQ-9", "GAD-7", "PCL-5", "C-SSRS", "DSM-5", "ICD-11"].map((t) => (
-              <span key={t} className="px-3 py-1 rounded-full border border-border/60 bg-card/60">{t}</span>
+          <div className="text-center mb-12">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-amber-300/80 mb-3">Why WellMindAI</p>
+            <h2 className="font-display text-3xl md:text-5xl text-slate-50 mb-3">
+              Not another <span className="text-slate-500">meditation</span> app.
+            </h2>
+            <p className="text-slate-400 max-w-xl mx-auto">Built for the messy 2 a.m. moments — not perfectly quiet meditation rooms.</p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 overflow-hidden bg-slate-950/40">
+            <div className="grid grid-cols-3 text-xs uppercase tracking-[0.18em] text-slate-400 bg-white/[0.03] px-6 py-4">
+              <span>Dimension</span>
+              <span className="flex items-center gap-2 text-slate-500"><X className="w-3.5 h-3.5" /> Traditional wellness apps</span>
+              <span className="flex items-center gap-2 text-amber-300"><CheckCircle2 className="w-3.5 h-3.5" /> WellMindAI</span>
+            </div>
+            {COMPARE.map((row, i) => (
+              <div
+                key={row.k}
+                className={`grid grid-cols-3 items-center px-6 py-5 text-sm ${i % 2 === 0 ? "bg-white/[0.015]" : ""} border-t border-white/5`}
+              >
+                <span className="font-medium text-slate-200">{row.k}</span>
+                <span className="text-slate-500">{row.a}</span>
+                <span className="text-slate-100 font-medium">
+                  <span className="bg-gradient-to-r from-amber-200 to-amber-100 bg-clip-text text-transparent">{row.b}</span>
+                </span>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ░░░ PRIVACY PROMISE ░░░ */}
-      <section className="py-16 bg-gradient-to-b from-background to-card/30">
+      {/* ░░░ PRIVACY BAND ░░░ */}
+      <section className="py-16 border-t border-white/5 bg-[#0a0c11]">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-5">
-            <Shield className="w-7 h-7 text-primary" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-300/10 border border-amber-300/20 mb-5">
+            <Shield className="w-7 h-7 text-amber-300" />
           </div>
-          <h2 className="font-display text-2xl md:text-3xl text-foreground mb-3">
-            आपकी बात आपकी रहती है — हमेशा।
+          <h2 className="font-display text-2xl md:text-4xl text-slate-50 mb-3">
+            What you say here, <span className="text-amber-300">stays here</span>.
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            End-to-end encryption · Anonymous aggregated analytics · HIPAA + DPDP compliant ·
-            कोई इंसान आपकी sessions नहीं पढ़ता। Institutional dashboards सिर्फ patterns दिखाते हैं, identities नहीं।
+          <p className="text-slate-400 max-w-2xl mx-auto mb-6">
+            End-to-end encrypted. No human ever reads your sessions. Anonymous mode is on by default — no email, no phone, nothing.
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-xs">
-            {["E2E Encrypted", "HIPAA-aligned", "DPDP Act 2023", "RLS Audit Logs", "Zero-knowledge journals"].map(t => (
-              <span key={t} className="px-3 py-1.5 rounded-full bg-card border border-border text-foreground/70">
-                <Lock className="w-3 h-3 inline mr-1.5" />{t}
+            {["E2E Encrypted", "HIPAA-aligned", "DPDP Act 2023", "Zero-knowledge", "RLS audit logs"].map((t) => (
+              <span key={t} className="px-3 py-1.5 rounded-full bg-slate-900/70 border border-white/10 text-slate-300">
+                <Lock className="w-3 h-3 inline mr-1.5 text-amber-300" />{t}
               </span>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ░░░ SOCIAL IMPACT PARTNERS ░░░ */}
+      <section className="py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-300/25 bg-amber-300/5 text-amber-200 text-[11px] uppercase tracking-[0.18em] mb-4">
+              <HeartHandshake className="w-3 h-3" /> Social Impact
+            </div>
+            <h2 className="font-display text-3xl md:text-5xl text-slate-50 mb-3">
+              Our partners hand out <span className="text-amber-300">free access codes</span>.
+            </h2>
+            <p className="text-slate-400 max-w-xl mx-auto">
+              We work with NGOs and crisis lines so the people who need this most never see a paywall.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {PARTNERS.map((p, i) => (
+              <motion.div
+                key={p.name}
+                initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className={`relative rounded-2xl border border-white/10 p-6 bg-gradient-to-br ${p.hue} hover:border-amber-300/30 transition group overflow-hidden`}
+              >
+                <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/[0.03] group-hover:bg-amber-300/5 transition" />
+                <div className="relative">
+                  <div className="font-display text-lg text-slate-50 mb-1.5">{p.name}</div>
+                  <div className="text-xs text-slate-400">{p.tag}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-slate-500 mt-8">
+            Run an NGO, college counselling cell, or campus initiative?{" "}
+            <a href="mailto:partners@wellmindai.in" className="text-amber-300 hover:underline">Request partnership codes →</a>
+          </p>
+        </div>
+      </section>
+
       {/* ░░░ FINAL CTA ░░░ */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-cyan-500/10 via-background to-amber-500/10" />
+      <section className="relative py-24 border-t border-white/5 overflow-hidden">
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-400/[0.07] via-transparent to-cyan-400/[0.06]" />
         <div className="max-w-3xl mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center p-10 md:p-14 rounded-3xl bg-card/80 backdrop-blur border border-primary/15 shadow-elegant"
+            initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            className="text-center p-10 md:p-14 rounded-[28px] border border-white/10 bg-gradient-to-b from-slate-900/80 to-slate-950/90 backdrop-blur shadow-2xl"
           >
-            <Sparkles className="w-8 h-8 text-primary mx-auto mb-4" />
-            <h2 className="font-display text-3xl md:text-5xl text-foreground mb-4 text-balance">
-              कुर्सी अभी भी <span className="serif-italic text-primary">गर्म</span> है.
+            <Sparkles className="w-7 h-7 text-amber-300 mx-auto mb-4" />
+            <h2 className="font-display text-3xl md:text-5xl text-slate-50 mb-3">
+              The chair is still <span className="text-amber-300 italic">warm</span>.
             </h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              5-मिनट का फ्री AI session. No credit card. No registration. सिर्फ एक ईमानदार message।
+            <p className="text-slate-400 mb-8 max-w-md mx-auto">
+              2 free minutes. No card, no signup. One honest sentence is all it takes.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <NavLink to="/phone-counselor">
-                <Button size="lg" className="px-8 h-14 text-base font-semibold rounded-full bg-primary hover:bg-primary/90 shadow-elegant">
-                  <Zap className="w-5 h-5 mr-2" /> अभी बात करें
-                </Button>
-              </NavLink>
-              <NavLink to="/auth">
-                <Button size="lg" variant="outline" className="px-8 h-14 text-base font-semibold rounded-full">
-                  Create free account
+              <Button
+                size="lg"
+                onClick={() => document.getElementById("vent-demo")?.scrollIntoView({ behavior: "smooth" })}
+                className="px-8 h-14 rounded-full text-base font-semibold bg-amber-300 text-slate-950 hover:bg-amber-200 shadow-[0_0_60px_-12px_rgba(245,158,11,0.55)]"
+              >
+                <Zap className="w-5 h-5 mr-2" /> Vent now — free
+              </Button>
+              <NavLink to="/blog">
+                <Button size="lg" variant="outline" className="px-8 h-14 rounded-full text-base font-semibold border-white/15 text-slate-200 hover:bg-white/5">
+                  Read the blog
                 </Button>
               </NavLink>
             </div>
@@ -471,17 +390,6 @@ const Index = () => {
       </section>
 
       <Footer />
-
-      <Dialog open={!!screener} onOpenChange={(o) => !o && setScreener(null)}>
-        <DialogContent className="max-w-md p-0 bg-transparent border-0 shadow-none">
-          {screener && (
-            <ClinicalScreener
-              screener={screener}
-              onClose={() => setScreener(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
