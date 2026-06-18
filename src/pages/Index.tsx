@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   ArrowRight, Shield, Lock, Sparkles, Send, Waves, RefreshCw,
   CheckCircle2, X, Timer, Wind, HeartHandshake, Zap, Brain,
+  Video, Mic, Globe2, Activity, ScanLine, Stethoscope, Languages, PhoneCall,
 } from "lucide-react";
 
 /* ───────────────── Stress-aware micro-copy ───────────────── */
