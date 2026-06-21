@@ -177,19 +177,19 @@ export default function Business() {
                     </div>
                     <div className="flex items-center gap-3">
                       <Input
-                        type="number" min={1} max={10000}
+                        type="number" min={MIN_SEATS} max={10000}
                         value={employees}
-                        onChange={(e) => setEmployees(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))}
+                        onChange={(e) => setEmployees(Math.max(MIN_SEATS, Math.min(10000, Number(e.target.value) || MIN_SEATS)))}
                         className="w-28 font-mono"
                       />
                       <Slider
-                        value={[employees]} min={1} max={1000} step={1}
-                        onValueChange={(v) => setEmployees(v[0])}
+                        value={[employees]} min={MIN_SEATS} max={1000} step={10}
+                        onValueChange={(v) => setEmployees(Math.max(MIN_SEATS, v[0]))}
                         className="flex-1"
                       />
                     </div>
                     <div className="flex justify-between text-[10px] text-muted-foreground mt-2 uppercase tracking-widest">
-                      <span>1</span><span>50 (-10%)</span><span>200 (-20%)</span><span>500+ (-30%)</span>
+                      <span>Minimum {MIN_SEATS} seats</span><span>₹{PER_SEAT_INR}/seat · flat</span><span>1,000+</span>
                     </div>
                   </div>
 
