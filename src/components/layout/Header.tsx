@@ -120,10 +120,16 @@ const Header = () => {
                     <User className="w-4 h-4 mr-2" /> Dashboard
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/subscription")}>
-                    <Crown className="w-4 h-4 mr-2" /> My Plan
+                    <Crown className="w-4 h-4 mr-2" /> Plans &amp; credit usage
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/referrals")}>
-                    <Gift className="w-4 h-4 mr-2" /> Refer & Earn
+                    <Gift className="w-4 h-4 mr-2" /> Refer &amp; Earn
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/partner-program")}>
+                    <Megaphone className="w-4 h-4 mr-2" /> Partner Program
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/student-ambassador")}>
+                    <GraduationCap className="w-4 h-4 mr-2" /> Student Ambassador
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
