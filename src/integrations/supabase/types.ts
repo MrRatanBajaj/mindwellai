@@ -845,6 +845,21 @@ export type Database = {
         }
         Relationships: []
       }
+      MAU: {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       medication_orders: {
         Row: {
           created_at: string
