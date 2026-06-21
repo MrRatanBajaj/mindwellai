@@ -308,7 +308,7 @@ export default function Business() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button onClick={submit} disabled={submitting} className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 flex-1">
-                    {submitting ? "Saving…" : <>Activate plan <ArrowRight className="w-4 h-4" /></>}
+                    {submitting ? "Activating…" : <>Activate Instant Access For Your Team <ArrowRight className="w-4 h-4" /></>}
                   </Button>
                   <a href="mailto:sales@wellmindai.in" className="flex-1">
                     <Button variant="outline" className="w-full gap-2">
