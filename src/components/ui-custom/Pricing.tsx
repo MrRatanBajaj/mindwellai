@@ -38,7 +38,7 @@ export const pricingPlans: PricingPlan[] = PLANS.map((p) => ({
   isFeatured: p.isFeatured,
   isFree: p.isFree,
   sessionsCount:
-    p.id === "free" ? 1 : p.id === "plus" ? 4 : 100,
+    p.id === "free" ? 1 : p.id === "plus" ? 999 : p.id === "premium" ? 30 : 100,
 }));
 
 const PlanCard = ({
@@ -138,36 +138,17 @@ const Pricing = () => {
 
   const handleSelect = async (plan: Plan) => {
     if (plan.id === "free") {
-      if (!user) {
-        toast.info("Sign up to start your free plan.");
-        navigate("/auth?redirect=/dashboard");
-        return;
-      }
-      setActivating(plan.id);
-      try {
-        const { data: existing } = await supabase
-          .from("subscriptions").select("id").eq("user_id", user.id).maybeSingle();
-        if (!existing) {
-          await supabase.from("subscriptions").insert({
-            user_id: user.id, plan_id: "free", status: "active",
-            sessions_remaining: 1,
-            current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-          });
-        }
-        toast.success("Free plan activated!");
-        navigate("/dashboard");
-      } catch (e: any) {
-        toast.error(e?.message || "Could not activate free plan.");
-      } finally { setActivating(null); }
+      // Zero-signup access — go straight to the in-page 2-min vent demo.
+      navigate("/?vent=1#vent-demo");
       return;
     }
 
     if (plan.id === "business") {
-      window.location.href = "mailto:sales@wellmindai.in?subject=WellMindAI%20Business%20%E2%80%94%20Demo%20request";
+      navigate("/business");
       return;
     }
 
-    // Plus → payment
+    // Plus / Premium → payment
     navigate(`/payment?plan=${plan.id}&currency=${currency}`);
   };
 
@@ -205,13 +186,12 @@ const Pricing = () => {
         ))}
       </div>
 
-      {/* Soft business note */}
+      {/* B2B note */}
       <div className="mt-10 max-w-3xl mx-auto px-2 text-center">
         <p className="text-xs text-muted-foreground">
-          Business plan includes 15 min AI counseling / employee / month, anonymized wellness dashboards,
-          and crisis escalation. Custom seats available.{" "}
-          <a href="mailto:sales@wellmindai.in" className="text-primary underline-offset-2 hover:underline">
-            sales@wellmindai.in
+          Running a company, college or coaching institute?{" "}
+          <a href="/business" className="text-primary underline-offset-2 hover:underline font-semibold">
+            See B2B per-seat pricing →
           </a>
         </p>
       </div>

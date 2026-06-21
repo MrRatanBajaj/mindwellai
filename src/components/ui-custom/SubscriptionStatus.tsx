@@ -69,15 +69,15 @@ const SubscriptionStatus = () => {
 
   const getPlanDetails = (planId: string) => {
     const plans: Record<string, { name: string; sessions: number; color: string }> = {
-      'free': { name: 'Free Plan', sessions: 1, color: 'from-slate-500 to-slate-600' },
+      'free': { name: 'Free Forever', sessions: 1, color: 'from-slate-500 to-slate-600' },
       'free-trial': { name: 'Free Trial', sessions: 3, color: 'from-slate-500 to-slate-600' },
-      'plus': { name: 'Plus', sessions: 4, color: 'from-blue-500 to-indigo-600' },
+      'plus': { name: 'Plus (Voice)', sessions: 999, color: 'from-blue-500 to-indigo-600' },
+      'premium': { name: 'Premium (Virtual Human)', sessions: 30, color: 'from-violet-500 to-purple-600' },
       'business': { name: 'Business', sessions: 999, color: 'from-violet-500 to-purple-600' },
       'student': { name: 'Student Plan', sessions: 2, color: 'from-pink-500 to-rose-600' },
       'starter': { name: 'Starter Plan', sessions: 2, color: 'from-emerald-500 to-teal-600' },
       'standard': { name: 'Standard Plan', sessions: 6, color: 'from-blue-500 to-blue-600' },
       'basic': { name: 'Basic Plan', sessions: 8, color: 'from-blue-500 to-blue-600' },
-      'premium': { name: 'Premium Plan', sessions: 999, color: 'from-violet-500 to-purple-600' },
     };
     return plans[planId] || { name: planId, sessions: 0, color: 'from-slate-500 to-slate-600' };
   };

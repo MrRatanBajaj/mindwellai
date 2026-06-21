@@ -19,20 +19,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 // ─────────────────── Realtime pricing engine ───────────────────
-const BASE_PER_USER_INR = 99; // ₹99 / user / month base
+const PER_SEAT_INR = 299; // ₹299 / seat / month — flat, no haggling
+const MIN_SEATS = 50;
 
-function volumeDiscount(emp: number) {
-  if (emp >= 500) return 0.30;
-  if (emp >= 200) return 0.20;
-  if (emp >= 50)  return 0.10;
-  return 0;
-}
-function durationDiscount(months: number) {
-  if (months >= 24) return 0.25;
-  if (months >= 12) return 0.15;
-  if (months >= 6)  return 0.05;
-  return 0;
-}
+function volumeDiscount(_seats: number) { return 0; }
+function durationDiscount(_months: number) { return 0; }
 
 const FREE_DOMAINS = new Set([
   "gmail.com","yahoo.com","yahoo.co.in","hotmail.com","outlook.com",
@@ -54,7 +45,7 @@ export default function Business() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [employees, setEmployees] = useState(50);
+  const [employees, setEmployees] = useState(100);
   const [months, setMonths] = useState(12);
   const [companyName, setCompanyName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
@@ -64,9 +55,9 @@ export default function Business() {
     const vd = volumeDiscount(employees);
     const dd = durationDiscount(months);
     const combinedDisc = 1 - (1 - vd) * (1 - dd); // stacked
-    const monthlyList = BASE_PER_USER_INR * employees;
+    const monthlyList = PER_SEAT_INR * employees;
     const monthlyEffective = Math.round(monthlyList * (1 - vd) * (1 - dd));
-    const perUserEffective = Math.round(BASE_PER_USER_INR * (1 - vd) * (1 - dd));
+    const perUserEffective = Math.round(PER_SEAT_INR * (1 - vd) * (1 - dd));
     const total = monthlyEffective * months;
     const saved = (monthlyList * months) - total;
     return { vd, dd, combinedDisc, monthlyList, monthlyEffective, perUserEffective, total, saved };
@@ -186,19 +177,19 @@ export default function Business() {
                     </div>
                     <div className="flex items-center gap-3">
                       <Input
-                        type="number" min={1} max={10000}
+                        type="number" min={MIN_SEATS} max={10000}
                         value={employees}
-                        onChange={(e) => setEmployees(Math.max(1, Math.min(10000, Number(e.target.value) || 1)))}
+                        onChange={(e) => setEmployees(Math.max(MIN_SEATS, Math.min(10000, Number(e.target.value) || MIN_SEATS)))}
                         className="w-28 font-mono"
                       />
                       <Slider
-                        value={[employees]} min={1} max={1000} step={1}
-                        onValueChange={(v) => setEmployees(v[0])}
+                        value={[employees]} min={MIN_SEATS} max={1000} step={10}
+                        onValueChange={(v) => setEmployees(Math.max(MIN_SEATS, v[0]))}
                         className="flex-1"
                       />
                     </div>
                     <div className="flex justify-between text-[10px] text-muted-foreground mt-2 uppercase tracking-widest">
-                      <span>1</span><span>50 (-10%)</span><span>200 (-20%)</span><span>500+ (-30%)</span>
+                      <span>Minimum {MIN_SEATS} seats</span><span>₹{PER_SEAT_INR}/seat · flat</span><span>1,000+</span>
                     </div>
                   </div>
 
@@ -266,9 +257,9 @@ export default function Business() {
                       <span className="font-display text-5xl md:text-6xl">₹{pricing.perUserEffective}</span>
                       <span className="opacity-80 text-sm">/user/month</span>
                     </div>
-                    {pricing.perUserEffective < BASE_PER_USER_INR && (
+                    {pricing.perUserEffective < PER_SEAT_INR && (
                       <div className="text-xs opacity-70 mt-1">
-                        <span className="line-through">₹{BASE_PER_USER_INR}</span> list price
+                        <span className="line-through">₹{PER_SEAT_INR}</span> list price
                       </div>
                     )}
 
@@ -317,7 +308,7 @@ export default function Business() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button onClick={submit} disabled={submitting} className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 flex-1">
-                    {submitting ? "Saving…" : <>Activate plan <ArrowRight className="w-4 h-4" /></>}
+                    {submitting ? "Activating…" : <>Activate Instant Access For Your Team <ArrowRight className="w-4 h-4" /></>}
                   </Button>
                   <a href="mailto:sales@wellmindai.in" className="flex-1">
                     <Button variant="outline" className="w-full gap-2">
