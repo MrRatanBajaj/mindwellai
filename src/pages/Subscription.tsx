@@ -18,10 +18,10 @@ const Subscription = () => {
           >
             <div className="flex items-center justify-center gap-3 mb-4">
               <Crown className="w-9 h-9 text-primary" />
-              <h1 className="text-4xl md:text-5xl font-bold">My Subscription</h1>
+              <h1 className="text-4xl md:text-5xl font-bold">Plans &amp; credit usage</h1>
             </div>
             <p className="text-slate-600">
-              View your current plan, renewal date, and remaining counselor sessions.
+              Manage your subscription plan and session credit balance.
             </p>
           </motion.div>
 
