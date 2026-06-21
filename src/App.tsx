@@ -68,7 +68,8 @@ const App = () => (
 
             
             {/* Auth + active paid subscription required */}
-            <Route path="/self-help" element={<SubscriptionRoute><SelfHelp /></SubscriptionRoute>} />
+            <Route path="/partner-program" element={<PartnerProgram />} />
+            <Route path="/student-ambassador" element={<StudentAmbassador />} />
             <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/phone-counselor" element={<ProtectedRoute><PhoneCounselor /></ProtectedRoute>} />
