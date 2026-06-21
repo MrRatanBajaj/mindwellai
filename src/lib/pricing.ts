@@ -36,7 +36,7 @@ export const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   PT: "EUR", IE: "EUR", AT: "EUR", FI: "EUR", GR: "EUR", LU: "EUR",
 };
 
-export type PlanId = "free" | "plus" | "business";
+export type PlanId = "free" | "plus" | "premium" | "business";
 
 export interface PlanFeature { text: string; }
 
@@ -58,7 +58,6 @@ export interface Plan {
   isFeatured?: boolean;
   isFree?: boolean;
   price: PlanPriceByCurrency;
-  // Razorpay/Stripe plan keys
   paymentKey?: string;
 }
 
@@ -66,67 +65,61 @@ export interface Plan {
 export const PLANS: Plan[] = [
   {
     id: "free",
-    name: "Free",
-    tagline: "Get started, forever free",
+    name: "Free Forever",
+    tagline: "Zero signup. Lifetime baseline access.",
     features: [
-      "AI Chat counselor",
-      "Private journaling",
-      "Mood tracking",
+      "One-time 2-minute Virtual Human therapy session (lifetime)",
+      "Unlimited AI text chat counseling",
+      "Private digital journaling",
+      "Daily mood tracking logs",
       "Emotional Color Brain Map™",
-      "1 Virtual Human session / month",
-      "5 minutes per session",
     ],
-    highlights: { sessions: "1 / month", duration: "5 min" },
-    cta: "Start Free",
+    highlights: { sessions: "1 lifetime", duration: "2 min" },
+    cta: "Start Free — No Signup",
     isFree: true,
     price: { monthly: { INR: 0, USD: 0, EUR: 0, GBP: 0, AED: 0, SGD: 0, AUD: 0, CAD: 0 } },
   },
   {
     id: "plus",
     name: "Plus",
-    tagline: "More time, more support",
+    tagline: "Voice ecosystem — daily support",
     features: [
-      "Unlimited AI Chat",
-      "Unlimited journaling",
-      "Voice conversations",
-      "Emotional dashboard",
-      "Emotional Color Brain Map™",
-      "4 Virtual Human sessions / month",
-      "10 minutes per session",
+      "Unlimited voice & audio therapy (zero voice caps)",
+      "Unlimited AI text chat counseling",
+      "Full emotional analytics dashboard",
+      "Unlimited private journaling",
+      "🚫 Virtual Human video disabled on this tier",
     ],
-    highlights: { sessions: "4 / month", duration: "10 min" },
+    highlights: { sessions: "Unlimited voice", duration: "No caps" },
     cta: "Upgrade to Plus",
     isFeatured: true,
     paymentKey: "plus",
     price: {
       monthly: {
-        INR: 299, USD: 4.99, EUR: 4.99, GBP: 3.99,
-        AED: 18, SGD: 6.99, AUD: 7.99, CAD: 6.99,
+        INR: 399, USD: 5.99, EUR: 5.49, GBP: 4.99,
+        AED: 22, SGD: 8.99, AUD: 9.99, CAD: 8.99,
       },
     },
   },
   {
-    id: "business",
-    name: "Business",
-    tagline: "Schools · Colleges · Coaching · Startups · SMEs",
+    id: "premium",
+    name: "Premium",
+    tagline: "The Virtual Human tier",
     features: [
-      "Everything in Plus",
-      "Organization dashboard",
-      "Employee / student wellness insights",
-      "Monthly anonymized reports",
-      "Priority support",
-      "Crisis escalation built-in",
+      "30 minutes of live Virtual Human Video Therapy / month",
+      "Unlimited voice & audio therapy",
+      "Unlimited AI text chat counseling",
+      "Premium emotional metrics mapping",
+      "Priority cloud rendering — zero midnight queues",
     ],
-    highlights: { sessions: "Per seat", duration: "Custom" },
-    cta: "Book a Demo",
-    paymentKey: "business",
+    highlights: { sessions: "30 min video", duration: "/ month" },
+    cta: "Go Premium",
+    paymentKey: "premium",
     price: {
       monthly: {
-        INR: 99, USD: 1.99, EUR: 1.99, GBP: 1.49,
-        AED: 7, SGD: 2.99, AUD: 2.99, CAD: 2.99,
+        INR: 1499, USD: 19.99, EUR: 18.99, GBP: 16.99,
+        AED: 75, SGD: 26.99, AUD: 29.99, CAD: 27.99,
       },
-      perSeatSuffix: true,
-      startingAt: true,
     },
   },
 ];
