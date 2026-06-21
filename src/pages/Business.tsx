@@ -19,20 +19,11 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 // ─────────────────── Realtime pricing engine ───────────────────
-const BASE_PER_USER_INR = 99; // ₹99 / user / month base
+const PER_SEAT_INR = 299; // ₹299 / seat / month — flat, no haggling
+const MIN_SEATS = 50;
 
-function volumeDiscount(emp: number) {
-  if (emp >= 500) return 0.30;
-  if (emp >= 200) return 0.20;
-  if (emp >= 50)  return 0.10;
-  return 0;
-}
-function durationDiscount(months: number) {
-  if (months >= 24) return 0.25;
-  if (months >= 12) return 0.15;
-  if (months >= 6)  return 0.05;
-  return 0;
-}
+function volumeDiscount(_seats: number) { return 0; }
+function durationDiscount(_months: number) { return 0; }
 
 const FREE_DOMAINS = new Set([
   "gmail.com","yahoo.com","yahoo.co.in","hotmail.com","outlook.com",
