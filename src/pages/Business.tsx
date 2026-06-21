@@ -55,9 +55,9 @@ export default function Business() {
     const vd = volumeDiscount(employees);
     const dd = durationDiscount(months);
     const combinedDisc = 1 - (1 - vd) * (1 - dd); // stacked
-    const monthlyList = BASE_PER_USER_INR * employees;
+    const monthlyList = PER_SEAT_INR * employees;
     const monthlyEffective = Math.round(monthlyList * (1 - vd) * (1 - dd));
-    const perUserEffective = Math.round(BASE_PER_USER_INR * (1 - vd) * (1 - dd));
+    const perUserEffective = Math.round(PER_SEAT_INR * (1 - vd) * (1 - dd));
     const total = monthlyEffective * months;
     const saved = (monthlyList * months) - total;
     return { vd, dd, combinedDisc, monthlyList, monthlyEffective, perUserEffective, total, saved };
@@ -257,9 +257,9 @@ export default function Business() {
                       <span className="font-display text-5xl md:text-6xl">₹{pricing.perUserEffective}</span>
                       <span className="opacity-80 text-sm">/user/month</span>
                     </div>
-                    {pricing.perUserEffective < BASE_PER_USER_INR && (
+                    {pricing.perUserEffective < PER_SEAT_INR && (
                       <div className="text-xs opacity-70 mt-1">
-                        <span className="line-through">₹{BASE_PER_USER_INR}</span> list price
+                        <span className="line-through">₹{PER_SEAT_INR}</span> list price
                       </div>
                     )}
 
