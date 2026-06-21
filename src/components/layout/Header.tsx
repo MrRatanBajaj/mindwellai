@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Menu, X, LogOut, BookOpen, Calendar, Leaf,
-  MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User
+  Menu, X, LogOut, BookOpen, Calendar,
+  MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User,
+  Megaphone, GraduationCap,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
