@@ -186,13 +186,12 @@ const Pricing = () => {
         ))}
       </div>
 
-      {/* Soft business note */}
+      {/* B2B note */}
       <div className="mt-10 max-w-3xl mx-auto px-2 text-center">
         <p className="text-xs text-muted-foreground">
-          Business plan includes 15 min AI counseling / employee / month, anonymized wellness dashboards,
-          and crisis escalation. Custom seats available.{" "}
-          <a href="mailto:sales@wellmindai.in" className="text-primary underline-offset-2 hover:underline">
-            sales@wellmindai.in
+          Running a company, college or coaching institute?{" "}
+          <a href="/business" className="text-primary underline-offset-2 hover:underline font-semibold">
+            See B2B per-seat pricing →
           </a>
         </p>
       </div>
