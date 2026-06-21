@@ -199,7 +199,21 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
                   >
-                    <Crown className="w-4 h-4 text-calm-sage" /> My Plan
+                    <Crown className="w-4 h-4 text-calm-sage" /> Plans &amp; credit usage
+                  </NavLink>
+                  <NavLink
+                    to="/partner-program"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
+                  >
+                    <Megaphone className="w-4 h-4 text-calm-sage" /> Partner Program
+                  </NavLink>
+                  <NavLink
+                    to="/student-ambassador"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
+                  >
+                    <GraduationCap className="w-4 h-4 text-calm-sage" /> Student Ambassador
                   </NavLink>
                   <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3 mt-2 rounded-full">
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
