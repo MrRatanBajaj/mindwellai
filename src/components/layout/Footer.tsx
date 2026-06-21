@@ -11,7 +11,7 @@ const Footer = () => {
     {
       title: "Product",
       links: [
-        { to: "/self-help", label: "Self Help" },
+        { to: "/partner-program", label: "Partner Program" },
         { to: "/journal", label: "Journal" },
         { to: "/consultation", label: "Book Counselor" },
       ],

@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Menu, X, LogOut, BookOpen, Calendar, Leaf,
-  MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User
+  Menu, X, LogOut, BookOpen, Calendar,
+  MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User,
+  Megaphone, GraduationCap,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,7 +43,6 @@ const Header = () => {
   // Navigation links only show after auth; landing page stays clean for guests.
   const primaryLinks = user ? [
     { to: "/dashboard", label: "Dashboard", icon: User },
-    { to: "/self-help", label: "Self Help", icon: Leaf },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation", label: "Counselors", icon: Calendar },
     { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
@@ -120,10 +120,16 @@ const Header = () => {
                     <User className="w-4 h-4 mr-2" /> Dashboard
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/subscription")}>
-                    <Crown className="w-4 h-4 mr-2" /> My Plan
+                    <Crown className="w-4 h-4 mr-2" /> Plans &amp; credit usage
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/referrals")}>
-                    <Gift className="w-4 h-4 mr-2" /> Refer & Earn
+                    <Gift className="w-4 h-4 mr-2" /> Refer &amp; Earn
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/partner-program")}>
+                    <Megaphone className="w-4 h-4 mr-2" /> Partner Program
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/student-ambassador")}>
+                    <GraduationCap className="w-4 h-4 mr-2" /> Student Ambassador
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -193,7 +199,21 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
                   >
-                    <Crown className="w-4 h-4 text-calm-sage" /> My Plan
+                    <Crown className="w-4 h-4 text-calm-sage" /> Plans &amp; credit usage
+                  </NavLink>
+                  <NavLink
+                    to="/partner-program"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
+                  >
+                    <Megaphone className="w-4 h-4 text-calm-sage" /> Partner Program
+                  </NavLink>
+                  <NavLink
+                    to="/student-ambassador"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
+                  >
+                    <GraduationCap className="w-4 h-4 text-calm-sage" /> Student Ambassador
                   </NavLink>
                   <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3 mt-2 rounded-full">
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
