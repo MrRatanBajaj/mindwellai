@@ -43,7 +43,6 @@ const Header = () => {
   // Navigation links only show after auth; landing page stays clean for guests.
   const primaryLinks = user ? [
     { to: "/dashboard", label: "Dashboard", icon: User },
-    { to: "/self-help", label: "Self Help", icon: Leaf },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation", label: "Counselors", icon: Calendar },
     { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
