@@ -138,36 +138,17 @@ const Pricing = () => {
 
   const handleSelect = async (plan: Plan) => {
     if (plan.id === "free") {
-      if (!user) {
-        toast.info("Sign up to start your free plan.");
-        navigate("/auth?redirect=/dashboard");
-        return;
-      }
-      setActivating(plan.id);
-      try {
-        const { data: existing } = await supabase
-          .from("subscriptions").select("id").eq("user_id", user.id).maybeSingle();
-        if (!existing) {
-          await supabase.from("subscriptions").insert({
-            user_id: user.id, plan_id: "free", status: "active",
-            sessions_remaining: 1,
-            current_period_end: new Date(Date.now() + 30 * 86400000).toISOString(),
-          });
-        }
-        toast.success("Free plan activated!");
-        navigate("/dashboard");
-      } catch (e: any) {
-        toast.error(e?.message || "Could not activate free plan.");
-      } finally { setActivating(null); }
+      // Zero-signup access — go straight to the in-page 2-min vent demo.
+      navigate("/?vent=1#vent-demo");
       return;
     }
 
     if (plan.id === "business") {
-      window.location.href = "mailto:sales@wellmindai.in?subject=WellMindAI%20Business%20%E2%80%94%20Demo%20request";
+      navigate("/business");
       return;
     }
 
-    // Plus → payment
+    // Plus / Premium → payment
     navigate(`/payment?plan=${plan.id}&currency=${currency}`);
   };
 
