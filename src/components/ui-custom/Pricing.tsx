@@ -38,7 +38,7 @@ export const pricingPlans: PricingPlan[] = PLANS.map((p) => ({
   isFeatured: p.isFeatured,
   isFree: p.isFree,
   sessionsCount:
-    p.id === "free" ? 1 : p.id === "plus" ? 4 : 100,
+    p.id === "free" ? 1 : p.id === "plus" ? 999 : p.id === "premium" ? 30 : 100,
 }));
 
 const PlanCard = ({
