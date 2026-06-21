@@ -45,7 +45,7 @@ export default function Business() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [employees, setEmployees] = useState(50);
+  const [employees, setEmployees] = useState(100);
   const [months, setMonths] = useState(12);
   const [companyName, setCompanyName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
