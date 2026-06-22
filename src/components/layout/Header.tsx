@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Menu, X, LogOut, BookOpen, Calendar,
+  Menu, X, LogOut, BookOpen, Calendar, Phone,
   MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User,
   Megaphone, GraduationCap,
 } from "lucide-react";
@@ -45,6 +45,7 @@ const Header = () => {
     { to: "/dashboard", label: "Dashboard", icon: User },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation", label: "Counselors", icon: Calendar },
+    { to: "/phone-counselor", label: "Voice Call", icon: Phone },
     { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
   ] : [];
 
