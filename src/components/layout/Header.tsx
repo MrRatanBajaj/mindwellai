@@ -45,6 +45,7 @@ const Header = () => {
     { to: "/dashboard", label: "Dashboard", icon: User },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation", label: "Counselors", icon: Calendar },
+    { to: "/phone-counselor", label: "Voice Call", icon: Phone },
     { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
   ] : [];
 
