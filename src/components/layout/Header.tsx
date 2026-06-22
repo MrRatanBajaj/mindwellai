@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Menu, X, LogOut, BookOpen, Calendar,
+  Menu, X, LogOut, BookOpen, Calendar, Phone,
   MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User,
   Megaphone, GraduationCap,
 } from "lucide-react";
