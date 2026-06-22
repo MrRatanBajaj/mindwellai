@@ -107,9 +107,23 @@ const Auth = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [signupCooldown, setSignupCooldown] = useState(0);
 
+  const routeAfterAuth = async (userId: string) => {
+    const { data } = await supabase
+      .from("subscriptions")
+      .select("status, plan_id, current_period_end")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .maybeSingle();
+    const active =
+      !!data &&
+      data.plan_id !== "free" &&
+      (!data.current_period_end || new Date(data.current_period_end) > new Date());
+    navigate(active ? "/dashboard" : "/plans");
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate("/dashboard");
+      if (session?.user) routeAfterAuth(session.user.id);
     });
   }, [navigate]);
 
@@ -146,7 +160,9 @@ const Auth = () => {
 
       logLoginAttempt(true, email);
       toast.success("Welcome back!");
-      navigate("/dashboard");
+      const { data: { user: signedInUser } } = await supabase.auth.getUser();
+      if (signedInUser) await routeAfterAuth(signedInUser.id);
+      else navigate("/plans");
     } catch {
       logLoginAttempt(false, loginData.email);
       toast.error("An unexpected error occurred");
@@ -313,7 +329,9 @@ const Auth = () => {
         return;
       }
       toast.success("Verified successfully! Welcome!");
-      navigate("/dashboard");
+      const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+      if (verifiedUser) await routeAfterAuth(verifiedUser.id);
+      else navigate("/plans");
     } catch {
       toast.error("Verification failed");
     } finally {
