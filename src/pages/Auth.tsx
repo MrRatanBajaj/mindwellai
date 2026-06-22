@@ -253,7 +253,7 @@ const Auth = () => {
 
       if (data?.mode === "recovered") {
         toast.success("Your earlier account was repaired and you are now signed in.", { duration: 6000 });
-        navigate("/dashboard");
+        navigate("/plans");
       } else {
         toast.success("Account created! Choose a plan to start your journey.", { duration: 6000 });
         navigate("/plans");
