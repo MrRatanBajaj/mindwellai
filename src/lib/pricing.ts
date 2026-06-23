@@ -36,7 +36,7 @@ export const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   PT: "EUR", IE: "EUR", AT: "EUR", FI: "EUR", GR: "EUR", LU: "EUR",
 };
 
-export type PlanId = "free" | "plus" | "premium" | "business";
+export type PlanId = "free" | "premium" | "pro_ultimate" | "business";
 
 export interface PlanFeature { text: string; }
 
@@ -65,60 +65,57 @@ export interface Plan {
 export const PLANS: Plan[] = [
   {
     id: "free",
-    name: "Free Forever",
-    tagline: "Zero signup. Lifetime baseline access.",
+    name: "Free",
+    tagline: "Trust & acquisition loop — 7 days",
     features: [
-      "One-time 2-minute Virtual Human therapy session (lifetime)",
-      "Unlimited AI text chat counseling",
-      "Private digital journaling",
-      "Daily mood tracking logs",
-      "Emotional Color Brain Map™",
+      "7-day validity window per user / device",
+      "Unlimited chat therapy + secure journaling",
+      "Voice therapy: free trial for automated audio screening",
+      "Video counselling: 2 minutes max — new users only, one-time",
     ],
-    highlights: { sessions: "1 lifetime", duration: "2 min" },
-    cta: "Start Free — No Signup",
+    highlights: { sessions: "7 days", duration: "2 min video (once)" },
+    cta: "Start Free — 7 Days",
     isFree: true,
     price: { monthly: { INR: 0, USD: 0, EUR: 0, GBP: 0, AED: 0, SGD: 0, AUD: 0, CAD: 0 } },
   },
   {
-    id: "plus",
-    name: "Plus",
-    tagline: "Voice ecosystem — daily support",
+    id: "premium",
+    name: "Premium",
+    tagline: "Core therapy bundle",
     features: [
-      "Unlimited voice & audio therapy (zero voice caps)",
-      "Unlimited AI text chat counseling",
+      "Unlimited chat & voice therapy logs",
+      "Voice biomarkers — pitch, jitter & pause pattern detection",
+      "Video counselling: 12 min / month, up to 3 sessions (4 min each)",
       "Full emotional analytics dashboard",
-      "Unlimited private journaling",
-      "🚫 Virtual Human video disabled on this tier",
     ],
-    highlights: { sessions: "Unlimited voice", duration: "No caps" },
-    cta: "Upgrade to Plus",
+    highlights: { sessions: "12 min video", duration: "3 sessions / mo" },
+    cta: "Get Premium",
     isFeatured: true,
-    paymentKey: "plus",
+    paymentKey: "premium",
     price: {
       monthly: {
-        INR: 399, USD: 5.99, EUR: 5.49, GBP: 4.99,
-        AED: 22, SGD: 8.99, AUD: 9.99, CAD: 8.99,
+        INR: 499, USD: 6.99, EUR: 6.49, GBP: 5.99,
+        AED: 25, SGD: 9.99, AUD: 10.99, CAD: 9.99,
       },
     },
   },
   {
-    id: "premium",
-    name: "Premium",
-    tagline: "The Virtual Human tier",
+    id: "pro_ultimate",
+    name: "Pro Ultimate",
+    tagline: "Deep healing suite",
     features: [
-      "30 minutes of live Virtual Human Video Therapy / month",
-      "Unlimited voice & audio therapy",
-      "Unlimited AI text chat counseling",
-      "Premium emotional metrics mapping",
-      "Priority cloud rendering — zero midnight queues",
+      "Unlimited text chat + standard audio therapy",
+      "Clinical metrics — DSM-5 & PHQ-9 automated profiling",
+      "Video counselling: 30 min / month, 6 sessions (5 min each)",
+      "Priority cloud rendering — zero queue",
     ],
-    highlights: { sessions: "30 min video", duration: "/ month" },
-    cta: "Go Premium",
-    paymentKey: "premium",
+    highlights: { sessions: "30 min video", duration: "6 sessions / mo" },
+    cta: "Go Pro Ultimate",
+    paymentKey: "pro_ultimate",
     price: {
       monthly: {
-        INR: 1499, USD: 19.99, EUR: 18.99, GBP: 16.99,
-        AED: 75, SGD: 26.99, AUD: 29.99, CAD: 27.99,
+        INR: 999, USD: 12.99, EUR: 11.99, GBP: 10.99,
+        AED: 49, SGD: 17.99, AUD: 19.99, CAD: 17.99,
       },
     },
   },
