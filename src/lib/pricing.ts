@@ -36,7 +36,7 @@ export const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   PT: "EUR", IE: "EUR", AT: "EUR", FI: "EUR", GR: "EUR", LU: "EUR",
 };
 
-export type PlanId = "free" | "plus" | "premium" | "business";
+export type PlanId = "free" | "premium" | "pro_ultimate" | "business";
 
 export interface PlanFeature { text: string; }
 
