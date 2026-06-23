@@ -345,9 +345,9 @@ export default function Business() {
         </section>
 
         <section className="max-w-3xl mx-auto px-6 text-center">
-          <NavLink to="/research">
+          <NavLink to="/about">
             <Button variant="outline" size="sm" className="gap-2">
-              Read our research papers <ArrowRight className="w-4 h-4" />
+              Learn more about us <ArrowRight className="w-4 h-4" />
             </Button>
           </NavLink>
         </section>

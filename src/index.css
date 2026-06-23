@@ -1,98 +1,83 @@
-/* Fonts loaded via <link> in index.html for earlier discovery and non-blocking render */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* WellMindAI design system — Emerald Prestige
-   Investor-grade authority + warm wellness.
-   Semantic HSL tokens only. */
+/* ───────────────────────────────────────────────────────
+   WellMindAI — Oil-Pastel design system
+   Inspired by a mom's crayon drawing: warm peach + sage,
+   paper grain, hand-drawn strokes, soft pencil shadows.
+   ─────────────────────────────────────────────────────── */
 
 @layer base {
   :root {
-    --background: 42 30% 98%;          /* warm cream */
-    --foreground: 162 35% 10%;         /* deep emerald-ink */
+    /* Core surfaces */
+    --background: 28 70% 90%;          /* soft peach #F7D9C4 */
+    --foreground: 0 0% 23%;            /* warm ink #3A3A3A */
 
-    --card: 0 0% 100%;
-    --card-foreground: 162 35% 10%;
+    --card: 36 60% 94%;                /* cream paper */
+    --card-foreground: 0 0% 23%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 162 35% 10%;
+    --popover: 36 60% 96%;
+    --popover-foreground: 0 0% 23%;
 
-    --primary: 162 80% 18%;            /* deep emerald */
-    --primary-foreground: 42 30% 98%;
-    --primary-glow: 162 65% 32%;
+    --primary: 14 55% 55%;             /* warm terracotta */
+    --primary-foreground: 36 60% 96%;
+    --primary-glow: 14 70% 70%;
 
-    --secondary: 42 25% 94%;
-    --secondary-foreground: 162 35% 14%;
+    --secondary: 86 27% 78%;           /* sage */
+    --secondary-foreground: 0 0% 23%;
 
-    --muted: 42 20% 94%;
-    --muted-foreground: 162 12% 38%;
+    --muted: 36 40% 88%;
+    --muted-foreground: 20 10% 38%;
 
-    --accent: 42 70% 55%;              /* gold */
-    --accent-foreground: 162 35% 10%;
+    --accent: 86 30% 70%;              /* deeper sage */
+    --accent-foreground: 0 0% 18%;
 
-    --gold: 42 70% 55%;
-    --gold-soft: 42 60% 88%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 36 60% 96%;
 
-    --destructive: 0 72% 48%;
-    --destructive-foreground: 0 0% 100%;
+    --border: 28 35% 78%;
+    --input: 28 30% 82%;
+    --ring: 14 55% 55%;
 
-    --border: 162 15% 88%;
-    --input: 162 15% 88%;
-    --ring: 162 80% 22%;
+    --radius: 1.25rem;
 
-    --radius: 0.875rem;
+    /* Legacy calm tokens — remapped to oil-pastel palette so old components stay on-brand */
+    --calm-sage: 86 35% 55%;
+    --calm-sage-light: 86 40% 88%;
+    --calm-sky: 28 70% 90%;
+    --calm-lavender: 36 60% 92%;
+    --calm-sand: 36 60% 90%;
+    --calm-warm: 28 70% 92%;
 
-    /* legacy calm tokens — remapped to new system so existing components stay on-brand */
-    --calm-sage: 162 80% 22%;
-    --calm-sage-light: 162 40% 92%;
-    --calm-sky: 200 50% 92%;
-    --calm-lavender: 280 30% 94%;
-    --calm-sand: 42 50% 94%;
-    --calm-warm: 42 60% 96%;
-
-    --gradient-primary: linear-gradient(135deg, hsl(162 80% 18%), hsl(162 65% 32%));
-    --gradient-gold: linear-gradient(135deg, hsl(42 70% 55%), hsl(38 80% 62%));
-    --gradient-investor: linear-gradient(135deg, hsl(162 80% 12%) 0%, hsl(162 65% 22%) 60%, hsl(42 70% 55%) 100%);
-    --shadow-elegant: 0 18px 50px -20px hsl(162 80% 18% / 0.25);
-    --shadow-gold: 0 12px 40px -16px hsl(42 70% 55% / 0.5);
+    --gradient-primary: linear-gradient(135deg, hsl(14 55% 55%), hsl(28 75% 70%));
+    --gradient-pastel: linear-gradient(135deg, hsl(28 70% 88%) 0%, hsl(36 60% 92%) 50%, hsl(86 35% 80%) 100%);
+    --shadow-pencil: 0 2px 0 hsl(0 0% 23% / 0.08), 0 6px 18px -8px hsl(14 55% 55% / 0.2);
+    --shadow-crayon: 0 4px 0 hsl(0 0% 23% / 0.1), 0 12px 28px -10px hsl(14 40% 50% / 0.25);
   }
 
   .dark {
-    --background: 162 35% 6%;
-    --foreground: 42 25% 94%;
-
-    --card: 162 30% 9%;
-    --card-foreground: 42 25% 94%;
-
-    --popover: 162 30% 9%;
-    --popover-foreground: 42 25% 94%;
-
-    --primary: 42 70% 55%;
-    --primary-foreground: 162 35% 8%;
-    --primary-glow: 42 80% 65%;
-
-    --secondary: 162 25% 14%;
-    --secondary-foreground: 42 25% 94%;
-
-    --muted: 162 20% 14%;
-    --muted-foreground: 42 15% 65%;
-
-    --accent: 162 60% 35%;
-    --accent-foreground: 42 25% 94%;
-
-    --destructive: 0 60% 45%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 162 20% 18%;
-    --input: 162 20% 18%;
-    --ring: 42 70% 55%;
-
-    --calm-sage: 162 60% 40%;
-    --calm-sage-light: 162 40% 18%;
-    --calm-sky: 200 30% 18%;
-    --calm-lavender: 280 25% 20%;
+    --background: 20 18% 14%;
+    --foreground: 36 60% 92%;
+    --card: 20 16% 18%;
+    --card-foreground: 36 60% 92%;
+    --popover: 20 16% 18%;
+    --popover-foreground: 36 60% 92%;
+    --primary: 14 70% 65%;
+    --primary-foreground: 20 18% 12%;
+    --secondary: 86 25% 35%;
+    --secondary-foreground: 36 60% 92%;
+    --muted: 20 12% 22%;
+    --muted-foreground: 36 25% 70%;
+    --accent: 86 30% 40%;
+    --accent-foreground: 36 60% 92%;
+    --border: 20 15% 26%;
+    --input: 20 15% 26%;
+    --ring: 14 70% 65%;
+    --calm-sage: 86 30% 55%;
+    --calm-sage-light: 86 20% 22%;
+    --calm-sky: 28 25% 22%;
+    --calm-lavender: 36 25% 22%;
   }
 }
 
@@ -105,55 +90,91 @@
     scroll-behavior: smooth;
   }
 
-  body { @apply bg-background text-foreground font-sans antialiased; }
+  body {
+    @apply text-foreground font-sans antialiased;
+    background-color: hsl(var(--background));
+    /* Paper-grain texture — subtle dotted noise overlay */
+    background-image:
+      radial-gradient(hsl(0 0% 23% / 0.04) 1px, transparent 1px),
+      radial-gradient(hsl(14 55% 55% / 0.05) 1px, transparent 1px);
+    background-size: 24px 24px, 36px 36px;
+    background-position: 0 0, 12px 18px;
+  }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
-    font-feature-settings: "ss01", "ss02";
+    @apply font-display;
   }
 
   ::selection {
-    background: hsl(var(--primary) / 0.18);
-    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
   }
 }
 
 @layer components {
-  .glass-panel {
-    @apply bg-card/70 backdrop-blur-xl border border-border/40 shadow-glass;
+  /* Crayon-stroke border — wobbly, hand-drawn feel */
+  .crayon-border {
+    border: 2px solid hsl(var(--foreground) / 0.85);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-pencil);
+    position: relative;
   }
-  .glass-panel-dark {
-    @apply bg-foreground/10 backdrop-blur-xl border border-foreground/10 shadow-glass;
+  .crayon-border::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: calc(var(--radius) + 4px);
+    border: 1px dashed hsl(var(--foreground) / 0.15);
+    pointer-events: none;
   }
-  .glass-input {
-    @apply bg-card/60 border border-border/50 focus:border-primary/40 focus:ring-2 focus:ring-primary/15 transition-all duration-200;
+
+  /* Paper card with pastel cream surface */
+  .pastel-card {
+    @apply rounded-3xl bg-card text-card-foreground p-6;
+    box-shadow: var(--shadow-crayon);
+    border: 1.5px solid hsl(var(--foreground) / 0.1);
   }
+
+  /* Hand-drawn underline beneath text */
+  .hand-underline {
+    background-image: linear-gradient(transparent 70%, hsl(var(--primary) / 0.4) 70%);
+    background-size: 100% 100%;
+    padding-bottom: 0.05em;
+  }
+
+  /* Handwritten accent (Caveat) */
+  .handwritten {
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+  }
+
+  /* Background washes */
+  .bg-pastel-peach { background: hsl(28 70% 88%); }
+  .bg-pastel-sage  { background: hsl(86 35% 80%); }
+  .bg-pastel-cream { background: hsl(36 60% 92%); }
+  .bg-pastel-blend { background: var(--gradient-pastel); }
+
+  /* Wobble + lift on hover, like picking up a paper card */
   .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1;
-    box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
+    @apply transition-all duration-300 hover:-translate-y-1 hover:rotate-[-0.5deg];
   }
-  .hover-lift:hover {
-    box-shadow: var(--shadow-elegant);
-  }
+
   .text-balance { text-wrap: balance; }
 
+  /* Legacy text-gradient still used in some places */
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-primary);
   }
-  .text-gold {
-    @apply bg-clip-text text-transparent;
-    background-image: var(--gradient-gold);
+
+  /* Legacy glass classes kept for compatibility (now warm) */
+  .glass-panel {
+    @apply rounded-3xl bg-card/85 backdrop-blur-md;
+    border: 1.5px solid hsl(var(--foreground) / 0.08);
+    box-shadow: var(--shadow-pencil);
   }
-  .bg-investor {
-    background-image: var(--gradient-investor);
-  }
-  .ring-gold {
-    box-shadow: 0 0 0 1px hsl(var(--gold) / 0.4), var(--shadow-gold);
-  }
-  .serif-italic {
-    font-family: 'Instrument Serif', serif;
-    font-style: italic;
+  .glass-input {
+    @apply bg-card/70 border-2 border-foreground/15 focus:border-primary focus:ring-0 transition-all;
   }
 }
 
