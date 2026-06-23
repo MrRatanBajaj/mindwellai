@@ -2,8 +2,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, BookOpen, Calendar, Phone,
-  MessageCircleHeart, Crown, Gift, Sparkles, ChevronDown, User,
-  Megaphone, GraduationCap,
+  Crown, Gift, Sparkles, ChevronDown, User,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import wellmindLogo from "@/assets/wellmind-logo.png";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -33,46 +31,38 @@ const Header = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Signed out successfully");
+      toast.success("See you soon");
       navigate("/");
     } catch {
-      toast.error("Error signing out");
+      toast.error("Couldn't sign out");
     }
   };
 
-  // Navigation links only show after auth; landing page stays clean for guests.
   const primaryLinks = user ? [
-    { to: "/dashboard", label: "Dashboard", icon: User },
+    { to: "/dashboard", label: "Home", icon: User },
     { to: "/journal", label: "Journal", icon: BookOpen },
-    { to: "/consultation", label: "Counselors", icon: Calendar },
-    { to: "/phone-counselor", label: "Voice Call", icon: Phone },
-    { to: "/feedback-wall", label: "Wall", icon: MessageCircleHeart },
+    { to: "/consultation", label: "Talk now", icon: Calendar },
+    { to: "/phone-counselor", label: "Voice", icon: Phone },
   ] : [];
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? "bg-background/85 backdrop-blur-xl shadow-[0_1px_0_0_hsl(var(--border))] py-1"
-          : "bg-gradient-to-b from-background/95 to-background/70 backdrop-blur-md py-2"
+          ? "bg-background/90 backdrop-blur-md py-1 border-b-2 border-foreground/10"
+          : "bg-transparent py-2"
       }`}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-calm-sage/40 to-transparent"
-      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-
         <div className="flex items-center justify-between gap-2">
-          {/* Logo */}
-          <NavLink to="/" className="flex items-center group flex-shrink-0 pl-1">
-            <img
-              src={wellmindLogo}
-              alt="WellMind AI"
-              width="32"
-              height="32"
-              className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"
-            />
+          {/* Hand-drawn brand */}
+          <NavLink to="/" className="flex items-center gap-2 group">
+            <span className="w-9 h-9 rounded-full bg-primary/90 flex items-center justify-center border-2 border-foreground/80 shadow-pencil">
+              <span className="font-hand text-primary-foreground text-xl leading-none">W</span>
+            </span>
+            <span className="font-display text-xl font-semibold text-foreground hidden sm:inline">
+              wellmind
+            </span>
           </NavLink>
 
           {/* Desktop Nav */}
@@ -82,10 +72,10 @@ const Header = () => {
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  `relative flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                     isActive
-                      ? "bg-calm-sage/15 text-calm-sage"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      ? "bg-secondary text-foreground border-2 border-foreground/80"
+                      : "text-foreground/70 hover:text-foreground hover:bg-card/60"
                   }`
                 }
               >
@@ -93,7 +83,6 @@ const Header = () => {
                 {link.label}
               </NavLink>
             ))}
-
           </nav>
 
           {/* Auth */}
@@ -101,64 +90,51 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full h-9 px-2 gap-2 hover:bg-muted/60"
-                  >
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-calm-sage to-calm-lavender flex items-center justify-center text-white text-xs font-semibold">
+                  <Button variant="ghost" size="sm" className="rounded-full h-10 px-2 gap-2">
+                    <div className="w-8 h-8 rounded-full bg-secondary border-2 border-foreground/80 flex items-center justify-center text-foreground text-sm font-bold">
                       {user.email?.[0]?.toUpperCase() || "U"}
                     </div>
-                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                    <ChevronDown className="w-3.5 h-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-2">
-                  <div className="px-2 py-2 text-xs text-muted-foreground truncate">
-                    {user.email}
-                  </div>
+                <DropdownMenuContent align="end" className="w-56 mt-2 pastel-card p-2">
+                  <div className="px-2 py-2 text-xs text-muted-foreground truncate">{user.email}</div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                    <User className="w-4 h-4 mr-2" /> Dashboard
+                    <User className="w-4 h-4 mr-2" /> Home
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/subscription")}>
-                    <Crown className="w-4 h-4 mr-2" /> Plans &amp; credit usage
+                    <Crown className="w-4 h-4 mr-2" /> Plan & usage
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/referrals")}>
-                    <Gift className="w-4 h-4 mr-2" /> Refer &amp; Earn
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/partner-program")}>
-                    <Megaphone className="w-4 h-4 mr-2" /> Partner Program
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/student-ambassador")}>
-                    <GraduationCap className="w-4 h-4 mr-2" /> Student Ambassador
+                    <Gift className="w-4 h-4 mr-2" /> Refer
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                    <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                    <LogOut className="w-4 h-4 mr-2" /> Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="ghost" size="sm" asChild className="rounded-full">
-                  <NavLink to="/auth">Sign In</NavLink>
+                <Button variant="ghost" size="sm" asChild className="rounded-full font-semibold">
+                  <NavLink to="/auth">Sign in</NavLink>
                 </Button>
                 <Button
                   size="sm"
                   asChild
-                  className="rounded-full bg-gradient-to-r from-calm-sage to-calm-lavender hover:opacity-90 text-white shadow-md"
+                  className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-foreground/80 shadow-pencil font-semibold"
                 >
                   <NavLink to="/auth">
-                    <Sparkles className="w-3.5 h-3.5 mr-1" /> Get Started
+                    <Sparkles className="w-3.5 h-3.5 mr-1" /> Start
                   </NavLink>
                 </Button>
               </>
             )}
           </div>
 
-          {/* Mobile Toggle */}
           <button
-            className="lg:hidden p-2 rounded-full hover:bg-muted transition-colors"
+            className="lg:hidden p-2 rounded-full hover:bg-card/60"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -166,72 +142,37 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden mt-3 pb-3 border-t border-border/50 pt-3 px-1">
+          <div className="lg:hidden mt-3 pb-3 pt-3 px-1 pastel-card">
             <nav className="flex flex-col gap-1">
               {primaryLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted transition-colors text-sm"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/60 text-sm font-semibold"
                 >
-                  <link.icon className="w-4 h-4 text-calm-sage" />
-                  {link.label}
+                  <link.icon className="w-4 h-4" /> {link.label}
                 </NavLink>
               ))}
-
-              <div className="border-t border-border my-3" />
+              <div className="border-t-2 border-foreground/10 my-3" />
               {user ? (
                 <>
-                  <div className="text-xs text-muted-foreground px-3 mb-2 truncate">
-                    {user.email}
-                  </div>
-                  <NavLink
-                    to="/dashboard"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
-                  >
-                    <User className="w-4 h-4 text-calm-sage" /> Dashboard
+                  <div className="text-xs text-muted-foreground px-3 mb-2 truncate">{user.email}</div>
+                  <NavLink to="/subscription" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/60 text-sm">
+                    <Crown className="w-4 h-4" /> Plan
                   </NavLink>
-                  <NavLink
-                    to="/subscription"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
-                  >
-                    <Crown className="w-4 h-4 text-calm-sage" /> Plans &amp; credit usage
-                  </NavLink>
-                  <NavLink
-                    to="/partner-program"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
-                  >
-                    <Megaphone className="w-4 h-4 text-calm-sage" /> Partner Program
-                  </NavLink>
-                  <NavLink
-                    to="/student-ambassador"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm"
-                  >
-                    <GraduationCap className="w-4 h-4 text-calm-sage" /> Student Ambassador
+                  <NavLink to="/referrals" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/60 text-sm">
+                    <Gift className="w-4 h-4" /> Refer
                   </NavLink>
                   <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3 mt-2 rounded-full">
-                    <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                    <LogOut className="w-4 h-4 mr-2" /> Sign out
                   </Button>
                 </>
               ) : (
                 <div className="flex flex-col gap-2 px-3">
-                  <Button variant="outline" size="sm" asChild className="rounded-full">
-                    <NavLink to="/auth">Sign In</NavLink>
-                  </Button>
-                  <Button
-                    size="sm"
-                    asChild
-                    className="rounded-full bg-gradient-to-r from-calm-sage to-calm-lavender text-white"
-                  >
-                    <NavLink to="/auth">Get Started</NavLink>
-                  </Button>
+                  <Button variant="outline" size="sm" asChild className="rounded-full"><NavLink to="/auth">Sign in</NavLink></Button>
+                  <Button size="sm" asChild className="rounded-full bg-primary text-primary-foreground border-2 border-foreground/80"><NavLink to="/auth">Start</NavLink></Button>
                 </div>
               )}
             </nav>
