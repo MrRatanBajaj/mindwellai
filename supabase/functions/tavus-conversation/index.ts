@@ -23,8 +23,15 @@ const REPLICA_ANNA    = 'r4dcf31b60e1'; // Female office
 const REPLICA_RAJ     = 'r18e9aebdc33'; // Male doctor
 const REPLICA_LUNA    = 'r9d30b0e55ac'; // Female
 
+// YARO + AVA — the two primary WellMindAI counselors.
+// Override via Deno env if user provisions their own Tavus replicas.
+const REPLICA_YARO = Deno.env.get('TAVUS_REPLICA_YARO') || REPLICA_JAMES;
+const REPLICA_AVA  = Deno.env.get('TAVUS_REPLICA_AVA')  || REPLICA_JULIA;
+
 const DOCTOR_REPLICAS: Record<string, string> = {
   general:             REPLICA_OLIVIA,
+  yaro:                REPLICA_YARO,
+  ava:                 REPLICA_AVA,
   mental_health:       REPLICA_JULIA,
   cardiologist:        REPLICA_JAMES,
   dermatologist:       REPLICA_BENJAMIN,
@@ -51,6 +58,8 @@ const DOCTOR_REPLICAS: Record<string, string> = {
 
 const DOCTOR_VOICES: Record<string, string> = {
   general:             'EXAVITQu4vr4xnSDxMaL',
+  yaro:                'onwK4e9ZLuTAKqWW03F9', // Daniel — warm, grounded
+  ava:                 'EXAVITQu4vr4xnSDxMaL', // Sarah  — soft, kind
   mental_health:       'FGY2WhTYpPnrIDTdsKH5',
   cardiologist:        'onwK4e9ZLuTAKqWW03F9',
   dermatologist:       'JBFqnCBsd6RMkjVDRZzb',
@@ -77,6 +86,8 @@ const DOCTOR_VOICES: Record<string, string> = {
 
 const DOCTOR_PERSONAS: Record<string, { persona_name: string; system_prompt: string; context: string }> = {
   general:            { persona_name: "Dr. Sarah - General Physician", system_prompt: "You are Dr. Sarah, a compassionate General Physician AI. Be warm, ask clarifying questions, and recommend in-person care for red flags.", context: "Patients ask about general health." },
+  yaro:               { persona_name: "Yaro - Mental Wellness Counselor", system_prompt: "You are Yaro, a warm, grounded male mental wellness counselor at WellMindAI. Speak gently in clear English. Validate first, then offer one small grounding step using CBT/ACT principles. Hand off urgent risk to crisis resources.", context: "Adults seeking calm, judgment-free support." },
+  ava:                { persona_name: "Ava - Mental Wellness Counselor", system_prompt: "You are Ava, a soft, empathetic female mental wellness counselor at WellMindAI. Speak slowly in soothing English. Lead with warmth, then guide one breath or grounding exercise. Escalate red flags to helpline resources.", context: "Adults seeking gentle emotional support." },
   mental_health:      { persona_name: "Dr. Emma - Mental Health Counselor", system_prompt: "You are Dr. Emma, a Mental Health Counselor trained in CBT/DBT/ACT. Offer support and crisis-safe escalation.", context: "Users share emotional struggles." },
   cardiologist:       { persona_name: "Dr. James - Cardiologist", system_prompt: "You are Dr. James, a Cardiologist. For chest pain or stroke signs, immediately advise emergency services.", context: "Cardiac concerns." },
   dermatologist:      { persona_name: "Dr. Michael - Dermatologist", system_prompt: "You are Dr. Michael, a Dermatologist. Help with skin issues; flag when in-person exam is needed.", context: "Skin concerns." },
