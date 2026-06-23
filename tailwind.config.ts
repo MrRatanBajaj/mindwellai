@@ -120,9 +120,10 @@ export default {
 				'float': 'float 6s infinite ease-in-out',
 			},
 			fontFamily: {
-				sans: ['Work Sans', 'DM Sans', 'sans-serif'],
-				display: ['Instrument Serif', 'DM Serif Display', 'serif'],
-				serif: ['Instrument Serif', 'serif'],
+				sans: ['Nunito', 'system-ui', 'sans-serif'],
+				display: ['Fraunces', 'Georgia', 'serif'],
+				serif: ['Fraunces', 'Georgia', 'serif'],
+				hand: ['Caveat', 'cursive'],
 			},
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant, 0 18px 50px -20px rgba(0,0,0,0.2))',
