@@ -32,6 +32,21 @@ export function SubscriptionRoute({ children }: SubscriptionRouteProps) {
         setChecking(false);
         return;
       }
+
+      // B2B gatekeeper bypass — active corporate/university/insurance/trial users.
+      try {
+        const { data: b2b } = await supabase.functions.invoke("b2b-gatekeeper", { body: {} });
+        if (b2b?.access === "premium") {
+          if (!cancelled) {
+            setHasActiveSub(true);
+            setChecking(false);
+          }
+          return;
+        }
+      } catch {
+        // Non-fatal — fall through to standard subscription check.
+      }
+
       const { data } = await supabase
         .from('subscriptions')
         .select('status, current_period_end, plan_id')
