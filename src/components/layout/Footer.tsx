@@ -10,8 +10,8 @@ const Footer = () => {
     {
       title: "Talk",
       links: [
-        { to: "/consultation", label: "Counselors" },
-        { to: "/phone-counselor", label: "Voice call" },
+        { to: "/consultation/video", label: "Video therapy" },
+        { to: "/consultation/audio", label: "Audio call" },
         { to: "/journal", label: "Journal" },
       ],
     },
@@ -21,14 +21,17 @@ const Footer = () => {
         { to: "/about", label: "About" },
         { to: "/careers", label: "Careers" },
         { to: "/blog", label: "Blog" },
+        { to: "/business", label: "For business" },
       ],
     },
     {
-      title: "Care",
+      title: "Trust",
       links: [
+        { to: "/privacy", label: "Privacy" },
+        { to: "/terms", label: "Terms" },
+        { to: "/trust", label: "Trust center" },
         { to: "/subscription", label: "Plans" },
         { to: "/referrals", label: "Refer & earn" },
-        { to: "/policy", label: "Privacy & terms" },
       ],
     },
   ];
