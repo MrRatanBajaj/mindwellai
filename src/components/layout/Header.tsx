@@ -41,8 +41,8 @@ const Header = () => {
   const primaryLinks = user ? [
     { to: "/dashboard", label: "Home", icon: User },
     { to: "/journal", label: "Journal", icon: BookOpen },
-    { to: "/consultation", label: "Talk now", icon: Calendar },
-    { to: "/phone-counselor", label: "Voice", icon: Phone },
+    { to: "/consultation/video", label: "Video", icon: Calendar },
+    { to: "/consultation/audio", label: "Audio", icon: Phone },
   ] : [];
 
   return (
