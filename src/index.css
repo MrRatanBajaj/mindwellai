@@ -161,6 +161,70 @@
 
   .text-balance { text-wrap: balance; }
 
+  .landing-paper-shell {
+    @apply rounded-3xl bg-card p-8 md:p-12;
+    min-height: 32rem;
+    border: 1.5px solid hsl(var(--foreground) / 0.12);
+    box-shadow: var(--shadow-pencil);
+  }
+
+  .landing-ink-card {
+    @apply relative overflow-hidden rounded-3xl p-6 text-card;
+    background:
+      radial-gradient(circle at 52% 44%, hsl(var(--primary) / 0.18), transparent 30%),
+      hsl(var(--foreground));
+    border: 1px solid hsl(var(--foreground) / 0.1);
+    box-shadow: var(--shadow-crayon);
+  }
+
+  .oil-orbit {
+    position: absolute;
+    width: 14rem;
+    height: 14rem;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(-12deg);
+    border-radius: 48% 52% 46% 54%;
+    border: 12px solid hsl(var(--primary) / 0.25);
+    filter: blur(0.2px);
+  }
+
+  .oil-orbit::after {
+    content: "";
+    position: absolute;
+    inset: 1.3rem;
+    border-radius: 46% 54% 50% 50%;
+    border: 10px solid hsl(var(--secondary) / 0.24);
+    transform: rotate(18deg);
+  }
+
+  .oil-doodle-wrap {
+    position: relative;
+    min-height: 23rem;
+    opacity: 0.9;
+  }
+
+  .oil-stroke {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 28;
+    stroke-dasharray: 9 6 14 5;
+    filter: url(#none);
+  }
+
+  .oil-stroke-thin { stroke-width: 20; }
+  .oil-stroke-muted { stroke: hsl(var(--muted-foreground) / 0.24); }
+  .oil-stroke-sage { stroke: hsl(var(--secondary) / 0.58); }
+  .oil-stroke-primary { stroke: hsl(var(--primary) / 0.48); }
+  .oil-stroke-soft { stroke: hsl(var(--accent) / 0.35); }
+
+  .faq-paper {
+    @apply rounded-3xl bg-card p-5;
+    border: 1.5px solid hsl(var(--foreground) / 0.1);
+    box-shadow: var(--shadow-pencil);
+  }
+
   /* Legacy text-gradient still used in some places */
   .text-gradient {
     @apply bg-clip-text text-transparent;
