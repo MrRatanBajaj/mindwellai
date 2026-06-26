@@ -32,6 +32,8 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Business from "./pages/Business";
 import UpsellExpired from "./pages/UpsellExpired";
+import B2BBillingEngine from "./pages/B2BBillingEngine";
+import B2BAdminDashboard from "./pages/B2BAdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,8 @@ const App = () => (
             <Route path="/memorial-chat" element={<MemorialChat />} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/business" element={<Business />} />
+            <Route path="/business/buy" element={<B2BBillingEngine />} />
+            <Route path="/business/dashboard" element={<ProtectedRoute><B2BAdminDashboard /></ProtectedRoute>} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/expired" element={<UpsellExpired />} />

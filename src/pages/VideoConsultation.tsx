@@ -9,6 +9,7 @@ import { COUNSELORS, getCounselor, type CounselorId } from "@/lib/counselors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSEO } from "@/hooks/useSEO";
+import SoulMachinesSession from "@/components/ui-custom/SoulMachinesSession";
 
 const VideoConsultation = () => {
   const navigate = useNavigate();
@@ -116,12 +117,10 @@ const GatedVideoCall = ({
   counselor, onEnd, onBack,
 }: { counselor: ReturnType<typeof getCounselor>; onEnd: () => void; onBack: () => void; }) => {
   const [state, setState] = useState<"loading" | "live" | "blocked">("loading");
-  const [conversationUrl, setConversationUrl] = useState<string | null>(null);
   const [blockedMsg, setBlockedMsg] = useState("");
   const [secs, setSecs] = useState(0);
   const [maxSecs, setMaxSecs] = useState(0);
   const sessionIdRef = useRef<string | null>(null);
-  const tavusIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,29 +137,7 @@ const GatedVideoCall = ({
         }
         sessionIdRef.current = gate.data?.sessionId ?? null;
         setMaxSecs(gate.data?.maxSeconds ?? 120);
-
-        const persona = await supabase.functions.invoke("tavus-conversation", {
-          body: { action: "create_persona", doctorType: counselor.doctorType },
-        });
-        if (persona.error || persona.data?.error) {
-          throw new Error(persona.data?.error || persona.error?.message || "Tavus error");
-        }
-        let convUrl = persona.data?.conversation_url as string | undefined;
-        let convId = persona.data?.conversation_id as string | undefined;
-
-        if (!convUrl && persona.data?.persona_id) {
-          const conv = await supabase.functions.invoke("tavus-conversation", {
-            body: { action: "create_conversation", personaId: persona.data.persona_id, doctorType: counselor.doctorType },
-          });
-          if (conv.error || conv.data?.error) throw new Error(conv.data?.error || conv.error?.message);
-          convUrl = conv.data?.conversation_url;
-          convId = conv.data?.conversation_id;
-        }
-        if (!convUrl) throw new Error("Tavus didn't return a video link. Please retry or contact support.");
-        if (cancelled) return;
-        tavusIdRef.current = convId ?? null;
-        setConversationUrl(convUrl);
-        setState("live");
+        if (!cancelled) setState("live");
       } catch (e) {
         if (cancelled) return;
         console.error("video start error:", e);
@@ -169,7 +146,7 @@ const GatedVideoCall = ({
       }
     })();
     return () => { cancelled = true; };
-  }, [counselor.id, counselor.doctorType]);
+  }, [counselor.id]);
 
   useEffect(() => {
     if (state !== "live") return;
@@ -201,11 +178,6 @@ const GatedVideoCall = ({
       if (sessionIdRef.current) {
         await supabase.functions.invoke("video-session-gate", {
           body: { action: "end", sessionId: sessionIdRef.current, seconds: secs, counselor: counselor.id },
-        });
-      }
-      if (tavusIdRef.current) {
-        await supabase.functions.invoke("tavus-conversation", {
-          body: { action: "end_conversation", conversationId: tavusIdRef.current },
         });
       }
     } catch (e) { console.error(e); }
@@ -245,14 +217,9 @@ const GatedVideoCall = ({
         <div className="font-hand text-2xl text-primary">{fmt(secs)} / {fmt(maxSecs)}</div>
       </div>
       <div className="pastel-card p-2 bg-foreground/95">
-        <iframe
-          src={conversationUrl!}
-          allow="camera; microphone; fullscreen; display-capture; autoplay"
-          className="w-full aspect-video rounded-2xl border-0"
-          title={`${counselor.name} video session`}
-        />
+        <SoulMachinesSession counselorId={counselor.id} counselorName={counselor.name} />
       </div>
-      <p className="text-center text-xs text-foreground/60 mt-3">Encrypted · Private · Server-enforced limit</p>
+      <p className="text-center text-xs text-foreground/60 mt-3">Soul Machines digital human · Encrypted · Server-enforced limit</p>
     </div>
   );
 };
