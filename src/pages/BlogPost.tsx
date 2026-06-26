@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useParams, Navigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Header from "@/components/layout/Header";
+import LandingNav from "@/components/layout/LandingNav";
 import Footer from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Calendar, Loader2 } from "lucide-react";
@@ -119,7 +119,7 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      <LandingNav />
       <main className="flex-1 pt-28 pb-20 px-6">
         <article className="max-w-3xl mx-auto">
           <NavLink to="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
