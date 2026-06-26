@@ -1,4 +1,4 @@
-import Header from "@/components/layout/Header";
+import LandingNav from "@/components/layout/LandingNav";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";

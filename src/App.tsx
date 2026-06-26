@@ -35,6 +35,7 @@ import UpsellExpired from "./pages/UpsellExpired";
 import B2BBillingEngine from "./pages/B2BBillingEngine";
 import B2BAdminDashboard from "./pages/B2BAdminDashboard";
 import B2BTestAccess from "./pages/B2BTestAccess";
+import JudgementFreeSpace from "./pages/JudgementFreeSpace";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
+            <Route path="/judgement-free-space" element={<JudgementFreeSpace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/policy" element={<Policy />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
