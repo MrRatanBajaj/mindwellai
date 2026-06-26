@@ -36,7 +36,32 @@ const Blog = () => {
         .select("id, slug, title, excerpt, cover_image_url, tags, published_at, created_at")
         .order("published_at", { ascending: false })
         .limit(60);
-      setPosts((data as Post[]) || []);
+      const rows = (data as Post[]) || [];
+      // Public fallback content so visitors without login still see articles
+      const samples: Post[] = rows.length ? rows : [
+        {
+          id: "s1", slug: "what-judgement-free-really-means",
+          title: "What 'judgement-free' really means in AI therapy",
+          excerpt: "We unpack how WellMindAI is designed to listen without scoring you — and why that matters.",
+          cover_image_url: null, tags: ["wellbeing", "ai"],
+          published_at: new Date().toISOString(), created_at: new Date().toISOString(),
+        },
+        {
+          id: "s2", slug: "voice-vs-text-therapy",
+          title: "Voice or text? How to choose your first AI session",
+          excerpt: "A quick guide to picking between Yaro (voice), Riya (video) and journaling on your hardest days.",
+          cover_image_url: null, tags: ["guide"],
+          published_at: new Date().toISOString(), created_at: new Date().toISOString(),
+        },
+        {
+          id: "s3", slug: "five-minutes-to-calm",
+          title: "Five minutes to calm: a grounding exercise you can do anywhere",
+          excerpt: "A breath-by-breath script you can read on the bus, in bed, or between meetings.",
+          cover_image_url: null, tags: ["exercise", "anxiety"],
+          published_at: new Date().toISOString(), created_at: new Date().toISOString(),
+        },
+      ];
+      setPosts(samples);
       setLoading(false);
     })();
   }, []);
