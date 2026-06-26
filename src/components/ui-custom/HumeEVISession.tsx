@@ -40,7 +40,7 @@ const Inner = ({
         await connect({
           auth: { type: "accessToken", value: token },
           ...(configId ? { configId } : {}),
-          sessionSettings: systemPrompt ? { systemPrompt } : undefined,
+          sessionSettings: systemPrompt ? { type: "session_settings", systemPrompt } : undefined,
         });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not connect to Hume EVI");
