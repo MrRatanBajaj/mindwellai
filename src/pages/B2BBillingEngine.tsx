@@ -16,7 +16,9 @@ type AuthStrategy = "domain_match" | "secure_passcode";
 const PRICE: Record<OrgType, number> = { corporate: 149, college: 49, coaching: 79 };
 const RZP_KEY = (import.meta.env.VITE_RAZORPAY_KEY_ID as string | undefined) ?? "";
 
-declare global { interface Window { Razorpay: new (opts: unknown) => { open: () => void } } }
+// Razorpay is loaded via the checkout.js script; typed as any to avoid global collisions.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const RZP: any = (typeof window !== "undefined" ? (window as any).Razorpay : undefined);
 
 const B2BBillingEngine = () => {
   const navigate = useNavigate();
@@ -50,9 +52,11 @@ const B2BBillingEngine = () => {
   const startCheckout = async () => {
     if (!orgName || !identifier || !adminEmail) return toast.error("Fill all fields.");
     if (!RZP_KEY) return toast.error("Razorpay key missing. Set VITE_RAZORPAY_KEY_ID.");
-    if (!window.Razorpay) return toast.error("Payment script still loading. Try again in a second.");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Rzp = (window as any).Razorpay ?? RZP;
+    if (!Rzp) return toast.error("Payment script still loading. Try again in a second.");
     setBusy(true);
-    const rzp = new window.Razorpay({
+    const rzp = new Rzp({
       key: RZP_KEY,
       amount: total * 100,
       currency: "INR",
