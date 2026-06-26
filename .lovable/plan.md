@@ -1,113 +1,82 @@
-## Scope
+# Plan — Counselor Images + Soul Machines + Full B2B Self-Serve
 
-Five focused changes — counseling split, Tavus fix, legal pages, Aria voice removal, unified B2B backend.
+## 1. Restore your 3 uploaded images for YARO & AVA
+Earlier I changed copy but didn't actually wire your uploaded PNGs into the cards. I will:
+- Copy the 3 uploads from `user-uploads://` into `src/assets/counselors/` (`yaro.png`, `ava.png`, plus the 3rd as `yaro-ava-hero.png` for the landing oil-pastel hero panel).
+- Reference them by ES6 import in `Index.tsx`, `VideoConsultation.tsx`, `AudioConsultation.tsx`, and `src/lib/counselors.ts`.
+- Only the names/labels were ever supposed to change — keep your artwork exactly as uploaded inside the hand-drawn pastel frames.
 
----
+(Please re-attach the 3 images on the next message — they're not in the project tree right now. I'll wire them the moment they land.)
 
-### 1. Remove "Dr. Aria" voice persona
+## 2. Replace Tavus video with Soul Machines virtual humans
+Tavus has been flaky. Switch the video counselor to **Soul Machines Workforce** (`workforce.soulmachines.com`) digital people for YARO and AVA.
 
-- Delete `src/pages/AIVoiceTherapy.tsx`, `src/pages/AITherapist.tsx`, `src/pages/AIAudioCall.tsx`.
-- Drop the Aria persona selector + `ElevenLabsPhoneCounselor`-as-Aria flow from `PhoneCounselor.tsx` (will be replaced in step 2).
-- Keep `src/lib/ariaPersonas.ts` only if used by the chatbot (`NainaChatbot`); otherwise delete.
+- New page component `SoulMachinesSession.tsx` that mounts the official `@soulmachines/smwebsdk` `Scene` + `Persona` and renders the WebRTC `<video>` from `scene.videoElement`.
+- New edge function `soulmachines-jwt` — mints the short-lived JWT from `SOULMACHINES_API_KEY` + `SOULMACHINES_API_SECRET` using the documented HS256 payload (`sm-control`, `sm-control-via-browser`, expiry 60s). Returns `{ url, jwt }`.
+- Secrets to add (I'll request via `add_secret` after you approve):
+  - `SOULMACHINES_API_KEY`
+  - `SOULMACHINES_API_SECRET`
+  - `SOULMACHINES_YARO_PERSONA` (Persona ID from your dashboard)
+  - `SOULMACHINES_AVA_PERSONA`
+- `VideoConsultation.tsx` → swap `TavusVideoConsultation` for `SoulMachinesSession` with counselor prop.
+- Keep `video-session-gate` 15s heartbeat untouched (still enforces Free 2-min / paid minute caps).
+- Tavus code stays in repo unused (no deletion) so you can revert if needed.
 
-### 2. Split Counseling — two pages, two counselors (YARO + AVA)
+## 3. Full B2B self-serve (DB + checkout + gatekeeper + admin dashboard)
 
-- **`/consultation/video`** (`src/pages/VideoConsultation.tsx`) — only video. Two cards (YARO male, AVA female) → "Start Video Therapy" → mounts `TavusVideoConsultation` with the counselor's Tavus persona/replica from `src/lib/counselors.ts`.
-- **`/consultation/audio`** (`src/pages/AudioConsultation.tsx`) — only audio. Two cards → "Start Audio Call" → mounts `ElevenLabsPhoneCounselor` with YARO/AVA ElevenLabs voice IDs.
-- Update `/consultation` (`Consultation.tsx`) to be a hub: two big oil-pastel tiles → Video / Audio.
-- Header nav: replace single "Counseling" with dropdown → Video Therapy, Audio Therapy.
-- Both pages enforce the existing `SubscriptionRoute` gate so plan quotas (Free 2-min one-time video, Premium minutes, etc.) keep working through `video-session-gate`.
-
-### 3. Fix video counselor (Tavus)
-
-Symptoms reported: "video counselor not working." Likely causes:
-- Tavus conversation creation runs synchronously and the edge function times out, or
-- Replica/persona IDs aren't set as secrets (`TAVUS_REPLICA_YARO`, `TAVUS_REPLICA_AVA`).
-
-Fix:
-- Refactor `supabase/functions/tavus-conversation/index.ts` to return `202 Accepted` immediately with a `conversation_id`, and use `EdgeRuntime.waitUntil` for any post-creation work. Tavus' own `/v2/conversations` POST returns a `conversation_url` quickly, so we mostly need: validate body, call Tavus, return URL, log usage in background.
-- Add clear error JSON when `TAVUS_API_KEY` / replica IDs missing (so the client shows a friendly message instead of a blank iframe).
-- Client-side `TavusVideoConsultation`: handle non-200 from gate/Tavus with a toast + retry button; show loading skeleton while waiting; ping `video-session-gate` heartbeat every 15s (already in place — verify wiring).
-
-### 4. Privacy Policy & Terms — separate trust pages
-
-- New `src/pages/PrivacyPolicy.tsx` at `/privacy` — HIPAA-aligned data handling, encryption at rest/in transit, RLS, retention, user rights (export/delete), India DPDP Act note, contact `privacy@wellmindai.in`.
-- New `src/pages/TermsConditions.tsx` at `/terms` — eligibility, subscription tiers (mirror `lib/pricing.ts`), refund policy, AI counselor disclaimer (not a substitute for licensed care), crisis helplines, governing law (India).
-- New `src/pages/TrustCenter.tsx` at `/trust` — single visual page with sections: Security (RLS, encrypted Supabase, JWT auth), Privacy (audit logs, scoped storage), Compliance posture (DPDP-aligned, HIPAA-style controls — explicitly "not a certification"), Subprocessors (Supabase, Razorpay, Stripe, Tavus, ElevenLabs, Lovable AI Gateway), Incident contact.
-- Keep existing `/policy` as redirect → `/privacy`. Footer: link Privacy, Terms, Trust separately.
-
-### 5. Unified B2B Architecture
-
-Existing tables: `b2b_companies`, `b2b_invites`, `b2b_members`. Extend rather than replace.
-
-**Migration**
-
+### 3a. Schema migration — your exact spec
 ```sql
--- Extend b2b_companies
-ALTER TABLE public.b2b_companies
-  ADD COLUMN IF NOT EXISTS client_type text
-    CHECK (client_type IN ('university','insurance','corporate','startup','trial')) DEFAULT 'corporate',
-  ADD COLUMN IF NOT EXISTS subscription_start_date date,
-  ADD COLUMN IF NOT EXISTS subscription_end_date date,
-  ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true;
-
--- New: access rules
-CREATE TABLE public.b2b_access_rules (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.b2b_companies(id) ON DELETE CASCADE,
-  auth_type text NOT NULL CHECK (auth_type IN ('domain','coupon')),
-  allowed_domain text,
-  coupon_prefix text,
-  total_seats_allowed int NOT NULL DEFAULT 0,
-  seats_used int NOT NULL DEFAULT 0,
-  created_at timestamptz DEFAULT now()
+CREATE TABLE public.b2b_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_name TEXT NOT NULL,
+  organization_type TEXT NOT NULL CHECK (organization_type IN ('corporate','college','coaching')),
+  admin_email TEXT NOT NULL,
+  admin_user_id UUID REFERENCES auth.users(id),
+  is_active BOOLEAN NOT NULL DEFAULT false,
+  max_seats INT NOT NULL DEFAULT 10,
+  seats_consumed INT NOT NULL DEFAULT 0,
+  contract_start TIMESTAMPTZ NOT NULL DEFAULT now(),
+  contract_end TIMESTAMPTZ NOT NULL,
+  razorpay_payment_id TEXT UNIQUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-GRANT SELECT ON public.b2b_access_rules TO authenticated;
-GRANT ALL ON public.b2b_access_rules TO service_role;
-ALTER TABLE public.b2b_access_rules ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Anyone authenticated can read rules to check own access"
-  ON public.b2b_access_rules FOR SELECT TO authenticated USING (true);
-
--- Coupons (single-use)
-CREATE TABLE public.b2b_coupons (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id uuid NOT NULL REFERENCES public.b2b_companies(id) ON DELETE CASCADE,
-  code text UNIQUE NOT NULL,
-  redeemed_by uuid REFERENCES auth.users(id),
-  redeemed_at timestamptz
-);
-GRANT SELECT, UPDATE ON public.b2b_coupons TO authenticated;
-GRANT ALL ON public.b2b_coupons TO service_role;
-ALTER TABLE public.b2b_coupons ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Read own/unused coupons" ON public.b2b_coupons FOR SELECT TO authenticated
-  USING (redeemed_by IS NULL OR redeemed_by = auth.uid());
-
--- Link profiles → company
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS company_id uuid REFERENCES public.b2b_companies(id);
+CREATE TABLE public.b2b_gateways (...);          -- domain_match | secure_passcode
+CREATE TABLE public.b2b_monthly_analytics (...); -- anonymous aggregates
+ALTER TABLE public.profiles ADD COLUMN b2b_account_id UUID REFERENCES public.b2b_accounts(id);
 ```
+All three tables get explicit `GRANT`s, RLS enabled, policies:
+- `b2b_accounts`: admin reads own row (`admin_user_id = auth.uid()`), service_role writes.
+- `b2b_gateways`: service_role only (secrets — never expose passcodes to clients).
+- `b2b_monthly_analytics`: admin of the matching `account_id` reads.
 
-**Edge function `b2b-gatekeeper`** — given the caller's JWT:
-1. Load profile → company.
-2. If `auth_type=domain`: check email domain matches `allowed_domain`.
-3. If `auth_type=coupon`: confirm a `b2b_coupons` row exists with `redeemed_by = user.id`.
-4. Return `{ access: 'premium' | 'expired' | 'b2c' , company, expires_at }` based on `is_active && now <= subscription_end_date`.
+Plus a SECURITY DEFINER RPC `b2b_increment_seat(account_id)` for atomic seat counting (your inline UPDATE has a race condition).
 
-**Client hook** `useB2BAccess()` — wraps gatekeeper; integrate into `SubscriptionRoute` so active B2B users bypass paid-subscription check.
+### 3b. Pages & routes
+- `/business/buy` — `B2BBillingEngine.tsx` (org form, seat slider, live price: corporate ₹149, college ₹49, coaching ₹79 per seat/yr, Razorpay checkout).
+- `/business/dashboard` — `B2BAdminDashboard.tsx` (live seat utilization bar + monthly engagement reports, PDF/CSV download via `jspdf`).
+- Existing `/business` stays as the marketing landing; add CTA → `/business/buy`.
 
-**Coupon redemption** — edge function `b2b-redeem-coupon` (body: `{ code }`) → matches `coupon_prefix`, marks coupon as redeemed, sets `profiles.company_id`, increments `seats_used`. Surface a "I have a workplace/insurance code" field on `/auth`.
+### 3c. Edge functions
+- `b2b-activate` — called by Razorpay handler. Verifies the payment signature against `RAZORPAY_KEY_SECRET`, then creates `b2b_accounts` + `b2b_gateways` rows. (Doing this server-side instead of from the browser is critical — the client snippet you shared lets anyone forge accounts.)
+- `b2b-verify-member` — replaces inline `verifyAndRegisterMember`. Takes `{ email, passcode? }`, looks up gateway, checks seat cap, calls `b2b_increment_seat`, sets `profiles.b2b_account_id`. Wired into `Auth.tsx` post-signup and into the existing `SubscriptionRoute` bypass (replacing the old `b2b-gatekeeper`).
+- `b2b-monthly-report` — cron-friendly endpoint that rolls up anonymous counts from `ai_counseling_sessions` + `therapy_sessions` into `b2b_monthly_analytics` for the previous month.
 
-**Up-sell screen** `src/pages/UpsellExpired.tsx` at `/expired` — when gatekeeper returns `b2c`, redirect there with 50%-off CTA → `/plans?promo=B2B50`.
+### 3d. Header/footer
+- Keep "For Business" in footer pointing at `/business`.
+- After login, if `profiles.b2b_account_id` is set AND the user's email matches the admin, show "Admin Dashboard" link in the header dropdown.
 
-### 6. Cleanup & wiring
+## 4. Testing checklist I'll run before handing back
+1. Build passes (`tsgo`).
+2. Playwright: open `/business/buy`, fill the form with `mytestfirm.com`, simulate Razorpay test success → confirm `b2b_accounts` + `b2b_gateways` rows via `supabase--read_query`.
+3. Playwright: sign up `employee1@mytestfirm.com` → land on `/dashboard` with premium unlocked (no paywall).
+4. Visit `/consultation/video` as that user → Soul Machines `<video>` element renders (or surface the SDK error if persona IDs aren't set yet).
+5. Visit `/business/dashboard` as the admin → seat counter shows `1 / 50`.
 
-- `App.tsx` routes: add `/consultation/video`, `/consultation/audio`, `/privacy`, `/terms`, `/trust`, `/expired`. Remove `/ai-voice-therapy`, `/ai-therapist`, `/ai-audio-call` if present.
-- Footer: Privacy, Terms, Trust, Refund.
-- Header dropdown: Counseling → Video / Audio.
+## Out of scope (ask if you want these next)
+- Custom-domain SSO (SAML/Okta).
+- Auto-generating coupon codes for insurance partners (the old `b2b_coupons` table is left intact, just unused).
+- Removing the legacy `b2b_companies` / `b2b_access_rules` tables — I'll leave them so nothing breaks; we can drop them in a cleanup pass.
 
----
-
-### Out of scope
-- New Tavus replica creation (user must add `TAVUS_REPLICA_YARO` / `TAVUS_REPLICA_AVA` secrets if not present).
-- Visual redesign of pages outside the five above (existing oil-pastel system reused).
-- Admin UI for managing companies/coupons (SQL-only for now).
+## Action required from you
+1. **Re-attach the 3 YARO/AVA images** — they aren't in the repo, so I can't wire them until you upload them again.
+2. Approve this plan so I can request the 4 Soul Machines secrets and run the migration.
