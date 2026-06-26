@@ -63,16 +63,15 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/expired" element={<UpsellExpired />} />
-            {/* Protected routes */}
-            <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-            <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+            {/* Public viewing — content visible without login. Pages handle their own auth-gated actions. */}
+            <Route path="/journal" element={<Journal />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/referrals" element={<Referrals />} />
             <Route path="/phone-counselor" element={<PhoneCounselor />} />
-            {/* Auth + active paid subscription required */}
-            <Route path="/consultation" element={<SubscriptionRoute><Consultation /></SubscriptionRoute>} />
-            <Route path="/consultation/video" element={<SubscriptionRoute><VideoConsultation /></SubscriptionRoute>} />
-            <Route path="/consultation/audio" element={<SubscriptionRoute><AudioConsultation /></SubscriptionRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/consultation" element={<Consultation />} />
+            <Route path="/consultation/video" element={<VideoConsultation />} />
+            <Route path="/consultation/audio" element={<AudioConsultation />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
