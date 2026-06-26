@@ -18,7 +18,7 @@ const landingNav = [
 const LandingNav = () => (
   <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md">
     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-      <Link to="/" className="font-display text-3xl text-foreground tracking-tight">WellMind</Link>
+      <Link to="/" className="font-display text-3xl text-foreground tracking-tight">WellMindAI</Link>
       <nav className="hidden md:flex items-center gap-8 text-[15px] text-foreground/80">
         {landingNav.map((it) =>
           it.href.startsWith("#") ? (
@@ -49,7 +49,7 @@ const Hero = () => (
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
         className="mt-6 text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto"
       >
-        Talk, type, or just breathe. WellMind connects the dots between your thoughts,
+        Talk, type, or just breathe. WellMindAI connects the dots between your thoughts,
         feelings and behaviors — one quiet conversation at a time.
       </motion.p>
       <motion.div
@@ -89,7 +89,7 @@ const FeatureGrid = () => (
         side={
           <>
             <h3 className="font-display text-2xl md:text-3xl text-foreground mb-3">
-              Don't know where to start? WellMind does.
+              Don't know where to start? WellMindAI does.
             </h3>
             <p className="text-foreground/70">
               Whether you're overwhelmed, curious, or just need to talk it out —
@@ -99,7 +99,7 @@ const FeatureGrid = () => (
         }
       >
         <div className="space-y-3 w-full max-w-xs">
-          <div className="inline-block px-4 py-2 rounded-2xl bg-[#3a322d] text-sm">Hey WellMind!</div>
+          <div className="inline-block px-4 py-2 rounded-2xl bg-[#3a322d] text-sm">Hey WellMindAI!</div>
           <div className="px-4 py-3 rounded-2xl border border-[#E8B8A8]/50 text-[#F5EFE6]">
             Great to meet you, let's get started.
           </div>
@@ -113,7 +113,7 @@ const FeatureGrid = () => (
               Breakthrough insights from day one
             </h3>
             <p className="text-foreground/70">
-              From your first conversation, WellMind connects the dots between your
+              From your first conversation, WellMindAI connects the dots between your
               thoughts, feelings, and behaviors to unlock new understanding.
             </p>
           </>
@@ -134,18 +134,18 @@ const FeatureGrid = () => (
       {[
         {
           icon: <Mic className="w-10 h-10 text-[#E8B8A8]" />,
-          title: "Talk or text 24/7, WellMind listens",
+          title: "Talk or text 24/7, WellMindAI listens",
           body: "Phone-call style audio with Yaro or Riya, or just type. Whatever feels right.",
         },
         {
           icon: <MessageCircle className="w-10 h-10 text-[#E8B8A8]" />,
-          title: "WellMind discovers your patterns",
+          title: "WellMindAI discovers your patterns",
           body: "Each conversation helps connect today's story to a pattern from last week.",
         },
         {
           icon: <Sparkles className="w-10 h-10 text-[#E8B8A8]" />,
-          title: "WellMind takes you on a journey",
-          body: "Come with your own agenda or let WellMind guide the way. A thoughtful next step, always.",
+          title: "WellMindAI takes you on a journey",
+          body: "Come with your own agenda or let WellMindAI guide the way. A thoughtful next step, always.",
         },
       ].map((c, i) => (
         <div key={i} className="rounded-[28px] bg-[#EFE3D3] overflow-hidden">
@@ -169,7 +169,7 @@ const JudgementSection = () => (
           A judgement-free space that grows with you
         </h2>
         <p className="mt-5 text-foreground/75 leading-relaxed">
-          WellMind greets you exactly where you are — remembering your stories,
+          WellMindAI greets you exactly where you are — remembering your stories,
           preferences and progress — so every conversation picks up where you left off.
           As you evolve, your guidance evolves too. Above all, it's a judgment-free space,
           designed for honest reflection and growth at your own pace.
@@ -233,7 +233,7 @@ const FAQ = () => {
 /* ───────── Page ───────── */
 const Index = () => {
   useSEO({
-    title: "WellMind AI — A judgement-free space for mental wellbeing",
+    title: "WellMindAI AI — A judgement-free space for mental wellbeing",
     description: "Talk, type, or just breathe. AI counselors Yaro and Riya help you reflect, find patterns, and grow at your own pace.",
     path: "/",
   });
