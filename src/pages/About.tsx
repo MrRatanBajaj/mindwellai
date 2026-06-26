@@ -40,7 +40,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-hidden">
-      <Header />
+      <LandingNav />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-calm-sage-light/40 via-calm-sky/20 to-background">

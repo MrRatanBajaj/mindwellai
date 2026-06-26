@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
-import Header from "@/components/layout/Header";
+import LandingNav from "@/components/layout/LandingNav";
 import Footer from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO } from "@/hooks/useSEO";
@@ -43,7 +43,7 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      <LandingNav />
       <main className="flex-1">
         {/* Hero */}
         <section className="pt-32 pb-12 px-6 bg-gradient-to-b from-secondary/40 to-background">
