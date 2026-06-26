@@ -179,19 +179,15 @@ const JudgementSection = () => (
           Read more →
         </Link>
       </div>
-      <div className="relative h-[320px] md:h-[380px]">
-        <svg viewBox="0 0 400 400" className="w-full h-full" aria-hidden>
-          <defs>
-            <filter id="rough"><feTurbulence baseFrequency="0.9" numOctaves="2"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
-          </defs>
-          <g fill="none" strokeLinecap="round" filter="url(#rough)">
-            <path d="M70 200 C 100 100, 220 80, 270 180 S 340 320, 250 340" stroke="#B8A89A" strokeWidth="14" opacity="0.75"/>
-            <path d="M110 255 C 170 205, 230 250, 285 205" stroke="#D86B7B" strokeWidth="22" opacity="0.95"/>
-            <path d="M140 290 C 200 245, 250 285, 300 235" stroke="#E89AA8" strokeWidth="18" opacity="0.85"/>
-            <path d="M95 230 C 160 185, 240 225, 295 175" stroke="#C9526B" strokeWidth="16" opacity="0.8"/>
-            <path d="M180 120 C 220 140, 260 180, 280 230" stroke="#A88BB5" strokeWidth="14" opacity="0.6"/>
-          </g>
-        </svg>
+      <div className="relative h-[320px] md:h-[420px] flex items-center justify-center">
+        <img
+          src={judgementArt}
+          alt="Hand-drawn peacock feather in oil pastel and watercolor — a symbol of judgement-free growth"
+          width={1024}
+          height={1024}
+          loading="lazy"
+          className="max-h-full w-auto object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+        />
       </div>
     </div>
   </section>
