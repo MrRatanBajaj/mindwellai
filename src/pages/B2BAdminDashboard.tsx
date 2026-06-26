@@ -40,14 +40,16 @@ const B2BAdminDashboard = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: acc } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = supabase as any;
+      const { data: acc } = await sb
         .from("b2b_accounts")
         .select("id, organization_name, organization_type, max_seats, seats_consumed, contract_end")
         .or(`admin_user_id.eq.${user.id},admin_email.eq.${user.email?.toLowerCase() ?? ""}`)
         .maybeSingle();
-      setAccount(acc as Account | null);
+      setAccount((acc as Account | null) ?? null);
       if (acc) {
-        const { data: rs } = await supabase
+        const { data: rs } = await sb
           .from("b2b_monthly_analytics")
           .select("*")
           .eq("account_id", (acc as Account).id)
