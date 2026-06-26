@@ -183,10 +183,12 @@ const JudgementSection = () => (
           <defs>
             <filter id="rough"><feTurbulence baseFrequency="0.9" numOctaves="2"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
           </defs>
-          <g fill="none" strokeWidth="14" strokeLinecap="round" filter="url(#rough)">
-            <path d="M70 200 C 100 100, 220 80, 270 180 S 340 320, 250 340" stroke="#B8A89A" opacity="0.7"/>
-            <path d="M120 250 C 180 200, 220 240, 260 200" stroke="#C97B7B" opacity="0.7"/>
-            <path d="M180 120 C 220 140, 260 180, 280 230" stroke="#A88BB5" opacity="0.6"/>
+          <g fill="none" strokeLinecap="round" filter="url(#rough)">
+            <path d="M70 200 C 100 100, 220 80, 270 180 S 340 320, 250 340" stroke="#B8A89A" strokeWidth="14" opacity="0.75"/>
+            <path d="M110 255 C 170 205, 230 250, 285 205" stroke="#D86B7B" strokeWidth="22" opacity="0.95"/>
+            <path d="M140 290 C 200 245, 250 285, 300 235" stroke="#E89AA8" strokeWidth="18" opacity="0.85"/>
+            <path d="M95 230 C 160 185, 240 225, 295 175" stroke="#C9526B" strokeWidth="16" opacity="0.8"/>
+            <path d="M180 120 C 220 140, 260 180, 280 230" stroke="#A88BB5" strokeWidth="14" opacity="0.6"/>
           </g>
         </svg>
       </div>
@@ -233,7 +235,7 @@ const FAQ = () => {
 /* ───────── Page ───────── */
 const Index = () => {
   useSEO({
-    title: "WellMindAI AI — A judgement-free space for mental wellbeing",
+    title: "WellMindAI — A judgement-free space for mental wellbeing",
     description: "Talk, type, or just breathe. AI counselors Yaro and Riya help you reflect, find patterns, and grow at your own pace.",
     path: "/",
   });
