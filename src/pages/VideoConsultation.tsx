@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { Video, ArrowLeft, Heart } from "lucide-react";
+import { Video, ArrowLeft, Heart, Shield, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { COUNSELORS, getCounselor, type CounselorId } from "@/lib/counselors";
 import { useSEO } from "@/hooks/useSEO";
@@ -17,8 +17,8 @@ const VideoConsultation = () => {
   const counselor = getCounselor(activeId);
 
   useSEO({
-    title: "Video therapy — Yaro or Ava | WellMind AI",
-    description: "Face-to-face video therapy session. Yaro on Soul Machines, Ava on Tavus. Private, server-enforced session limits.",
+    title: "Video therapy — Yaro or Riya | WellMind AI",
+    description: "Face-to-face AI therapy. Private, encrypted, session limits enforced server-side.",
     path: "/consultation/video",
   });
 
@@ -28,18 +28,16 @@ const VideoConsultation = () => {
       <main className="flex-grow pt-24 pb-12">
         <AnimatePresence mode="wait">
           {mode === "selection" && (
-            <motion.section key="sel" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-5xl mx-auto px-6">
+            <motion.section key="sel" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-4xl mx-auto px-6">
               <Button variant="ghost" onClick={() => navigate("/consultation")} className="mb-4 rounded-full">
                 <ArrowLeft className="w-4 h-4 mr-1" /> back
               </Button>
               <div className="text-center mb-10">
                 <p className="font-hand text-3xl text-primary mb-2">video therapy.</p>
                 <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground">
-                  Pick a face. <span className="hand-underline">We connect you.</span>
+                  Pick a face.
                 </h1>
-                <p className="mt-3 text-foreground/70 max-w-xl mx-auto">
-                  Yaro runs on Soul Machines digital human. Ava runs on Tavus replica. Both encrypted, both server-gated.
-                </p>
+                <p className="mt-3 text-foreground/70">A short call, just for you.</p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -52,23 +50,25 @@ const VideoConsultation = () => {
                     className="rounded-3xl p-7 bg-[#2A2522] text-[#F5EFE6] shadow-crayon hover:translate-y-[-4px] transition-transform"
                   >
                     <div className="flex flex-col items-center text-center">
-                      <div className="w-32 h-32 rounded-full bg-[#3a322d] border border-[#F5EFE6]/20 flex items-center justify-center mb-4">
-                        <span className="font-display text-6xl text-[#F5EFE6]">{c.name[0]}</span>
+                      <div className="w-28 h-28 rounded-full bg-[#3a322d] border border-[#F5EFE6]/20 flex items-center justify-center mb-4">
+                        <span className="font-display text-5xl text-[#F5EFE6]">{c.name[0]}</span>
                       </div>
                       <h2 className="font-display text-3xl">{c.name}</h2>
-                      <p className="text-sm uppercase tracking-widest text-[#E8B8A8] mt-1">
-                        {c.id === "yaro" ? "Soul Machines" : "Tavus replica"}
-                      </p>
-                      <p className="text-sm text-[#F5EFE6]/70 mt-3 max-w-xs">{c.bio}</p>
+                      <p className="text-sm text-[#F5EFE6]/70 mt-2 max-w-xs">{c.tagline}</p>
                       <Button
                         onClick={() => { setActiveId(c.id); setMode("live"); }}
                         className="mt-6 h-12 px-6 rounded-full bg-[#F5EFE6] text-[#2A2522] hover:bg-[#F5EFE6]/90 font-semibold"
                       >
-                        <Video className="w-4 h-4 mr-2" /> Start video with {c.name}
+                        <Video className="w-4 h-4 mr-2" /> Start with {c.name}
                       </Button>
                     </div>
                   </motion.div>
                 ))}
+              </div>
+
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-foreground/60">
+                <span className="inline-flex items-center gap-1.5"><Lock className="w-3 h-3" /> Encrypted in transit</span>
+                <span className="inline-flex items-center gap-1.5"><Shield className="w-3 h-3" /> Session length is gated server-side</span>
               </div>
             </motion.section>
           )}
@@ -81,7 +81,7 @@ const VideoConsultation = () => {
               {activeId === "yaro" ? (
                 <div className="rounded-3xl p-2 bg-[#2A2522]">
                   <SoulMachinesSession counselorId="yaro" counselorName="Yaro" />
-                  <p className="text-center text-xs text-[#F5EFE6]/60 py-3">Yaro · Soul Machines digital human · Encrypted</p>
+                  <p className="text-center text-xs text-[#F5EFE6]/60 py-3">Yaro · digital human · encrypted</p>
                 </div>
               ) : (
                 <TavusVideoConsultation doctorType="general" onEndCall={() => setMode("done")} />
