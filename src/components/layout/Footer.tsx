@@ -29,7 +29,6 @@ const Footer = () => {
       links: [
         { to: "/privacy", label: "Privacy" },
         { to: "/terms", label: "Terms" },
-        { to: "/trust", label: "Trust center" },
         { to: "/subscription", label: "Plans" },
         { to: "/referrals", label: "Refer & earn" },
       ],

@@ -14,7 +14,7 @@ import Auth from "./pages/Auth";
 import Policy from "./pages/Policy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
-import TrustCenter from "./pages/TrustCenter";
+
 import Careers from "./pages/Careers";
 import NotFound from "./pages/NotFound";
 import Journal from "./pages/Journal";
@@ -34,6 +34,7 @@ import Business from "./pages/Business";
 import UpsellExpired from "./pages/UpsellExpired";
 import B2BBillingEngine from "./pages/B2BBillingEngine";
 import B2BAdminDashboard from "./pages/B2BAdminDashboard";
+import B2BTestAccess from "./pages/B2BTestAccess";
 
 const queryClient = new QueryClient();
 
@@ -51,12 +52,13 @@ const App = () => (
             <Route path="/policy" element={<Policy />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsConditions />} />
-            <Route path="/trust" element={<TrustCenter />} />
+            
             <Route path="/careers" element={<Careers />} />
             <Route path="/memorial-chat" element={<MemorialChat />} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/business" element={<Business />} />
             <Route path="/business/buy" element={<B2BBillingEngine />} />
+            <Route path="/business/test-access" element={<B2BTestAccess />} />
             <Route path="/business/dashboard" element={<ProtectedRoute><B2BAdminDashboard /></ProtectedRoute>} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

@@ -3,21 +3,25 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ElevenLabsPhoneCounselor from "@/components/ui-custom/ElevenLabsPhoneCounselor";
+import HumeEVISession from "@/components/ui-custom/HumeEVISession";
 import { Button } from "@/components/ui/button";
-import { Phone, ArrowLeft, Heart, Mic } from "lucide-react";
+import { Phone, ArrowLeft, Heart, Mic, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { COUNSELORS, getCounselor, type CounselorId } from "@/lib/counselors";
 import { useSEO } from "@/hooks/useSEO";
+
+type Engine = "hume" | "elevenlabs";
 
 const AudioConsultation = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"selection" | "live" | "done">("selection");
   const [activeId, setActiveId] = useState<CounselorId>("ava");
+  const [engine, setEngine] = useState<Engine>("hume");
   const counselor = getCounselor(activeId);
 
   useSEO({
-    title: "Audio call — Yaro or Ava | WellMind AI",
-    description: "Real-time voice call powered by ElevenLabs Conversational AI. Zero-latency, natural intonation.",
+    title: "Audio therapy — Yaro or Riya | WellMind AI",
+    description: "Voice-to-voice AI therapy. Hume EVI detects emotion in real-time, or use ElevenLabs Conversational AI.",
     path: "/consultation/audio",
   });
 
@@ -31,14 +35,29 @@ const AudioConsultation = () => {
               <Button variant="ghost" onClick={() => navigate("/consultation")} className="mb-4 rounded-full">
                 <ArrowLeft className="w-4 h-4 mr-1" /> back
               </Button>
-              <div className="text-center mb-10">
-                <p className="font-hand text-3xl text-primary mb-2">audio call.</p>
+              <div className="text-center mb-8">
+                <p className="font-hand text-3xl text-primary mb-2">audio therapy.</p>
                 <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground">
-                  Pick a voice. <span className="hand-underline">We dial in.</span>
+                  Talk it out. <span className="hand-underline">We listen.</span>
                 </h1>
-                <p className="mt-3 text-foreground/70 max-w-xl mx-auto">
-                  Powered by ElevenLabs Conversational AI — zero-latency, natural intonation, like a real phone call.
-                </p>
+              </div>
+
+              {/* Engine toggle */}
+              <div className="flex justify-center mb-8">
+                <div className="inline-flex rounded-full bg-secondary p-1 border border-border">
+                  <button
+                    onClick={() => setEngine("hume")}
+                    className={`px-5 h-10 rounded-full text-sm font-medium flex items-center gap-1.5 transition ${engine === "hume" ? "bg-foreground text-background" : "text-foreground/70"}`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Hume EVI · emotion-aware
+                  </button>
+                  <button
+                    onClick={() => setEngine("elevenlabs")}
+                    className={`px-5 h-10 rounded-full text-sm font-medium transition ${engine === "elevenlabs" ? "bg-foreground text-background" : "text-foreground/70"}`}
+                  >
+                    ElevenLabs · fast
+                  </button>
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -56,8 +75,7 @@ const AudioConsultation = () => {
                         <span className="absolute -bottom-2 right-2 font-display text-2xl bg-[#F5EFE6] text-[#2A2522] rounded-full w-10 h-10 flex items-center justify-center">{c.name[0]}</span>
                       </div>
                       <h2 className="font-display text-3xl">{c.name}</h2>
-                      <p className="text-sm uppercase tracking-widest text-[#E8B8A8] mt-1">ElevenLabs voice</p>
-                      <p className="text-sm text-[#F5EFE6]/70 mt-3 max-w-xs">{c.bio}</p>
+                      <p className="text-sm text-[#F5EFE6]/70 mt-2 max-w-xs">{c.tagline}</p>
                       <Button
                         onClick={() => { setActiveId(c.id); setMode("live"); }}
                         className="mt-6 h-12 px-6 rounded-full bg-[#F5EFE6] text-[#2A2522] hover:bg-[#F5EFE6]/90 font-semibold"
@@ -76,13 +94,21 @@ const AudioConsultation = () => {
               <Button variant="ghost" onClick={() => setMode("selection")} className="mb-4 rounded-full">
                 <ArrowLeft className="w-4 h-4 mr-1" /> back
               </Button>
-              <ElevenLabsPhoneCounselor
-                counselorName={counselor.name}
-                specialty="Mental wellness counselor"
-                personaPrompt={counselor.audioPrompt}
-                firstMessage={counselor.audioFirstMessage}
-                onEnd={() => setMode("done")}
-              />
+              {engine === "hume" ? (
+                <HumeEVISession
+                  counselorName={counselor.name}
+                  systemPrompt={counselor.audioPrompt}
+                  onEnd={() => setMode("done")}
+                />
+              ) : (
+                <ElevenLabsPhoneCounselor
+                  counselorName={counselor.name}
+                  specialty="Mental wellness counselor"
+                  personaPrompt={counselor.audioPrompt}
+                  firstMessage={counselor.audioFirstMessage}
+                  onEnd={() => setMode("done")}
+                />
+              )}
             </motion.div>
           )}
 
