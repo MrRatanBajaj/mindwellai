@@ -3,38 +3,10 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/Footer";
+import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
-import { Mic, MessageCircle, Sparkles, ChevronDown, Phone, Video, BookOpen } from "lucide-react";
+import { Mic, MessageCircle, Sparkles, ChevronDown } from "lucide-react";
 import judgementArt from "@/assets/judgement-feather.png";
-
-/* ───────── Top nav (landing-only) ───────── */
-const landingNav = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "/about" },
-  { label: "Blog", href: "/blog" },
-  { label: "Research", href: "#research" },
-  { label: "News", href: "/blog" },
-];
-
-const LandingNav = () => (
-  <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md">
-    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-      <Link to="/" className="font-display text-3xl text-foreground tracking-tight">WellMindAI</Link>
-      <nav className="hidden md:flex items-center gap-8 text-[15px] text-foreground/80">
-        {landingNav.map((it) =>
-          it.href.startsWith("#") ? (
-            <a key={it.label} href={it.href} className="hover:text-foreground transition-colors">{it.label}</a>
-          ) : (
-            <Link key={it.label} to={it.href} className="hover:text-foreground transition-colors">{it.label}</Link>
-          )
-        )}
-      </nav>
-      <Button asChild className="h-11 rounded-full bg-[#2A2522] hover:bg-[#2A2522]/90 text-[#F5EFE6] px-6 font-medium">
-        <Link to="/auth">Start free <Sparkles className="ml-1.5 h-4 w-4" /></Link>
-      </Button>
-    </div>
-  </header>
-);
 
 /* ───────── Hero ───────── */
 const Hero = () => (
@@ -175,7 +147,7 @@ const JudgementSection = () => (
           As you evolve, your guidance evolves too. Above all, it's a judgment-free space,
           designed for honest reflection and growth at your own pace.
         </p>
-        <Link to="/about" className="inline-block mt-6 text-primary underline underline-offset-4 font-medium">
+        <Link to="/judgement-free-space" className="inline-block mt-6 text-primary underline underline-offset-4 font-medium">
           Read more →
         </Link>
       </div>

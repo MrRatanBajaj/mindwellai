@@ -1,4 +1,4 @@
-import Header from "@/components/layout/Header";
+import LandingNav from "@/components/layout/LandingNav";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
@@ -40,7 +40,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-hidden">
-      <Header />
+      <LandingNav />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-calm-sage-light/40 via-calm-sky/20 to-background">
