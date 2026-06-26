@@ -147,7 +147,7 @@ const JudgementSection = () => (
           As you evolve, your guidance evolves too. Above all, it's a judgment-free space,
           designed for honest reflection and growth at your own pace.
         </p>
-        <Link to="/about" className="inline-block mt-6 text-primary underline underline-offset-4 font-medium">
+        <Link to="/judgement-free-space" className="inline-block mt-6 text-primary underline underline-offset-4 font-medium">
           Read more →
         </Link>
       </div>
