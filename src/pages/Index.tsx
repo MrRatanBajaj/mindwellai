@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { Mic, MessageCircle, Sparkles, ChevronDown, Phone, Video, BookOpen } from "lucide-react";
+import judgementArt from "@/assets/judgement-feather.png";
 
 /* ───────── Top nav (landing-only) ───────── */
 const landingNav = [
