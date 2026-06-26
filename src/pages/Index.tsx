@@ -1,289 +1,252 @@
-import { useEffect } from "react";
-import { useSEO } from "@/hooks/useSEO";
-import Footer from "@/components/layout/Footer";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import { ArrowRight, BookOpen, Brain, Heart, MessageCircle, Phone, ShieldCheck, Sparkles, Video } from "lucide-react";
+import Footer from "@/components/layout/Footer";
+import { useSEO } from "@/hooks/useSEO";
+import { Mic, MessageCircle, Sparkles, ChevronDown, Phone, Video, BookOpen } from "lucide-react";
 
+/* ───────── Top nav (landing-only) ───────── */
 const landingNav = [
   { label: "Home", href: "#home" },
   { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
   { label: "Research", href: "#research" },
-];
-
-const faqs = [
-  {
-    question: "Is the free plan really free?",
-    answer: "Yes. You get 7 days to try WellMindAI, including text care, journaling, audio screening, and one short video trial.",
-  },
-  {
-    question: "Who are the counselors?",
-    answer: "WellMindAI keeps the experience simple with two counselors: AVA and YARO for voice and video support.",
-  },
-  {
-    question: "Is video counseling private?",
-    answer: "Sessions are protected by account access, server-side usage limits, and privacy-first storage rules.",
-  },
-  {
-    question: "Can I use only audio?",
-    answer: "Yes. Audio and video counseling now live on separate pages so each plan limit stays clear.",
-  },
-  {
-    question: "Is this a replacement for emergency care?",
-    answer: "No. If there is immediate danger, contact local emergency services or a crisis helpline right away.",
-  },
+  { label: "News", href: "/blog" },
 ];
 
 const LandingNav = () => (
-  <header className="fixed top-0 left-0 right-0 z-50 border-b border-foreground/10 bg-background/90 backdrop-blur-md">
-    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-      <Link to="/" className="flex items-center gap-2" aria-label="WellMindAI home">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-foreground/80 bg-card shadow-pencil">
-          <span className="font-hand text-2xl leading-none text-primary">W</span>
-        </span>
-        <span className="font-display text-2xl font-semibold text-foreground">WellMindAI</span>
-      </Link>
-
-      <nav className="hidden items-center gap-1 rounded-full border border-foreground/10 bg-card/60 px-2 py-1 md:flex" aria-label="Landing page navigation">
-        {landingNav.map((item) =>
-          item.href.startsWith("#") ? (
-            <a key={item.label} href={item.href} className="rounded-full px-4 py-2 text-sm font-semibold text-foreground/75 transition-colors hover:bg-secondary/70 hover:text-foreground">
-              {item.label}
-            </a>
+  <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md">
+    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <Link to="/" className="font-display text-3xl text-foreground tracking-tight">WellMind</Link>
+      <nav className="hidden md:flex items-center gap-8 text-[15px] text-foreground/80">
+        {landingNav.map((it) =>
+          it.href.startsWith("#") ? (
+            <a key={it.label} href={it.href} className="hover:text-foreground transition-colors">{it.label}</a>
           ) : (
-            <Link key={item.label} to={item.href} className="rounded-full px-4 py-2 text-sm font-semibold text-foreground/75 transition-colors hover:bg-secondary/70 hover:text-foreground">
-              {item.label}
-            </Link>
-          ),
+            <Link key={it.label} to={it.href} className="hover:text-foreground transition-colors">{it.label}</Link>
+          )
         )}
       </nav>
-
-      <Button asChild className="h-11 rounded-full border-2 border-foreground/80 bg-foreground px-5 font-semibold text-background shadow-pencil hover:bg-foreground/90">
-        <Link to="/auth">
-          Start free <Sparkles className="ml-1.5 h-4 w-4" />
-        </Link>
+      <Button asChild className="h-11 rounded-full bg-[#2A2522] hover:bg-[#2A2522]/90 text-[#F5EFE6] px-6 font-medium">
+        <Link to="/auth">Start free <Sparkles className="ml-1.5 h-4 w-4" /></Link>
       </Button>
     </div>
   </header>
 );
 
-const OilDoodle = () => (
-  <div className="oil-doodle-wrap" aria-hidden="true">
-    <svg viewBox="0 0 620 430" className="h-full w-full" role="img">
-      <path className="oil-stroke oil-stroke-muted" d="M95 310 C155 170, 265 165, 280 230 C295 292, 184 326, 245 375 C315 432, 446 330, 525 202" />
-      <path className="oil-stroke oil-stroke-sage" d="M85 280 C168 235, 256 250, 345 282 C430 312, 506 291, 565 230" />
-      <path className="oil-stroke oil-stroke-primary" d="M207 372 C218 300, 246 254, 292 210 C342 160, 419 139, 498 104" />
-      <path className="oil-stroke oil-stroke-soft" d="M384 80 C465 122, 512 172, 548 246 C575 300, 575 342, 553 382" />
-      <path className="oil-stroke oil-stroke-muted oil-stroke-thin" d="M128 118 C184 70, 238 78, 276 126" />
-      <path className="oil-stroke oil-stroke-muted oil-stroke-thin" d="M338 238 C393 190, 454 178, 512 190" />
-    </svg>
+/* ───────── Hero ───────── */
+const Hero = () => (
+  <section id="home" className="pt-32 pb-20 px-6">
+    <div className="max-w-5xl mx-auto text-center">
+      <motion.h1
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
+        className="font-display text-5xl md:text-7xl font-normal leading-[1.05] text-foreground tracking-tight"
+      >
+        AI for mental wellbeing
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
+        className="mt-6 text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto"
+      >
+        Talk, type, or just breathe. WellMind connects the dots between your thoughts,
+        feelings and behaviors — one quiet conversation at a time.
+      </motion.p>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+        className="mt-10 flex flex-wrap items-center justify-center gap-3"
+      >
+        <Button asChild className="h-14 px-8 rounded-full bg-[#2A2522] hover:bg-[#2A2522]/90 text-[#F5EFE6] text-base">
+          <Link to="/auth">Get started free</Link>
+        </Button>
+        <Button asChild variant="ghost" className="h-14 px-6 rounded-full text-base text-foreground/80">
+          <Link to="/about">How it works</Link>
+        </Button>
+      </motion.div>
+    </div>
+  </section>
+);
+
+/* ───────── Dark card (talktoash-style) ───────── */
+const DarkCard = ({
+  children, className = "", side,
+}: { children: React.ReactNode; className?: string; side?: React.ReactNode }) => (
+  <div className={`grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-0 rounded-[28px] overflow-hidden bg-[#EFE3D3] ${className}`}>
+    <div className="bg-[#2A2522] text-[#F5EFE6] p-8 md:p-10 min-h-[280px] flex items-center justify-center">
+      {children}
+    </div>
+    <div className="p-8 md:p-10 flex flex-col justify-center">
+      {side}
+    </div>
   </div>
 );
 
-const Index = () => {
-  const navigate = useNavigate();
-  const { user, loading } = useAuth();
+/* ───────── Cards grid section ───────── */
+const FeatureGrid = () => (
+  <section className="px-6 pb-12">
+    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <DarkCard
+        side={
+          <>
+            <h3 className="font-display text-2xl md:text-3xl text-foreground mb-3">
+              Don't know where to start? WellMind does.
+            </h3>
+            <p className="text-foreground/70">
+              Whether you're overwhelmed, curious, or just need to talk it out —
+              your AI counselor meets you there.
+            </p>
+          </>
+        }
+      >
+        <div className="space-y-3 w-full max-w-xs">
+          <div className="inline-block px-4 py-2 rounded-2xl bg-[#3a322d] text-sm">Hey WellMind!</div>
+          <div className="px-4 py-3 rounded-2xl border border-[#E8B8A8]/50 text-[#F5EFE6]">
+            Great to meet you, let's get started.
+          </div>
+        </div>
+      </DarkCard>
 
+      <DarkCard
+        side={
+          <>
+            <h3 className="font-display text-2xl md:text-3xl text-foreground mb-3">
+              Breakthrough insights from day one
+            </h3>
+            <p className="text-foreground/70">
+              From your first conversation, WellMind connects the dots between your
+              thoughts, feelings, and behaviors to unlock new understanding.
+            </p>
+          </>
+        }
+      >
+        <div className="text-center">
+          <p className="font-display text-2xl text-[#F5EFE6] mb-3">New Insight</p>
+          <div className="px-5 py-4 rounded-2xl border border-[#E8B8A8]/50 italic text-[#F5EFE6]/90 text-sm">
+            "I'm starting to think my sleep challenges are really just my work
+            stresses showing up differently."
+          </div>
+        </div>
+      </DarkCard>
+    </div>
+
+    {/* 3-up row */}
+    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+      {[
+        {
+          icon: <Mic className="w-10 h-10 text-[#E8B8A8]" />,
+          title: "Talk or text 24/7, WellMind listens",
+          body: "Phone-call style audio with Yaro or Ava, or just type. Whatever feels right.",
+        },
+        {
+          icon: <MessageCircle className="w-10 h-10 text-[#E8B8A8]" />,
+          title: "WellMind discovers your patterns",
+          body: "Each conversation helps connect today's story to a pattern from last week.",
+        },
+        {
+          icon: <Sparkles className="w-10 h-10 text-[#E8B8A8]" />,
+          title: "WellMind takes you on a journey",
+          body: "Come with your own agenda or let WellMind guide the way. A thoughtful next step, always.",
+        },
+      ].map((c, i) => (
+        <div key={i} className="rounded-[28px] bg-[#EFE3D3] overflow-hidden">
+          <div className="bg-[#2A2522] h-44 flex items-center justify-center">{c.icon}</div>
+          <div className="p-6">
+            <h4 className="font-display text-xl text-foreground mb-2">{c.title}</h4>
+            <p className="text-foreground/70 text-sm">{c.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+/* ───────── Judgement-free split ───────── */
+const JudgementSection = () => (
+  <section className="px-6 py-16">
+    <div className="max-w-6xl mx-auto rounded-[28px] bg-[#EFE3D3] p-8 md:p-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight">
+          A judgement-free space that grows with you
+        </h2>
+        <p className="mt-5 text-foreground/75 leading-relaxed">
+          WellMind greets you exactly where you are — remembering your stories,
+          preferences and progress — so every conversation picks up where you left off.
+          As you evolve, your guidance evolves too. Above all, it's a judgment-free space,
+          designed for honest reflection and growth at your own pace.
+        </p>
+        <Link to="/about" className="inline-block mt-6 text-primary underline underline-offset-4 font-medium">
+          Read more →
+        </Link>
+      </div>
+      <div className="relative h-[320px] md:h-[380px]">
+        <svg viewBox="0 0 400 400" className="w-full h-full" aria-hidden>
+          <defs>
+            <filter id="rough"><feTurbulence baseFrequency="0.9" numOctaves="2"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+          </defs>
+          <g fill="none" strokeWidth="14" strokeLinecap="round" filter="url(#rough)">
+            <path d="M70 200 C 100 100, 220 80, 270 180 S 340 320, 250 340" stroke="#B8A89A" opacity="0.7"/>
+            <path d="M120 250 C 180 200, 220 240, 260 200" stroke="#C97B7B" opacity="0.7"/>
+            <path d="M180 120 C 220 140, 260 180, 280 230" stroke="#A88BB5" opacity="0.6"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+);
+
+/* ───────── FAQ ───────── */
+const faqs = [
+  { q: "Is the free plan really free?", a: "Yes — 7 days of text care, journaling, audio screening and a short video trial. No card needed." },
+  { q: "Who are the counselors?", a: "Two AI counselors: Yaro (Soul Machines video / ElevenLabs voice) and Ava (Tavus video / ElevenLabs voice)." },
+  { q: "Is video counseling private?", a: "Sessions are gated by your account, server-side usage limits and privacy-first storage." },
+  { q: "Can I use audio only?", a: "Yes. Audio and video live on separate pages so plan limits stay clear." },
+  { q: "Is this a replacement for emergency care?", a: "No. In a crisis, contact local emergency services or a helpline right away." },
+];
+
+const FAQ = () => {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section className="px-6 pb-24">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="font-display text-4xl md:text-5xl text-foreground text-center mb-10">
+          Frequently asked
+        </h2>
+        <div className="space-y-3">
+          {faqs.map((f, i) => (
+            <div key={i} className="rounded-2xl bg-[#EFE3D3] overflow-hidden">
+              <button
+                onClick={() => setOpen(open === i ? null : i)}
+                className="w-full flex items-center justify-between p-5 text-left"
+              >
+                <span className="font-display text-lg text-foreground">{f.q}</span>
+                <ChevronDown className={`w-5 h-5 transition-transform ${open === i ? "rotate-180" : ""}`} />
+              </button>
+              {open === i && <div className="px-5 pb-5 text-foreground/75">{f.a}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/* ───────── Page ───────── */
+const Index = () => {
   useSEO({
-    title: "WellMindAI — talk to someone, gently.",
-    description: "Two counselors. One tap. Voice or video mental wellness sessions, drawn with care.",
+    title: "WellMind AI — A judgement-free space for mental wellbeing",
+    description: "Talk, type, or just breathe. AI counselors Yaro and Ava help you reflect, find patterns, and grow at your own pace.",
     path: "/",
   });
 
-  useEffect(() => {
-    if (!loading && user) navigate("/dashboard", { replace: true });
-  }, [user, loading, navigate]);
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-background text-foreground">
       <LandingNav />
-
-      {/* HERO — peach + sage split, hand-drawn */}
-      <section id="home" className="relative flex-grow overflow-hidden pt-28 pb-16">
-        {/* Sage corner wash */}
-        <div aria-hidden className="absolute -top-20 -right-20 w-[40rem] h-[40rem] rounded-full bg-pastel-sage opacity-80 blur-2xl -z-10" />
-        <div aria-hidden className="absolute -bottom-32 -left-20 w-[36rem] h-[36rem] rounded-full bg-pastel-cream opacity-80 blur-2xl -z-10" />
-
-        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-[1.05fr_1fr] gap-12 items-center">
-          {/* Left */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <p className="font-hand text-3xl text-primary mb-3">hi, you.</p>
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl leading-[1.02] font-semibold mb-6 text-balance">
-              A judgment-free space that grows with you.
-            </h1>
-            <p className="text-lg text-foreground/75 max-w-lg mb-8 leading-relaxed">
-              Talk to AVA or YARO by voice or video. Calm, private support when your mind feels too full.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                size="lg"
-                onClick={() => navigate("/auth")}
-                className="h-14 px-7 rounded-full text-base font-semibold bg-primary text-primary-foreground border-2 border-foreground/80 shadow-pencil hover:rotate-[-1deg] transition-transform"
-              >
-                Start talking <ArrowRight className="w-5 h-5 ml-1.5" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate("/consultation")}
-                className="h-14 px-7 rounded-full text-base font-semibold border-2 border-foreground bg-card hover:bg-card/80"
-              >
-                choose care
-              </Button>
-            </div>
-            <p className="font-hand text-xl text-foreground/60 mt-6">
-              7 days free. no card. anonymous.
-            </p>
-          </motion.div>
-
-          {/* Right — dark oil-pencil cards inspired by the reference */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15, duration: 0.6 }}
-            className="grid gap-4"
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                { name: "AVA", note: "soft voice care", icon: MessageCircle },
-                { name: "YARO", note: "steady video care", icon: Video },
-              ].map((c) => (
-                <div key={c.name} className="landing-ink-card min-h-64 hover-lift">
-                  <div className="oil-orbit" />
-                  <div className="relative z-10 flex h-full flex-col justify-between">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-card/15 px-4 py-2 font-hand text-2xl">{c.name}</span>
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-card/35 bg-card/10">
-                        <c.icon className="h-5 w-5" />
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-display text-3xl leading-tight">{c.note}</p>
-                      <p className="mt-3 max-w-xs text-sm text-card/75">One tap. Private room. Clear plan limits.</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="pastel-card flex items-center gap-5 bg-pastel-cream">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-foreground/70 bg-pastel-sage shadow-pencil">
-                <Brain className="h-7 w-7" />
-              </div>
-              <p className="text-base leading-relaxed text-foreground/75">
-                Your stories, mood notes, and coping patterns stay connected, so support feels less robotic and more human.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Ash-inspired judgment-free feature */}
-      <section className="border-t-2 border-foreground/10 bg-card/40 py-16">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="landing-paper-shell grid gap-10 overflow-hidden lg:grid-cols-[0.95fr_1.25fr] lg:items-center">
-            <motion.div initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-              <h2 className="font-display text-4xl leading-tight md:text-5xl">A judgment-free space that grows with you</h2>
-              <p className="mt-6 max-w-md text-lg leading-relaxed text-foreground/75">
-                WellMindAI remembers your care journey gently, so every check-in starts closer to where you are.
-              </p>
-              <Button asChild variant="link" className="mt-5 h-auto p-0 text-base font-semibold text-primary underline-offset-4 hover:underline">
-                <Link to="/about">Read more <ArrowRight className="ml-1 h-4 w-4" /></Link>
-              </Button>
-            </motion.div>
-            <OilDoodle />
-          </div>
-        </div>
-      </section>
-
-      {/* Three soft promises — minimal, hand-drawn */}
-      <section className="bg-pastel-cream border-t-2 border-foreground/10 py-16">
-        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-3 gap-6">
-          {[
-            { hand: "tap", title: "one tap to talk", body: "No booking, no forms. Pick a face, choose voice or video." },
-            { hand: "feel", title: "no judgment", body: "Trained in CBT, ACT, DBT. We listen first, advise gently." },
-            { hand: "safe", title: "yours alone", body: "End-to-end encrypted. Anonymous by default." },
-          ].map((c, i) => (
-            <motion.div
-              key={c.title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="pastel-card hover-lift"
-              style={{ transform: `rotate(${(i - 1) * 0.6}deg)` }}
-            >
-              <p className="font-hand text-3xl text-primary mb-1">{c.hand}</p>
-              <h3 className="font-display text-xl mb-2">{c.title}</h3>
-              <p className="text-sm text-foreground/70 leading-relaxed">{c.body}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      <section id="research" className="border-t-2 border-foreground/10 bg-background py-16">
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="font-hand text-3xl text-primary">research, softly used</p>
-              <h2 className="font-display text-4xl">Care that follows real mental-health practice.</h2>
-            </div>
-            <p className="max-w-sm text-sm leading-relaxed text-foreground/65">CBT, DBT, ACT, mood journaling, and daily check-ins — without making the page feel clinical.</p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {[
-              { icon: BookOpen, title: "Journal patterns", body: "Short reflections become clear emotional notes." },
-              { icon: Brain, title: "Coping models", body: "Personal exercises adapt as your mood shifts." },
-              { icon: ShieldCheck, title: "Privacy rules", body: "Access and usage are enforced server-side." },
-            ].map((item) => (
-              <div key={item.title} className="pastel-card hover-lift">
-                <item.icon className="mb-4 h-7 w-7 text-primary" />
-                <h3 className="font-display text-2xl">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/70">{item.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Quiet CTA */}
-      <section className="py-20 bg-pastel-peach border-t-2 border-foreground/10">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <Heart className="w-10 h-10 text-primary mx-auto mb-4" />
-          <p className="font-hand text-4xl text-foreground/90 mb-2">you don't have to figure it out alone.</p>
-          <h2 className="font-display text-3xl md:text-4xl mb-6">Try a free 7-day session.</h2>
-          <Button
-            size="lg"
-            onClick={() => navigate("/auth")}
-            className="h-14 px-8 rounded-full bg-foreground text-background border-2 border-foreground hover:bg-foreground/90 font-semibold"
-          >
-            Begin <ArrowRight className="w-5 h-5 ml-1.5" />
-          </Button>
-        </div>
-      </section>
-
-      <section className="border-t-2 border-foreground/10 bg-pastel-cream py-16">
-        <div className="mx-auto max-w-3xl px-6">
-          <div className="mb-8 text-center">
-            <p className="font-hand text-3xl text-primary">small answers</p>
-            <h2 className="font-display text-4xl">FAQ</h2>
-          </div>
-          <div className="space-y-3">
-            {faqs.map((faq) => (
-              <details key={faq.question} className="faq-paper group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl">
-                  {faq.question}
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-foreground/20 bg-card font-sans text-sm transition-transform group-open:rotate-45">+</span>
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-foreground/70">{faq.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      <main>
+        <Hero />
+        <FeatureGrid />
+        <JudgementSection />
+        <FAQ />
+      </main>
       <Footer />
     </div>
   );
