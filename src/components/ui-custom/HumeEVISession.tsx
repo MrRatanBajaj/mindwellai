@@ -1,6 +1,5 @@
 import { VoiceProvider, useVoice } from "@humeai/voice-react";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Phone, PhoneOff, Mic, MicOff, Loader2, Heart, Sparkles, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -12,22 +11,37 @@ interface Props {
   onEnd?: () => void;
 }
 
-const Inner = ({ counselorName, onEnd }: { counselorName: string; onEnd?: () => void }) => {
-  const { connect, disconnect, status, isMuted, mute, unmute, messages, isPlaying } = useVoice();
+const Inner = ({
+  counselorName,
+  token,
+  configId,
+  systemPrompt,
+  onEnd,
+}: {
+  counselorName: string;
+  token: string;
+  configId: string | null;
+  systemPrompt?: string;
+  onEnd?: () => void;
+}) => {
+  const {
+    connect, disconnect, status, isMuted, mute, unmute,
+    isPlaying, lastAssistantProsodyMessage,
+  } = useVoice();
   const [duration, setDuration] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    if (status.value !== "connected") return;
-    const i = setInterval(() => setDuration((d) => d + 1), 1000);
-    return () => clearInterval(i);
-  }, [status.value]);
-
-  useEffect(() => {
-    // auto-connect
+    if (hasStarted) return;
+    setHasStarted(true);
     (async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        await connect();
+        await connect({
+          auth: { type: "accessToken", value: token },
+          ...(configId ? { configId } : {}),
+          sessionSettings: systemPrompt ? { systemPrompt } : undefined,
+        });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not connect to Hume EVI");
       }
@@ -36,17 +50,17 @@ const Inner = ({ counselorName, onEnd }: { counselorName: string; onEnd?: () => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (status.value !== "connected") return;
+    const i = setInterval(() => setDuration((d) => d + 1), 1000);
+    return () => clearInterval(i);
+  }, [status.value]);
+
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  // Latest emotion read from assistant messages
   const lastEmotion = (() => {
-    const last = [...messages].reverse().find((m) =>
-      // @ts-expect-error hume types include prosody on user/assistant messages
-      m.type === "user_message" && m.models?.prosody?.scores,
-    );
-    // @ts-expect-error
-    const scores = last?.models?.prosody?.scores;
+    const scores = lastAssistantProsodyMessage?.models?.prosody?.scores;
     if (!scores) return null;
     const top = Object.entries(scores).sort((a, b) => (b[1] as number) - (a[1] as number))[0];
     return top ? { name: top[0], score: Math.round((top[1] as number) * 100) } : null;
@@ -60,7 +74,7 @@ const Inner = ({ counselorName, onEnd }: { counselorName: string; onEnd?: () => 
         <span>Hume EVI · Emotion-aware</span>
         <span className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full ${live ? "bg-emerald-400 animate-pulse" : "bg-amber-400 animate-pulse"}`} />
-          {live ? "Encrypted call" : status.value === "connecting" ? "Connecting…" : "Idle"}
+          {live ? "Encrypted call" : status.value === "connecting" ? "Connecting…" : status.value === "error" ? "Error" : "Idle"}
         </span>
       </div>
 
@@ -90,20 +104,29 @@ const Inner = ({ counselorName, onEnd }: { counselorName: string; onEnd?: () => 
             Detected: <span className="font-semibold capitalize">{lastEmotion.name}</span> · {lastEmotion.score}%
           </div>
         )}
+        {status.value === "error" && (
+          <p className="mt-3 text-xs text-destructive-foreground bg-destructive/30 rounded-lg px-3 py-2">
+            {status.reason}
+          </p>
+        )}
       </div>
 
       <div className="px-8 pb-8 flex items-center justify-center gap-6">
         <button
           onClick={() => (isMuted ? unmute() : mute())}
           className="w-14 h-14 rounded-full bg-[#F5EFE6]/15 flex items-center justify-center hover:bg-[#F5EFE6]/25 transition"
+          aria-label={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
         </button>
         <button
-          onClick={() => { disconnect(); onEnd?.(); }}
+          onClick={async () => { await disconnect(); onEnd?.(); }}
           className="w-20 h-20 rounded-full bg-destructive hover:bg-destructive/90 flex items-center justify-center shadow-lg"
+          aria-label="End call"
         >
-          {status.value === "connecting" ? <Loader2 className="w-8 h-8 animate-spin" /> : <PhoneOff className="w-8 h-8 text-destructive-foreground" />}
+          {status.value === "connecting"
+            ? <Loader2 className="w-8 h-8 animate-spin" />
+            : <PhoneOff className="w-8 h-8 text-destructive-foreground" />}
         </button>
         <div className="w-14 h-14 rounded-full bg-[#F5EFE6]/15 flex items-center justify-center">
           <Phone className="w-6 h-6" />
@@ -126,7 +149,7 @@ const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke("hume-access-token");
-        if (error || !data?.accessToken) throw new Error(error?.message ?? "no token");
+        if (error || !data?.accessToken) throw new Error(data?.error ?? error?.message ?? "no token");
         setToken(data.accessToken);
         setConfigId(data.configId ?? null);
       } catch (e) {
@@ -137,7 +160,7 @@ const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
 
   if (error) {
     return (
-      <div className="rounded-3xl p-8 bg-[#2A2522] text-[#F5EFE6] text-center">
+      <div className="rounded-3xl p-8 bg-[#2A2522] text-[#F5EFE6] text-center max-w-md">
         <p className="font-display text-lg mb-2">Hume EVI unavailable</p>
         <p className="text-sm opacity-75">{error}</p>
       </div>
@@ -145,19 +168,21 @@ const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
   }
   if (!token) {
     return (
-      <div className="rounded-3xl p-8 bg-[#2A2522] text-[#F5EFE6] text-center flex items-center justify-center gap-2">
+      <div className="rounded-3xl p-8 bg-[#2A2522] text-[#F5EFE6] text-center flex items-center justify-center gap-2 max-w-md">
         <Loader2 className="w-5 h-5 animate-spin" /> Connecting Hume EVI…
       </div>
     );
   }
 
   return (
-    <VoiceProvider
-      auth={{ type: "accessToken", value: token }}
-      configId={configId ?? undefined}
-      sessionSettings={systemPrompt ? { systemPrompt } : undefined}
-    >
-      <Inner counselorName={counselorName} onEnd={onEnd} />
+    <VoiceProvider>
+      <Inner
+        counselorName={counselorName}
+        token={token}
+        configId={configId}
+        systemPrompt={systemPrompt}
+        onEnd={onEnd}
+      />
     </VoiceProvider>
   );
 };

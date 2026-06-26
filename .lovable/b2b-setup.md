@@ -1,16 +1,17 @@
-# WellMind AI — B2B Self-Serve schema (run once)
+# 🚨 RUN THIS SQL ONCE — Creates B2B tables + seeds TestCorp test company
 
-Open the SQL editor and paste this block:
-https://supabase.com/dashboard/project/tcqwhsdhbxlzxuoekjom/sql/new
+Open: https://supabase.com/dashboard/project/tcqwhsdhbxlzxuoekjom/sql/new
+
+Paste and run the entire block below. It's idempotent — safe to run multiple times.
 
 ```sql
--- 1) Master account (company / college / coaching)
+-- 1) Master account
 CREATE TABLE IF NOT EXISTS public.b2b_accounts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_name TEXT NOT NULL,
   organization_type TEXT NOT NULL CHECK (organization_type IN ('corporate','college','coaching')),
   admin_email TEXT NOT NULL,
-  admin_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  admin_user_id UUID,
   is_active BOOLEAN NOT NULL DEFAULT false,
   max_seats INT NOT NULL DEFAULT 10,
   seats_consumed INT NOT NULL DEFAULT 0,
@@ -38,9 +39,8 @@ CREATE TABLE IF NOT EXISTS public.b2b_gateways (
 );
 GRANT ALL ON public.b2b_gateways TO service_role;
 ALTER TABLE public.b2b_gateways ENABLE ROW LEVEL SECURITY;
--- no policies = no client access (edge functions use service role)
 
--- 3) Monthly anonymous analytics
+-- 3) Monthly analytics
 CREATE TABLE IF NOT EXISTS public.b2b_monthly_analytics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   account_id UUID NOT NULL REFERENCES public.b2b_accounts(id) ON DELETE CASCADE,
@@ -88,15 +88,33 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.b2b_increment_seat(UUID) FROM public;
 GRANT EXECUTE ON FUNCTION public.b2b_increment_seat(UUID) TO service_role;
+
+-- 6) SEED TestCorp Pvt Ltd + 20 employee passcodes + @testcorp.com domain
+DO $$
+DECLARE acc_id UUID;
+BEGIN
+  SELECT id INTO acc_id FROM public.b2b_accounts WHERE organization_name = 'TestCorp Pvt Ltd' LIMIT 1;
+  IF acc_id IS NULL THEN
+    INSERT INTO public.b2b_accounts
+      (organization_name, organization_type, admin_email, is_active, max_seats, contract_end)
+    VALUES
+      ('TestCorp Pvt Ltd', 'corporate', 'admin@testcorp.com', true, 20, now() + interval '90 days')
+    RETURNING id INTO acc_id;
+
+    INSERT INTO public.b2b_gateways (account_id, auth_strategy, target_domain)
+    VALUES (acc_id, 'domain_match', 'testcorp.com')
+    ON CONFLICT (target_domain) DO NOTHING;
+
+    INSERT INTO public.b2b_gateways (account_id, auth_strategy, secure_passcode)
+    SELECT acc_id, 'secure_passcode', 'EMP' || lpad(n::text, 3, '0')
+    FROM generate_series(1, 20) AS n
+    ON CONFLICT (secure_passcode) DO NOTHING;
+  END IF;
+END $$;
 ```
 
-After running, you can onboard a test company immediately:
+After running, open `/business/test-access` in your app to see all 20 codes.
 
-```sql
-INSERT INTO public.b2b_accounts (organization_name, organization_type, admin_email, is_active, max_seats, contract_end)
-VALUES ('Test Firm', 'corporate', 'admin@mytestfirm.com', true, 50, now() + interval '1 year')
-RETURNING id;
-
-INSERT INTO public.b2b_gateways (account_id, auth_strategy, target_domain)
-VALUES ('<paste-id>', 'domain_match', 'mytestfirm.com');
-```
+## Test methods
+1. **Domain**: sign up with `employee1@testcorp.com` (any password) → auto-premium.
+2. **Passcode**: sign up with any email, then call `b2b-verify-member` with body `{"passcode":"EMP001"}` → seat consumed, premium unlocked.

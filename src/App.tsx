@@ -34,6 +34,7 @@ import Business from "./pages/Business";
 import UpsellExpired from "./pages/UpsellExpired";
 import B2BBillingEngine from "./pages/B2BBillingEngine";
 import B2BAdminDashboard from "./pages/B2BAdminDashboard";
+import B2BTestAccess from "./pages/B2BTestAccess";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/plans" element={<Plans />} />
             <Route path="/business" element={<Business />} />
             <Route path="/business/buy" element={<B2BBillingEngine />} />
+            <Route path="/business/test-access" element={<B2BTestAccess />} />
             <Route path="/business/dashboard" element={<ProtectedRoute><B2BAdminDashboard /></ProtectedRoute>} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

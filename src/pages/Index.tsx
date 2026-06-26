@@ -135,7 +135,7 @@ const FeatureGrid = () => (
         {
           icon: <Mic className="w-10 h-10 text-[#E8B8A8]" />,
           title: "Talk or text 24/7, WellMind listens",
-          body: "Phone-call style audio with Yaro or Ava, or just type. Whatever feels right.",
+          body: "Phone-call style audio with Yaro or Riya, or just type. Whatever feels right.",
         },
         {
           icon: <MessageCircle className="w-10 h-10 text-[#E8B8A8]" />,
@@ -197,7 +197,7 @@ const JudgementSection = () => (
 /* ───────── FAQ ───────── */
 const faqs = [
   { q: "Is the free plan really free?", a: "Yes — 7 days of text care, journaling, audio screening and a short video trial. No card needed." },
-  { q: "Who are the counselors?", a: "Two AI counselors: Yaro (Soul Machines video / ElevenLabs voice) and Ava (Tavus video / ElevenLabs voice)." },
+  { q: "Who are the counselors?", a: "Two AI counselors: Yaro (Soul Machines video) and Riya (Tavus video). Audio runs on Hume EVI with emotion detection or ElevenLabs for low-latency." },
   { q: "Is video counseling private?", a: "Sessions are gated by your account, server-side usage limits and privacy-first storage." },
   { q: "Can I use audio only?", a: "Yes. Audio and video live on separate pages so plan limits stay clear." },
   { q: "Is this a replacement for emergency care?", a: "No. In a crisis, contact local emergency services or a helpline right away." },
@@ -234,7 +234,7 @@ const FAQ = () => {
 const Index = () => {
   useSEO({
     title: "WellMind AI — A judgement-free space for mental wellbeing",
-    description: "Talk, type, or just breathe. AI counselors Yaro and Ava help you reflect, find patterns, and grow at your own pace.",
+    description: "Talk, type, or just breathe. AI counselors Yaro and Riya help you reflect, find patterns, and grow at your own pace.",
     path: "/",
   });
 
