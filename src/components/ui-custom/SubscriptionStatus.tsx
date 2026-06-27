@@ -47,14 +47,15 @@ const SubscriptionStatus = () => {
 
         if (sub) {
           const start = (sub as any).current_period_start || new Date().toISOString();
+          const sb = supabase as any;
           const [v, a] = await Promise.all([
-            supabase.from("video_usage").select("seconds")
+            sb.from("video_usage").select("seconds")
               .eq("user_id", user.id).gte("started_at", start),
-            supabase.from("audio_usage" as any).select("seconds")
+            sb.from("audio_usage").select("seconds")
               .eq("user_id", user.id).gte("started_at", start),
           ]);
-          setVideoSecondsUsed((v.data ?? []).reduce((s, r: any) => s + (r.seconds ?? 0), 0));
-          setAudioSecondsUsed((a.data ?? []).reduce((s, r: any) => s + (r.seconds ?? 0), 0));
+          setVideoSecondsUsed((v.data ?? []).reduce((s: number, r: any) => s + (r.seconds ?? 0), 0));
+          setAudioSecondsUsed((a.data ?? []).reduce((s: number, r: any) => s + (r.seconds ?? 0), 0));
         }
       } catch (e) {
         console.error("sub fetch", e);
