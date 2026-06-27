@@ -1,180 +1,110 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { pricingPlans } from "@/components/ui-custom/Pricing";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Check, CreditCard, Calendar, Lock, Smartphone, Wallet, History, Crown, Globe2 } from "lucide-react";
+import {
+  Check, CreditCard, Calendar, Lock, Smartphone, Wallet, History, Crown,
+  Sparkles, Shield, Loader2, ArrowLeft,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentHistory from "@/components/ui-custom/PaymentHistory";
 import SubscriptionStatus from "@/components/ui-custom/SubscriptionStatus";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PLAN_USD_PREVIEW, detectIsInternational } from "@/lib/stripe";
+import { PLANS, getPlan } from "@/lib/pricing";
+import { motion } from "framer-motion";
 
 const Payment = () => {
   const [searchParams] = useSearchParams();
   const planId = searchParams.get("plan");
   const navigate = useNavigate();
-  
-  const [selectedPlan, setSelectedPlan] = useState(
-    pricingPlans.find(plan => plan.id === planId) || pricingPlans[0]
+  const { user } = useAuth();
+
+  const selectedPlan = useMemo(
+    () => getPlan(planId || "") || PLANS[0],
+    [planId],
   );
-  
+
   const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: "",
-    cardName: "",
-    expiryDate: "",
-    cvv: "",
     name: "",
-    email: "",
+    email: user?.email || "",
     phone: "",
   });
-  
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'wallet'>('upi');
+  const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "wallet">("upi");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [useStripe, setUseStripe] = useState(false);
 
   useEffect(() => {
-    // If user directly navigates to payment without selecting a plan, redirect to plans
-    if (!planId) {
-      navigate("/plans");
-    }
-
-    const plan = pricingPlans.find(plan => plan.id === planId);
-    if (plan) {
-      setSelectedPlan(plan);
-    }
+    if (!planId) navigate("/plans");
   }, [planId, navigate]);
 
   useEffect(() => {
-    // Auto-suggest Stripe for non-Indian visitors.
-    detectIsInternational().then((intl) => {
-      if (intl) setUseStripe(true);
-    });
-    // Handle Stripe redirect result
-    const stripeStatus = searchParams.get("stripe");
-    if (stripeStatus === "success") {
-      toast.success("Payment successful! Your subscription is now active.");
-      setTimeout(() => navigate("/dashboard"), 1500);
-    } else if (stripeStatus === "cancelled") {
-      toast.error("Stripe checkout cancelled.");
+    if (user?.email && !paymentDetails.email) {
+      setPaymentDetails((p) => ({ ...p, email: user.email! }));
     }
-  }, []);
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPaymentDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setPaymentDetails((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // For free trial, no payment processing needed
-    if (selectedPlan.isFree) {
-      toast.success("Your free trial has been activated! Redirecting to schedule your first session.");
-      setTimeout(() => {
-        navigate("/consultation");
-      }, 2000);
+    if (!user) {
+      toast.info("Please sign in to continue");
+      navigate(`/auth?redirect=/payment?plan=${selectedPlan.id}`);
       return;
     }
-    
-    // Validate required fields
     if (!paymentDetails.name || !paymentDetails.email) {
       toast.error("Please fill in your name and email");
       return;
     }
-
-    // International (Stripe) path
-    if (useStripe) {
-      setIsProcessing(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("stripe-checkout", {
-          body: {
-            planId: selectedPlan.id,
-            email: paymentDetails.email,
-            name: paymentDetails.name,
-            userId: user?.id || null,
-            currency: "usd",
-          },
-        });
-        if (error) throw error;
-        if (!data?.url) throw new Error("Stripe session not created");
-        window.location.href = data.url;
-        return;
-      } catch (err) {
-        console.error("Stripe checkout failed:", err);
-        toast.error("Could not start Stripe checkout. Please try again.");
-        setIsProcessing(false);
-        return;
-      }
-    }
-
-    if (paymentMethod === 'card' && (!paymentDetails.cardNumber || !paymentDetails.cardName || !paymentDetails.expiryDate || !paymentDetails.cvv)) {
-      toast.error("Please fill in all card details");
-      return;
-    }
-
     setIsProcessing(true);
-
     try {
-      // Get amount from plan price (remove ₹ symbol and convert to number)
-      const amount = parseInt(selectedPlan.price.replace('₹', ''));
-      
-      // Create Razorpay order
-      const { data: orderData, error } = await supabase.functions.invoke('razorpay-payment', {
+      const amount = selectedPlan.pricePaise / 100;
+      const { data: orderData, error } = await supabase.functions.invoke("razorpay-payment", {
         body: {
-          amount: amount,
-          currency: 'INR',
+          amount,
+          currency: "INR",
           name: paymentDetails.name,
           email: paymentDetails.email,
           phone: paymentDetails.phone,
           planId: selectedPlan.id,
-          paymentMethod: paymentMethod
-        }
+          paymentMethod,
+        },
       });
-
       if (error) throw error;
 
-      // Load Razorpay script
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => {
         const options = {
           key: orderData.keyId,
           amount: orderData.amount,
           currency: orderData.currency,
-          name: orderData.name,
-          description: orderData.description,
+          name: "WellMindAI",
+          description: `${selectedPlan.name} — ${selectedPlan.priceLabel}/${selectedPlan.periodLabel}`,
           order_id: orderData.orderId,
           prefill: orderData.prefill,
-          theme: orderData.theme,
+          theme: { color: "#6366f1" },
           method: orderData.method,
           handler: async (response: any) => {
             try {
-              // Verify payment
-              const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+              const { error: vErr } = await supabase.functions.invoke("verify-payment", {
                 body: {
                   razorpayPaymentId: response.razorpay_payment_id,
                   razorpayOrderId: response.razorpay_order_id,
-                  razorpaySignature: response.razorpay_signature
-                }
+                  razorpaySignature: response.razorpay_signature,
+                },
               });
-
-              if (verifyError) throw verifyError;
-
-              toast.success("Payment successful! Redirecting to schedule your session.");
-              setTimeout(() => {
-                navigate("/consultation");
-              }, 2000);
-            } catch (error) {
-              console.error('Payment verification failed:', error);
+              if (vErr) throw vErr;
+              toast.success(`${selectedPlan.name} active! Enjoy your sessions.`);
+              setTimeout(() => navigate("/dashboard"), 1500);
+            } catch {
               toast.error("Payment verification failed. Please contact support.");
             }
           },
@@ -182,353 +112,202 @@ const Payment = () => {
             ondismiss: () => {
               setIsProcessing(false);
               toast.error("Payment cancelled");
-            }
-          }
+            },
+          },
         };
-
-        const razorpay = new (window as any).Razorpay(options);
-        razorpay.open();
+        new (window as any).Razorpay(options).open();
         setIsProcessing(false);
       };
       document.head.appendChild(script);
-
-    } catch (error) {
-      console.error('Payment initiation failed:', error);
+    } catch {
       toast.error("Failed to initiate payment. Please try again.");
       setIsProcessing(false);
     }
   };
 
-  const { user } = useAuth();
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-secondary/30 to-background">
       <Header />
-      
-      <section className="pt-32 pb-10 px-6">
-        <div className="max-w-5xl mx-auto">
+      <main className="flex-grow pt-28 pb-16 px-4">
+        <div className="max-w-6xl mx-auto">
           <Tabs defaultValue={planId ? "checkout" : "subscription"} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-              <TabsTrigger value="subscription" className="flex items-center gap-2">
-                <Crown className="w-4 h-4" />
-                Subscription
+            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8 rounded-full p-1 h-12">
+              <TabsTrigger value="subscription" className="rounded-full gap-2">
+                <Crown className="w-4 h-4" /> Plan
               </TabsTrigger>
-              <TabsTrigger value="checkout" className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                Checkout
+              <TabsTrigger value="checkout" className="rounded-full gap-2">
+                <CreditCard className="w-4 h-4" /> Checkout
               </TabsTrigger>
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <History className="w-4 h-4" />
-                History
+              <TabsTrigger value="history" className="rounded-full gap-2">
+                <History className="w-4 h-4" /> History
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="subscription">
               <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold text-center mb-8">Your Subscription</h2>
                 <SubscriptionStatus />
               </div>
             </TabsContent>
 
             <TabsContent value="checkout">
-              <div className="text-center mb-8">
-                <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance animate-fade-in">
-                  Complete Your {selectedPlan.isFree ? "Free Trial" : "Purchase"}
-                </h1>
-                <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto text-balance animate-fade-in">
-                  {selectedPlan.isFree 
-                    ? "Get started with your free trial and experience the benefits of WellMindAI counseling." 
-                    : "You're one step away from beginning your mental wellness journey with WellMindAI."}
-                </p>
-              </div>
-              
-              <div className="max-w-4xl mx-auto">
-                <div className="glass-panel rounded-xl p-6 md:p-10 shadow-lg animate-fade-in">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Order Summary */}
-              <div className="col-span-1 p-6 bg-slate-50 rounded-lg border border-slate-200">
-                <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
-                <div className="mb-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-slate-600">Plan</span>
-                    <span className="font-medium">{selectedPlan.name}</span>
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/plans")}
+                className="mb-4 rounded-full"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" /> Change plan
+              </Button>
+
+              <div className="grid lg:grid-cols-[1fr_1.4fr] gap-8">
+                {/* LEFT — Order summary */}
+                <motion.aside
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="rounded-3xl border border-border/60 bg-card p-7 h-fit lg:sticky lg:top-28 shadow-sm"
+                >
+                  <div className="flex items-center gap-2 mb-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                    <Sparkles className="w-3.5 h-3.5" /> Order Summary
                   </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-slate-600">Sessions</span>
-                    <span className="font-medium">
-                      {selectedPlan.sessionsCount === 999 ? "Unlimited" : `${selectedPlan.sessionsCount} sessions`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-slate-600">Billing</span>
-                    <span className="font-medium">
-                      {selectedPlan.isFree ? "One-time" : "Monthly"}
-                    </span>
-                  </div>
-                </div>
-                <div className="border-t border-slate-200 pt-4 mb-4">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>{selectedPlan.price}{!selectedPlan.isFree && "/month"}</span>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-500 italic">
-                  {selectedPlan.isFree 
-                    ? "No payment information required for free trial" 
-                    : "You will be charged on a monthly basis"}
-                </div>
-              </div>
-              
-              {/* Payment Form */}
-              <div className="col-span-2">
-                <h3 className="text-lg font-semibold mb-4">
-                  {selectedPlan.isFree ? "Create Account" : "Payment Information"}
-                </h3>
-                
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Personal Details */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="Enter your full name"
-                        value={paymentDetails.name}
-                        onChange={handleInputChange}
-                        required
-                      />
+                  <h2 className="font-display text-2xl mb-1">{selectedPlan.name}</h2>
+                  <p className="text-sm text-muted-foreground mb-6">{selectedPlan.tagline}</p>
+
+                  <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-transparent p-5 mb-6">
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-display text-5xl">{selectedPlan.priceLabel}</span>
+                      <span className="text-sm text-muted-foreground">/{selectedPlan.periodLabel}</span>
                     </div>
-                    
-                    <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Active for {selectedPlan.periodDays} days · Cancel anytime
+                    </p>
+                  </div>
+
+                  <div className="space-y-2.5 mb-6">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      What you get
+                    </p>
+                    {selectedPlan.features.map((f) => (
+                      <div key={f} className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                        <span className="text-foreground/85">{f}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-border/60 pt-4">
+                    <div className="flex justify-between font-semibold text-lg">
+                      <span>Total today</span>
+                      <span>{selectedPlan.priceLabel}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Inclusive of all taxes · INR only
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex items-center gap-4 text-[11px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1"><Lock className="w-3 h-3" /> 256-bit SSL</span>
+                    <span className="inline-flex items-center gap-1"><Shield className="w-3 h-3" /> PCI DSS</span>
+                    <span className="inline-flex items-center gap-1"><Sparkles className="w-3 h-3" /> Razorpay</span>
+                  </div>
+                </motion.aside>
+
+                {/* RIGHT — Payment form */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="rounded-3xl border border-border/60 bg-card p-7 shadow-sm"
+                >
+                  <h3 className="font-display text-2xl mb-1">Payment Information</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Quick & secure — most users finish in under 30 seconds.
+                  </p>
+
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input id="name" name="name" placeholder="Your name"
+                          value={paymentDetails.name} onChange={handleInputChange} required />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phone">Phone (optional)</Label>
+                        <Input id="phone" name="phone" type="tel" placeholder="+91…"
+                          value={paymentDetails.phone} onChange={handleInputChange} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
                       <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={paymentDetails.email}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Input id="email" name="email" type="email" placeholder="you@example.com"
+                        value={paymentDetails.email} onChange={handleInputChange} required />
                     </div>
-                    
+
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="Enter your phone number"
-                        value={paymentDetails.phone}
-                        onChange={handleInputChange}
-                      />
+                      <Label>Payment Method</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: "upi" as const, icon: Smartphone, label: "UPI" },
+                          { id: "card" as const, icon: CreditCard, label: "Card" },
+                          { id: "wallet" as const, icon: Wallet, label: "Wallet" },
+                        ].map((m) => {
+                          const active = paymentMethod === m.id;
+                          return (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => setPaymentMethod(m.id)}
+                              className={`rounded-2xl border-2 p-4 flex flex-col items-center gap-1.5 transition ${
+                                active
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border/60 hover:border-primary/30"
+                              }`}
+                            >
+                              <m.icon className={`w-5 h-5 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                              <span className="text-sm font-medium">{m.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
 
-                  {!selectedPlan.isFree && (
-                    <>
-                      {/* Region / Provider toggle */}
-                      <div className="rounded-lg border border-border bg-card/60 p-4 space-y-3">
-                        <div className="flex items-center gap-2 text-sm font-medium">
-                          <Globe2 className="w-4 h-4 text-primary" />
-                          Where are you paying from?
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button
-                            type="button"
-                            variant={!useStripe ? 'default' : 'outline'}
-                            onClick={() => setUseStripe(false)}
-                            className="flex flex-col items-start p-4 h-auto text-left"
-                          >
-                            <span className="text-sm font-semibold">🇮🇳 India (Razorpay)</span>
-                            <span className="text-xs opacity-80">UPI · Cards · Wallets · Netbanking — {selectedPlan.price}/mo</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={useStripe ? 'default' : 'outline'}
-                            onClick={() => setUseStripe(true)}
-                            className="flex flex-col items-start p-4 h-auto text-left"
-                          >
-                            <span className="text-sm font-semibold">🌍 International (Stripe)</span>
-                            <span className="text-xs opacity-80">
-                              Cards worldwide — {PLAN_USD_PREVIEW[selectedPlan.id] || "USD"} /mo
-                            </span>
-                          </Button>
-                        </div>
+                    {paymentMethod === "upi" && (
+                      <div className="rounded-xl bg-secondary/50 p-3 flex flex-wrap gap-2 text-xs">
+                        {["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay"].map((u) => (
+                          <span key={u} className="px-2 py-1 bg-background rounded">{u}</span>
+                        ))}
                       </div>
+                    )}
 
-                      {!useStripe && (
-                      <>
-
-                      {/* Payment Method Selection */}
-                      <div className="space-y-3">
-                        <Label>Choose Payment Method</Label>
-                        <div className="grid grid-cols-3 gap-3">
-                          <Button
-                            type="button"
-                            variant={paymentMethod === 'upi' ? 'default' : 'outline'}
-                            onClick={() => setPaymentMethod('upi')}
-                            className="flex flex-col items-center p-4 h-auto"
-                          >
-                            <Smartphone className="w-6 h-6 mb-2" />
-                            <span className="text-sm">UPI</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={paymentMethod === 'wallet' ? 'default' : 'outline'}
-                            onClick={() => setPaymentMethod('wallet')}
-                            className="flex flex-col items-center p-4 h-auto"
-                          >
-                            <Wallet className="w-6 h-6 mb-2" />
-                            <span className="text-sm">Wallet</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={paymentMethod === 'card' ? 'default' : 'outline'}
-                            onClick={() => setPaymentMethod('card')}
-                            className="flex flex-col items-center p-4 h-auto"
-                          >
-                            <CreditCard className="w-6 h-6 mb-2" />
-                            <span className="text-sm">Card</span>
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Payment Method Info */}
-                      <div className="p-4 bg-slate-50 rounded-lg">
-                        {paymentMethod === 'upi' && (
-                          <div className="text-sm text-slate-600">
-                            <p className="font-medium mb-2">Supported UPI Apps:</p>
-                            <div className="flex flex-wrap gap-2">
-                              <span className="px-2 py-1 bg-white rounded text-xs">Google Pay</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">PhonePe</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">Paytm</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">BHIM</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">Amazon Pay</span>
-                            </div>
-                          </div>
-                        )}
-                        {paymentMethod === 'wallet' && (
-                          <div className="text-sm text-slate-600">
-                            <p className="font-medium mb-2">Supported Wallets:</p>
-                            <div className="flex flex-wrap gap-2">
-                              <span className="px-2 py-1 bg-white rounded text-xs">Paytm Wallet</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">PhonePe Wallet</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">Amazon Pay</span>
-                              <span className="px-2 py-1 bg-white rounded text-xs">JioMoney</span>
-                            </div>
-                          </div>
-                        )}
-                        {paymentMethod === 'card' && (
-                          <div className="text-sm text-slate-600">
-                            <p>Credit/Debit cards, Net Banking, and EMI options available</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Card Details (only if card is selected) */}
-                      {paymentMethod === 'card' && (
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="cardNumber">Card Number</Label>
-                            <div className="relative">
-                              <Input
-                                id="cardNumber"
-                                name="cardNumber"
-                                placeholder="1234 5678 9012 3456"
-                                className="pl-10"
-                                value={paymentDetails.cardNumber}
-                                onChange={handleInputChange}
-                              />
-                              <CreditCard className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="cardName">Name on Card</Label>
-                            <Input
-                              id="cardName"
-                              name="cardName"
-                              placeholder="John Doe"
-                              value={paymentDetails.cardName}
-                              onChange={handleInputChange}
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="expiryDate">Expiry Date</Label>
-                              <div className="relative">
-                                <Input
-                                  id="expiryDate"
-                                  name="expiryDate"
-                                  placeholder="MM/YY"
-                                  className="pl-10"
-                                  value={paymentDetails.expiryDate}
-                                  onChange={handleInputChange}
-                                />
-                                <Calendar className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="cvv">CVV</Label>
-                              <div className="relative">
-                                <Input
-                                  id="cvv"
-                                  name="cvv"
-                                  placeholder="123"
-                                  className="pl-10"
-                                  value={paymentDetails.cvv}
-                                  onChange={handleInputChange}
-                                />
-                                <Lock className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      disabled={isProcessing}
+                      className="w-full h-14 rounded-full font-semibold text-base"
+                    >
+                      {isProcessing ? (
+                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing…</>
+                      ) : (
+                        <><Lock className="w-4 h-4 mr-2" /> Pay {selectedPlan.priceLabel} securely</>
                       )}
-                      </>
-                      )}
-                    </>
-                  )}
-                  
-                  <div className="flex items-center mt-6">
-                    <Check className="w-5 h-5 text-mindwell-600 mr-2" />
-                    <span className="text-sm text-slate-600">
-                      I agree to the <a href="#" className="text-mindwell-600 underline">Terms of Service</a> and <a href="#" className="text-mindwell-600 underline">Privacy Policy</a>
-                    </span>
-                  </div>
-                  
-                  <Button 
-                    type="submit"
-                    className="w-full bg-mindwell-500 hover:bg-mindwell-600 text-white mt-6"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? "Processing..." : selectedPlan.isFree
-                      ? "Start Free Trial"
-                      : useStripe
-                        ? `Pay ${PLAN_USD_PREVIEW[selectedPlan.id] || ""} with Stripe`
-                        : `Pay ${selectedPlan.price}`}
-                  </Button>
-                </form>
+                    </Button>
+
+                    <p className="text-[11px] text-center text-muted-foreground">
+                      By continuing, you agree to our Terms & Privacy. Your subscription
+                      renews automatically every {selectedPlan.periodDays} days.
+                    </p>
+                  </form>
+                </motion.div>
               </div>
-            </div>
-          </div>
-        </div>
-      </TabsContent>
+            </TabsContent>
 
-      <TabsContent value="history">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Payment History</h2>
-          <PaymentHistory />
+            <TabsContent value="history">
+              <div className="max-w-3xl mx-auto">
+                <h2 className="font-display text-2xl mb-6 text-center">Payment History</h2>
+                <PaymentHistory />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
-      </TabsContent>
-    </Tabs>
-  </div>
-</section>
-      
+      </main>
       <Footer />
     </div>
   );

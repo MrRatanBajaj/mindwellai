@@ -7,166 +7,112 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Per-plan cycle length & nominal "sessions_remaining" seed (legacy field).
+const PLAN_META: Record<string, { days: number; sessions: number; periodType: "weekly" | "monthly" }> = {
+  starter_weekly: { days: 7,  sessions: 1,  periodType: "weekly"  },
+  premium:        { days: 30, sessions: 3,  periodType: "monthly" },
+  pro_ultimate:   { days: 30, sessions: 6,  periodType: "monthly" },
+  // legacy
+  basic:    { days: 30, sessions: 8, periodType: "monthly" },
+  standard: { days: 30, sessions: 6, periodType: "monthly" },
+  starter:  { days: 30, sessions: 2, periodType: "monthly" },
+  student:  { days: 30, sessions: 2, periodType: "monthly" },
+}
+
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
     const { razorpayPaymentId, razorpayOrderId, razorpaySignature } = await req.json()
-
     if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
       throw new Error('Missing payment verification parameters')
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    )
+    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!
 
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
-
-    if (!razorpayKeySecret) {
-      throw new Error('Razorpay secret not configured')
-    }
-
-    // Verify signature
-    const body = razorpayOrderId + '|' + razorpayPaymentId
     const expectedSignature = createHmac('sha256', razorpayKeySecret)
-      .update(body)
+      .update(razorpayOrderId + '|' + razorpayPaymentId)
       .digest('hex')
+    if (expectedSignature !== razorpaySignature) throw new Error('Invalid payment signature')
 
-    if (expectedSignature !== razorpaySignature) {
-      throw new Error('Invalid payment signature')
-    }
-
-    // Get auth header to extract user
     const authHeader = req.headers.get('authorization')
-    let userId = null
-    
+    let userId: string | null = null
     if (authHeader) {
-      const token = authHeader.replace('Bearer ', '')
-      const { data: { user } } = await supabase.auth.getUser(token)
-      userId = user?.id
+      const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+      userId = user?.id ?? null
     }
 
-    // Update payment record
+    // Mark payment completed
     const { data: existingPayment } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('order_id', razorpayOrderId)
-      .single()
-
+      .from('payments').select('*').eq('order_id', razorpayOrderId).maybeSingle()
     if (existingPayment) {
-      await supabase
-        .from('payments')
-        .update({
-          payment_id: razorpayPaymentId,
-          status: 'completed'
-        })
-        .eq('order_id', razorpayOrderId)
+      await supabase.from('payments').update({
+        payment_id: razorpayPaymentId, status: 'completed',
+      }).eq('order_id', razorpayOrderId)
     }
 
-    // Update consultation record if exists
-    const { data: consultations, error: fetchError } = await supabase
-      .from('consultations')
-      .select('*')
-      .contains('notes', { razorpayOrderId: razorpayOrderId })
-      .limit(1)
+    // Find consultation/notes to extract planId
+    const { data: consultations } = await supabase
+      .from('consultations').select('*')
+      .contains('notes', { razorpayOrderId }).limit(1)
 
-    if (!fetchError && consultations?.length) {
-      const consultation = consultations[0]
-      const notes = typeof consultation.notes === 'string' 
-        ? JSON.parse(consultation.notes) 
-        : consultation.notes
+    let planId: string | null = null
+    if (consultations?.length) {
+      const c = consultations[0]
+      const notes = typeof c.notes === 'string' ? JSON.parse(c.notes) : c.notes
+      planId = notes?.planId ?? null
 
-      await supabase
-        .from('consultations')
-        .update({
-          status: 'confirmed',
-          notes: JSON.stringify({
-            ...notes,
-            razorpayPaymentId: razorpayPaymentId,
-            paymentStatus: 'completed',
-            paidAt: new Date().toISOString()
-          })
-        })
-        .eq('id', consultation.id)
+      await supabase.from('consultations').update({
+        status: 'confirmed',
+        notes: JSON.stringify({
+          ...notes, razorpayPaymentId,
+          paymentStatus: 'completed', paidAt: new Date().toISOString(),
+        }),
+      }).eq('id', c.id)
+    }
 
-      // Create or update subscription
-      if (userId && notes.planId) {
-        const sessionsMap: Record<string, number> = {
-          'student': 2,
-          'starter': 2,
-          'standard': 6,
-          'premium': 999,
-          // legacy
-          'free': 2,
-          'free-trial': 3,
-          'basic': 8,
-        }
-        
-        const { data: existingSub } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
+    if (!planId && existingPayment?.plan_id) planId = existingPayment.plan_id
 
-        if (existingSub) {
-          await supabase
-            .from('subscriptions')
-            .update({
-              plan_id: notes.planId,
-              status: 'active',
-              sessions_remaining: sessionsMap[notes.planId] || 0,
-              current_period_start: new Date().toISOString(),
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-            })
-            .eq('user_id', userId)
-        } else {
-          await supabase
-            .from('subscriptions')
-            .insert({
-              user_id: userId,
-              plan_id: notes.planId,
-              status: 'active',
-              sessions_remaining: sessionsMap[notes.planId] || 0,
-              current_period_start: new Date().toISOString(),
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-            })
-        }
+    // Upsert subscription
+    if (userId && planId) {
+      const meta = PLAN_META[planId] ?? { days: 30, sessions: 1, periodType: "monthly" as const }
+      const now = new Date()
+      const ends = new Date(now.getTime() + meta.days * 24 * 60 * 60 * 1000)
+
+      const { data: existingSub } = await supabase
+        .from('subscriptions').select('id').eq('user_id', userId).maybeSingle()
+
+      const payload: Record<string, unknown> = {
+        plan_id: planId,
+        status: 'active',
+        sessions_remaining: meta.sessions,
+        current_period_start: now.toISOString(),
+        current_period_end: ends.toISOString(),
+        period_type: meta.periodType,
+      }
+      if (existingSub) {
+        await supabase.from('subscriptions').update(payload).eq('user_id', userId)
+      } else {
+        await supabase.from('subscriptions').insert({ user_id: userId, ...payload })
       }
     }
 
-    // Log successful payment
-    await supabase
-      .from('analytics')
-      .insert({
-        event_type: 'payment_success',
-        event_data: {
-          orderId: razorpayOrderId,
-          paymentId: razorpayPaymentId
-        }
-      })
+    await supabase.from('analytics').insert({
+      event_type: 'payment_success',
+      event_data: { orderId: razorpayOrderId, paymentId: razorpayPaymentId, planId },
+    })
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Payment verified successfully',
-        consultationId: consultations?.[0]?.id || null
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
-
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (error) {
-    console.error('Payment verification error:', error)
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+    console.error('verify-payment error', error)
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

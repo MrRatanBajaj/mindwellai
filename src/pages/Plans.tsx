@@ -10,8 +10,8 @@ const Plans = () => {
   const [searchParams] = useSearchParams();
   const gated = searchParams.get("gated") === "1";
   useSEO({
-    title: "Pricing & Plans — WellMind AI Therapy from ₹149/mo",
-    description: "Compare Free, Student (₹149), Standard (₹499) and Premium (₹999) plans. Video, phone and AI chat counseling included.",
+    title: "Pricing — WellMindAI from ₹99/week",
+    description: "Start at ₹99/week — unlimited chat, voice & video therapy with AI counselors. Premium ₹499/mo, Pro Ultimate ₹999/mo.",
     path: "/plans",
   });
 
@@ -75,7 +75,7 @@ const Plans = () => {
             Simple, honest pricing.
           </h1>
           <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto">
-            Start free. Upgrade only when you need more time with your AI counselor.
+            Start at just <span className="font-semibold text-foreground">₹99/week</span> — unlimited chat plus real voice & video therapy with AI counselors.
           </p>
         </div>
       </section>

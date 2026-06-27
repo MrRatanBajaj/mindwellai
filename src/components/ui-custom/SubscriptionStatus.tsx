@@ -5,30 +5,20 @@ import { format, differenceInDays } from "date-fns";
 import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 import {
-  Crown,
-  Calendar,
-  Zap,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
+  Crown, Calendar, Zap, MessageSquare, Mic, Video,
+  AlertCircle, CheckCircle, XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { isFounder } from "@/lib/founderAccess";
+import { getPlan, type Plan } from "@/lib/pricing";
 
 interface Subscription {
   id: string;
@@ -42,239 +32,199 @@ interface Subscription {
 const SubscriptionStatus = () => {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [videoSecondsUsed, setVideoSecondsUsed] = useState(0);
+  const [audioSecondsUsed, setAudioSecondsUsed] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSubscription = async () => {
+    const fetch = async () => {
       if (!user) return;
-
       try {
-        const { data, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+        const { data: sub } = await supabase
+          .from("subscriptions").select("*")
+          .eq("user_id", user.id).maybeSingle();
+        setSubscription(sub as Subscription | null);
 
-        if (error && error.code !== 'PGRST116') throw error;
-        setSubscription(data);
-      } catch (error) {
-        console.error('Error fetching subscription:', error);
+        if (sub) {
+          const start = (sub as any).current_period_start || new Date().toISOString();
+          const sb = supabase as any;
+          const [v, a] = await Promise.all([
+            sb.from("video_usage").select("seconds")
+              .eq("user_id", user.id).gte("started_at", start),
+            sb.from("audio_usage").select("seconds")
+              .eq("user_id", user.id).gte("started_at", start),
+          ]);
+          setVideoSecondsUsed((v.data ?? []).reduce((s: number, r: any) => s + (r.seconds ?? 0), 0));
+          setAudioSecondsUsed((a.data ?? []).reduce((s: number, r: any) => s + (r.seconds ?? 0), 0));
+        }
+      } catch (e) {
+        console.error("sub fetch", e);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchSubscription();
+    fetch();
   }, [user]);
-
-  const getPlanDetails = (planId: string) => {
-    const plans: Record<string, { name: string; sessions: number; color: string }> = {
-      'free': { name: 'Free Forever', sessions: 1, color: 'from-slate-500 to-slate-600' },
-      'free-trial': { name: 'Free Trial', sessions: 3, color: 'from-slate-500 to-slate-600' },
-      'plus': { name: 'Plus (Voice)', sessions: 999, color: 'from-blue-500 to-indigo-600' },
-      'premium': { name: 'Premium (Virtual Human)', sessions: 30, color: 'from-violet-500 to-purple-600' },
-      'business': { name: 'Business', sessions: 999, color: 'from-violet-500 to-purple-600' },
-      'student': { name: 'Student Plan', sessions: 2, color: 'from-pink-500 to-rose-600' },
-      'starter': { name: 'Starter Plan', sessions: 2, color: 'from-emerald-500 to-teal-600' },
-      'standard': { name: 'Standard Plan', sessions: 6, color: 'from-blue-500 to-blue-600' },
-      'basic': { name: 'Basic Plan', sessions: 8, color: 'from-blue-500 to-blue-600' },
-    };
-    return plans[planId] || { name: planId, sessions: 0, color: 'from-slate-500 to-slate-600' };
-  };
 
   const handleCancel = async () => {
     if (!subscription || !user) return;
     const { error } = await supabase
-      .from('subscriptions')
+      .from("subscriptions")
       .update({
-        status: 'cancelled',
+        status: "cancelled",
         sessions_remaining: 0,
         current_period_end: new Date().toISOString(),
       })
-      .eq('user_id', user.id);
-
-    if (error) {
-      toast.error('Could not cancel. Please try again.');
-      return;
-    }
-    toast.success('Subscription cancelled. Access updated.');
-    setSubscription({ ...subscription, status: 'cancelled', sessions_remaining: 0 });
+      .eq("user_id", user.id);
+    if (error) return toast.error("Could not cancel. Please try again.");
+    toast.success("Subscription cancelled.");
+    setSubscription({ ...subscription, status: "cancelled", sessions_remaining: 0 });
   };
 
-  if (loading) {
-    return <Skeleton className="h-48 w-full rounded-xl" />;
-  }
+  if (loading) return <Skeleton className="h-64 w-full rounded-3xl" />;
 
-  // Founder / developer override — unlimited access, no payment.
   if (isFounder(user?.email)) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-amber-500 via-orange-500 to-pink-600 rounded-2xl p-8 text-white"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="rounded-3xl p-8 bg-gradient-to-br from-amber-500 via-orange-500 to-pink-600 text-white"
       >
         <Crown className="w-10 h-10 mb-4" />
-        <h3 className="text-2xl font-bold mb-2">Founder Access</h3>
-        <p className="text-white/90 mb-4">
-          Unlimited access to all features — no payment required.
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white/15 rounded-lg p-4">
-            <p className="text-xs text-white/80">Plan</p>
-            <p className="font-semibold">Founder</p>
-          </div>
-          <div className="bg-white/15 rounded-lg p-4">
-            <p className="text-xs text-white/80">Sessions</p>
-            <p className="font-semibold">Unlimited</p>
-          </div>
-        </div>
+        <h3 className="font-display text-2xl mb-2">Founder Access</h3>
+        <p className="text-white/90">Unlimited access — no plan required.</p>
       </motion.div>
     );
   }
 
-  const isCancelled = subscription?.status === 'cancelled';
-
+  const isCancelled = subscription?.status === "cancelled";
   if (!subscription || isCancelled) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-8 text-white"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="rounded-3xl p-10 bg-card border border-border text-center"
       >
-        <div className="flex items-start justify-between">
-          <div>
-            <Crown className="w-10 h-10 mb-4" />
-            <h3 className="text-2xl font-bold mb-2">
-              {isCancelled ? 'Subscription Cancelled' : 'No Active Subscription'}
-            </h3>
-            <p className="text-white/80 mb-6">
-              Choose a plan to start your mental wellness journey
-            </p>
-            <NavLink to="/plans">
-              <Button className="bg-white text-violet-600 hover:bg-white/90">
-                <Zap className="w-4 h-4 mr-2" />
-                View Plans
-              </Button>
-            </NavLink>
-          </div>
-        </div>
+        <Crown className="w-12 h-12 text-primary mx-auto mb-4" />
+        <h3 className="font-display text-2xl mb-2">
+          {isCancelled ? "Subscription Cancelled" : "No Active Subscription"}
+        </h3>
+        <p className="text-muted-foreground mb-6">
+          Start with our ₹99/week plan — unlimited chat + voice & video therapy.
+        </p>
+        <NavLink to="/plans">
+          <Button size="lg" className="rounded-full">
+            <Zap className="w-4 h-4 mr-2" /> View Plans
+          </Button>
+        </NavLink>
       </motion.div>
     );
   }
 
-  const planDetails = getPlanDetails(subscription.plan_id);
-  const daysRemaining = differenceInDays(
-    new Date(subscription.current_period_end),
-    new Date()
-  );
-  const isExpiringSoon = daysRemaining <= 7 && daysRemaining > 0;
+  const plan: Plan | undefined = getPlan(subscription.plan_id);
+  const daysRemaining = differenceInDays(new Date(subscription.current_period_end), new Date());
+  const isExpiringSoon = daysRemaining <= 2 && daysRemaining > 0;
   const isExpired = daysRemaining <= 0;
-  const sessionsProgress = planDetails.sessions === 999 
-    ? 100 
-    : ((planDetails.sessions - subscription.sessions_remaining) / planDetails.sessions) * 100;
+
+  const vMax = (plan?.quota.videoMinutes ?? 0) * 60;
+  const aMax = (plan?.quota.audioMinutes ?? 0) * 60;
+  const vPct = vMax ? Math.min(100, (videoSecondsUsed / vMax) * 100) : 0;
+  const aPct = aMax ? Math.min(100, (audioSecondsUsed / aMax) * 100) : 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`bg-gradient-to-br ${planDetails.color} rounded-2xl p-8 text-white`}
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+      className="rounded-3xl bg-card border border-border overflow-hidden"
     >
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Crown className="w-6 h-6" />
-            <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">
-              {subscription.status === 'active' ? 'Active' : subscription.status}
+      {/* Header band */}
+      <div className="p-7 bg-gradient-to-br from-primary via-primary/90 to-accent text-primary-foreground">
+        <div className="flex items-start justify-between">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full">
+              {subscription.status === "active" ? "Active" : subscription.status}
             </span>
+            <h3 className="font-display text-3xl mt-2">{plan?.name || subscription.plan_id}</h3>
+            <p className="text-sm opacity-90 mt-1">{plan?.tagline}</p>
           </div>
-          <h3 className="text-2xl font-bold">{planDetails.name}</h3>
+          {isExpiringSoon && (
+            <span className="inline-flex items-center gap-1.5 bg-amber-500/30 px-3 py-1.5 rounded-full text-xs">
+              <AlertCircle className="w-3.5 h-3.5" /> Expires soon
+            </span>
+          )}
+          {!isExpiringSoon && !isExpired && (
+            <span className="inline-flex items-center gap-1.5 bg-white/20 px-3 py-1.5 rounded-full text-xs">
+              <CheckCircle className="w-3.5 h-3.5" /> {daysRemaining}d left
+            </span>
+          )}
         </div>
-
-        {isExpiringSoon && !isExpired && (
-          <div className="flex items-center gap-2 bg-amber-500/20 px-3 py-2 rounded-lg">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">Expires soon</span>
-          </div>
-        )}
-        {subscription.status === 'active' && !isExpired && !isExpiringSoon && (
-          <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm">Active</span>
-          </div>
-        )}
       </div>
 
-      {/* Sessions Progress */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between text-sm mb-2">
-          <span>Sessions Used</span>
-          <span>
-            {planDetails.sessions === 999 
-              ? 'Unlimited' 
-              : `${planDetails.sessions - subscription.sessions_remaining}/${planDetails.sessions}`}
+      {/* Quota panels */}
+      <div className="p-7 space-y-5">
+        <div className="grid sm:grid-cols-3 gap-3">
+          <div className="rounded-2xl bg-secondary/40 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium mb-1.5">
+              <MessageSquare className="w-4 h-4 text-primary" /> Chat
+            </div>
+            <p className="text-xs text-muted-foreground">Unlimited</p>
+          </div>
+          <div className="rounded-2xl bg-secondary/40 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium mb-1.5">
+              <Mic className="w-4 h-4 text-primary" /> Voice
+            </div>
+            <Progress value={aPct} className="h-1.5 mb-1" />
+            <p className="text-xs text-muted-foreground">
+              {Math.round(audioSecondsUsed / 60)} / {plan?.quota.audioMinutes ?? 0} min used
+            </p>
+          </div>
+          <div className="rounded-2xl bg-secondary/40 p-4">
+            <div className="flex items-center gap-2 text-sm font-medium mb-1.5">
+              <Video className="w-4 h-4 text-primary" /> Video
+            </div>
+            <Progress value={vPct} className="h-1.5 mb-1" />
+            <p className="text-xs text-muted-foreground">
+              {Math.round(videoSecondsUsed / 60)} / {plan?.quota.videoMinutes ?? 0} min used
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/60 p-4 flex items-center gap-3 text-sm">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            {format(new Date(subscription.current_period_start), "MMM dd")} →{" "}
+            {format(new Date(subscription.current_period_end), "MMM dd, yyyy")}
+          </span>
+          <span className="ml-auto font-medium">
+            {isExpired ? "Expired" : `${daysRemaining}d remaining`}
           </span>
         </div>
-        <Progress 
-          value={sessionsProgress} 
-          className="h-2 bg-white/20"
-        />
-      </div>
 
-      {/* Billing Info */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-white/70 text-sm mb-1">
-            <Calendar className="w-4 h-4" />
-            <span>Current Period</span>
-          </div>
-          <p className="font-semibold">
-            {format(new Date(subscription.current_period_start), 'MMM dd')} - {format(new Date(subscription.current_period_end), 'MMM dd, yyyy')}
-          </p>
+        <div className="flex gap-3">
+          {subscription.plan_id !== "pro_ultimate" && (
+            <NavLink to="/plans" className="flex-1">
+              <Button className="w-full rounded-full">
+                <Zap className="w-4 h-4 mr-2" /> Upgrade
+              </Button>
+            </NavLink>
+          )}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="rounded-full">
+                <XCircle className="w-4 h-4 mr-2" /> Cancel
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Your access ends immediately. You can resubscribe anytime.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep plan</AlertDialogCancel>
+                <AlertDialogAction onClick={handleCancel}>Yes, cancel</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
-        <div className="bg-white/10 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-white/70 text-sm mb-1">
-            <RefreshCw className="w-4 h-4" />
-            <span>Next Renewal</span>
-          </div>
-          <p className="font-semibold">
-            {isExpired ? 'Expired' : `${daysRemaining} days left`}
-          </p>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-3">
-        {subscription.plan_id !== 'premium' && (
-          <NavLink to="/plans" className="flex-1">
-            <Button className="w-full bg-white text-violet-600 hover:bg-white/90">
-              <Zap className="w-4 h-4 mr-2" />
-              Upgrade Plan
-            </Button>
-          </NavLink>
-        )}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
-              <XCircle className="w-4 h-4 mr-2" />
-              Cancel Subscription
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Your access to Self Help and Book Counselors will end immediately.
-                You can resubscribe anytime from the Plans page.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Keep plan</AlertDialogCancel>
-              <AlertDialogAction onClick={handleCancel}>
-                Yes, cancel
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </motion.div>
   );

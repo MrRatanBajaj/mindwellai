@@ -1,21 +1,11 @@
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Check, Loader2, Sparkles, Building2, Globe2 } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
-import {
-  PLANS, Plan, CurrencyCode, CURRENCIES,
-  detectCurrency, setStoredCurrency, formatPrice, priceSuffix,
-} from "@/lib/pricing";
+import { PLANS, type Plan } from "@/lib/pricing";
 
-// Re-export legacy shape so Payment.tsx keeps working.
+// Legacy shape kept so older imports keep building.
 export interface PricingPlan {
   id: string;
   name: string;
@@ -31,24 +21,15 @@ export interface PricingPlan {
 export const pricingPlans: PricingPlan[] = PLANS.map((p) => ({
   id: p.id,
   name: p.name,
-  price: formatPrice(p, "INR") + priceSuffix(p),
+  price: `${p.priceLabel}/${p.periodLabel}`,
   description: p.tagline,
   features: p.features,
   buttonText: p.cta,
   isFeatured: p.isFeatured,
-  isFree: p.isFree,
-  sessionsCount:
-    p.id === "free" ? 1 : p.id === "premium" ? 3 : p.id === "pro_ultimate" ? 6 : 100,
+  sessionsCount: p.quota.videoSessions,
 }));
 
-const PlanCard = ({
-  plan, currency, onSelect, activating,
-}: {
-  plan: Plan;
-  currency: CurrencyCode;
-  onSelect: (p: Plan) => void;
-  activating: boolean;
-}) => {
+const PlanCard = ({ plan, onSelect }: { plan: Plan; onSelect: (p: Plan) => void }) => {
   const featured = plan.isFeatured;
   return (
     <motion.div
@@ -67,6 +48,11 @@ const PlanCard = ({
           Most Popular
         </span>
       )}
+      {plan.id === "starter_weekly" && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] uppercase tracking-widest font-bold inline-flex items-center gap-1">
+          <Sparkles className="w-3 h-3" /> New · Weekly
+        </span>
+      )}
 
       <div className="mb-6">
         <h3 className={cn("font-display text-2xl mb-1", featured ? "text-background" : "text-foreground")}>
@@ -78,19 +64,15 @@ const PlanCard = ({
       </div>
 
       <div className="mb-8">
-        {plan.price.startingAt && (
-          <div className={cn("text-[11px] uppercase tracking-widest mb-1", featured ? "text-background/60" : "text-muted-foreground")}>
-            Starting at
-          </div>
-        )}
         <div className="flex items-baseline gap-1">
-          <span className="font-display text-5xl">{formatPrice(plan, currency)}</span>
-          {!plan.isFree && (
-            <span className={cn("text-sm", featured ? "text-background/60" : "text-muted-foreground")}>
-              {priceSuffix(plan)}
-            </span>
-          )}
+          <span className="font-display text-5xl">{plan.priceLabel}</span>
+          <span className={cn("text-sm", featured ? "text-background/60" : "text-muted-foreground")}>
+            /{plan.periodLabel}
+          </span>
         </div>
+        <p className={cn("text-xs mt-1", featured ? "text-background/60" : "text-muted-foreground")}>
+          Renews every {plan.periodDays} days · Cancel anytime
+        </p>
       </div>
 
       <ul className="space-y-3 mb-8 flex-1">
@@ -104,18 +86,15 @@ const PlanCard = ({
 
       <Button
         onClick={() => onSelect(plan)}
-        disabled={activating}
         size="lg"
         className={cn(
           "w-full h-12 rounded-full font-semibold",
           featured
             ? "bg-accent text-accent-foreground hover:bg-accent/90"
-            : plan.isFree
-              ? "bg-secondary text-foreground hover:bg-secondary/80"
-              : "bg-primary text-primary-foreground hover:bg-primary/90",
+            : "bg-primary text-primary-foreground hover:bg-primary/90",
         )}
       >
-        {activating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Activating…</> : plan.cta}
+        {plan.cta}
       </Button>
     </motion.div>
   );
@@ -123,70 +102,16 @@ const PlanCard = ({
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [currency, setCurrency] = useState<CurrencyCode>("INR");
-  const [activating, setActivating] = useState<string | null>(null);
-
-  useEffect(() => {
-    detectCurrency().then(setCurrency);
-  }, []);
-
-  const handleCurrencyChange = (c: CurrencyCode) => {
-    setCurrency(c);
-    setStoredCurrency(c);
-  };
-
-  const handleSelect = async (plan: Plan) => {
-    if (plan.id === "free") {
-      // Zero-signup access — go straight to the in-page 2-min vent demo.
-      navigate("/?vent=1#vent-demo");
-      return;
-    }
-
-    if (plan.id === "business") {
-      navigate("/business");
-      return;
-    }
-
-    // Plus / Premium → payment
-    navigate(`/payment?plan=${plan.id}&currency=${currency}`);
-  };
+  const handleSelect = (plan: Plan) => navigate(`/payment?plan=${plan.id}`);
 
   return (
     <div className="py-6">
-      {/* Currency selector — minimal, top-right */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-10 max-w-5xl mx-auto px-2">
-        <p className="text-xs text-muted-foreground flex items-center gap-2">
-          <Globe2 className="w-3.5 h-3.5" />
-          Prices shown in your local currency based on your region.
-        </p>
-        <Select value={currency} onValueChange={(v) => handleCurrencyChange(v as CurrencyCode)}>
-          <SelectTrigger className="w-[180px] h-9 rounded-full text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.values(CURRENCIES).map((c) => (
-              <SelectItem key={c.code} value={c.code}>
-                {c.flag} {c.code} — {c.symbol}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {PLANS.map((plan) => (
-          <PlanCard
-            key={plan.id}
-            plan={plan}
-            currency={currency}
-            onSelect={handleSelect}
-            activating={activating === plan.id}
-          />
+          <PlanCard key={plan.id} plan={plan} onSelect={handleSelect} />
         ))}
       </div>
 
-      {/* B2B note */}
       <div className="mt-10 max-w-3xl mx-auto px-2 text-center">
         <p className="text-xs text-muted-foreground">
           Running a company, college or coaching institute?{" "}
