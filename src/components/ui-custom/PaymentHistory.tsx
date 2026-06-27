@@ -3,17 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
-import { 
-  CreditCard, 
-  Calendar, 
-  CheckCircle, 
-  XCircle, 
-  Clock,
-  Download,
-  Receipt
+import {
+  CreditCard, Calendar, CheckCircle, XCircle, Clock, Download, Receipt, Smartphone, Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getPlan } from "@/lib/pricing";
 
 interface Payment {
   id: string;
@@ -27,144 +22,131 @@ interface Payment {
   created_at: string;
 }
 
+const methodIcon = (m: string | null) => {
+  switch ((m || "").toLowerCase()) {
+    case "upi": return <Smartphone className="w-4 h-4" />;
+    case "wallet": return <Wallet className="w-4 h-4" />;
+    default: return <CreditCard className="w-4 h-4" />;
+  }
+};
+
 const PaymentHistory = () => {
   const { user } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPayments = async () => {
+    const fetch = async () => {
       if (!user) return;
-
       try {
-        const { data, error } = await supabase
-          .from('payments')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
+        const { data } = await supabase
+          .from("payments").select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
         setPayments(data || []);
-      } catch (error) {
-        console.error('Error fetching payments:', error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchPayments();
+    fetch();
   }, [user]);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'success':
-        return <CheckCircle className="w-5 h-5 text-emerald-500" />;
-      case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <Clock className="w-5 h-5 text-amber-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'success':
-        return 'bg-emerald-100 text-emerald-700';
-      case 'failed':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-amber-100 text-amber-700';
-    }
-  };
-
-  const getPlanName = (planId: string) => {
-    const plans: Record<string, string> = {
-      'free-trial': 'Free Trial',
-      'basic': 'Basic Plan',
-      'premium': 'Premium Plan',
-    };
-    return plans[planId] || planId;
+  const statusUI = (status: string) => {
+    const ok = status === "completed" || status === "success";
+    const fail = status === "failed";
+    if (ok) return { Icon: CheckCircle, cls: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Paid" };
+    if (fail) return { Icon: XCircle, cls: "bg-red-50 text-red-700 border-red-200", label: "Failed" };
+    return { Icon: Clock, cls: "bg-amber-50 text-amber-700 border-amber-200", label: "Pending" };
   };
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-xl" />
-        ))}
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
       </div>
     );
   }
 
-  if (payments.length === 0) {
+  if (!payments.length) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center py-12 bg-slate-50 rounded-xl"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="text-center py-16 rounded-3xl bg-card border border-border"
       >
-        <Receipt className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">No Payment History</h3>
-        <p className="text-slate-600">Your payment records will appear here</p>
+        <Receipt className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="font-display text-xl mb-2">No payments yet</h3>
+        <p className="text-sm text-muted-foreground">Your invoices will appear here once you subscribe.</p>
       </motion.div>
     );
   }
 
+  const total = payments
+    .filter((p) => p.status === "completed" || p.status === "success")
+    .reduce((s, p) => s + Number(p.amount), 0);
+
   return (
     <div className="space-y-4">
-      {payments.map((payment, index) => (
-        <motion.div
-          key={payment.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-violet-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-900">{getPlanName(payment.plan_id)}</h4>
-                <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>{format(new Date(payment.created_at), 'MMM dd, yyyy • HH:mm')}</span>
+      {/* Summary */}
+      <div className="rounded-3xl border border-border bg-gradient-to-br from-primary/5 to-accent/5 p-5 flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Total spent</p>
+          <p className="font-display text-2xl">₹{total.toLocaleString("en-IN")}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Transactions</p>
+          <p className="font-display text-2xl">{payments.length}</p>
+        </div>
+      </div>
+
+      {payments.map((p, i) => {
+        const { Icon, cls, label } = statusUI(p.status);
+        const plan = getPlan(p.plan_id);
+        return (
+          <motion.div
+            key={p.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="rounded-2xl border border-border bg-card p-5 hover:border-primary/30 transition"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  {methodIcon(p.payment_method)}
                 </div>
-                {payment.payment_method && (
-                  <p className="text-xs text-slate-400 mt-1">
-                    via {payment.payment_method.toUpperCase()}
-                  </p>
-                )}
+                <div>
+                  <h4 className="font-semibold">{plan?.name || p.plan_id}</h4>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                    <Calendar className="w-3 h-3" />
+                    {format(new Date(p.created_at), "MMM dd, yyyy · HH:mm")}
+                  </div>
+                  {p.payment_method && (
+                    <p className="text-[11px] text-muted-foreground mt-0.5 uppercase tracking-wide">
+                      via {p.payment_method}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-display text-xl">₹{p.amount}</div>
+                <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border mt-1 ${cls}`}>
+                  <Icon className="w-3 h-3" /> {label}
+                </div>
               </div>
             </div>
-
-            <div className="text-right">
-              <div className="text-lg font-bold text-slate-900">
-                {payment.currency === 'INR' ? '₹' : payment.currency} {payment.amount}
+            {p.payment_id && (
+              <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between gap-2">
+                <p className="text-[11px] text-muted-foreground truncate">
+                  Txn: <span className="font-mono">{p.payment_id}</span>
+                </p>
+                <Button variant="ghost" size="sm" className="text-primary text-xs h-7">
+                  <Download className="w-3 h-3 mr-1" /> Receipt
+                </Button>
               </div>
-              <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium mt-2 ${getStatusColor(payment.status)}`}>
-                {getStatusIcon(payment.status)}
-                <span className="capitalize">{payment.status}</span>
-              </div>
-            </div>
-          </div>
-
-          {payment.payment_id && (
-            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-              <p className="text-xs text-slate-400">
-                Transaction ID: {payment.payment_id}
-              </p>
-              <Button variant="ghost" size="sm" className="text-violet-600 hover:text-violet-700">
-                <Download className="w-4 h-4 mr-1" />
-                Receipt
-              </Button>
-            </div>
-          )}
-        </motion.div>
-      ))}
+            )}
+          </motion.div>
+        );
+      })}
     </div>
   );
 };
