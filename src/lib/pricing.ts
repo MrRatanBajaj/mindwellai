@@ -38,11 +38,11 @@ export const PLANS: Plan[] = [
     periodDays: 7,
     cycle: "weekly",
     features: [
-      "💬 Unlimited chat therapy — no time limit",
-      "🎤 Voice therapy: 10 min / week (Hume EVI emotion-aware)",
-      "📹 Video therapy: 3 min / week (Tavus AI counselor)",
-      "📊 Mood & journal tracking",
-      "🔒 Encrypted, private, HIPAA-grade",
+      "Unlimited chat therapy — no time limit",
+      "Voice therapy: 10 min / week (Hume EVI emotion-aware)",
+      "Video therapy: 3 min / week (Tavus AI counselor)",
+      "Mood & journal tracking",
+      "Encrypted, private, HIPAA-grade",
     ],
     cta: "Get Started — ₹99/week",
     quota: {
