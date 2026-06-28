@@ -108,7 +108,7 @@ const FeatureGrid = () => (
         {
           icon: <Mic className="w-10 h-10 text-[#E8B8A8]" />,
           title: "Talk or text 24/7, WellMindAI listens",
-          body: "Phone-call style audio with Yaro or Riya, or just type. Whatever feels right.",
+          body: "Phone-call style audio with Yaro or Ava, or just type. Whatever feels right.",
         },
         {
           icon: <MessageCircle className="w-10 h-10 text-[#E8B8A8]" />,
