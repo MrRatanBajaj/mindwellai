@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Props {
   counselorName: string;
   systemPrompt?: string;
+  voiceGender?: "male" | "female";
   onEnd?: () => void;
 }
 
@@ -16,12 +17,14 @@ const Inner = ({
   token,
   configId,
   systemPrompt,
+  voiceGender,
   onEnd,
 }: {
   counselorName: string;
   token: string;
   configId: string | null;
   systemPrompt?: string;
+  voiceGender?: "male" | "female";
   onEnd?: () => void;
 }) => {
   const {
@@ -37,10 +40,16 @@ const Inner = ({
     (async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Hume hosted voices: ITO (male, warm), KORA (female, soft)
+        const voiceName = voiceGender === "male" ? "ITO" : "KORA";
         await connect({
           auth: { type: "accessToken", value: token },
           ...(configId ? { configId } : {}),
-          sessionSettings: systemPrompt ? { type: "session_settings", systemPrompt } : undefined,
+          sessionSettings: {
+            type: "session_settings",
+            ...(systemPrompt ? { systemPrompt } : {}),
+            voice: { provider: "HUME_AI", name: voiceName },
+          } as any,
         });
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not connect to Hume EVI");
@@ -140,7 +149,7 @@ const Inner = ({
   );
 };
 
-const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
+const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [configId, setConfigId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -181,6 +190,7 @@ const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
         token={token}
         configId={configId}
         systemPrompt={systemPrompt}
+        voiceGender={voiceGender}
         onEnd={onEnd}
       />
     </VoiceProvider>

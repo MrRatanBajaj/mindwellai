@@ -31,7 +31,7 @@ const DOCTOR_NAMES: Record<string, string> = {
   cardiologist:   'Dr. James',
   pediatrician:   'Dr. Lily',
   neurologist:    'Dr. Nathan',
-  gynecologist:   'Dr. Maya',
+  gynecologist:   'Dr. Anya',
   nutritionist:   'Dr. Sophie',
   career:         'Dr. Arjun',
   relationship:   'Dr. Riya',

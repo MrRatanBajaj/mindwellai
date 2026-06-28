@@ -204,7 +204,7 @@ const PsychologyHero = () => {
                       />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg">Dr. Maya AI</h3>
+                      <h3 className="font-bold text-lg">Dr. Anya AI</h3>
                       <p className="text-white/80 text-sm">Cognitive Behavioral Specialist</p>
                     </div>
                   </div>

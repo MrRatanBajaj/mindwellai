@@ -36,6 +36,7 @@ import B2BBillingEngine from "./pages/B2BBillingEngine";
 import B2BAdminDashboard from "./pages/B2BAdminDashboard";
 import B2BTestAccess from "./pages/B2BTestAccess";
 import JudgementFreeSpace from "./pages/JudgementFreeSpace";
+import YaroChatPage from "./pages/YaroChatPage";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,8 @@ const App = () => (
             <Route path="/consultation/video" element={<VideoConsultation />} />
             <Route path="/consultation/audio" element={<AudioConsultation />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chat/yaro" element={<YaroChatPage />} />
+            <Route path="/chat" element={<YaroChatPage />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

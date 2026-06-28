@@ -25,7 +25,7 @@ serve(async (req) => {
 
     console.log('Processing mental health counseling request:', message.substring(0, 100) + '...');
 
-    const systemPrompt = `You are Dr. Maya, a compassionate and experienced mental health therapist specialized in providing evidence-based counseling. Your expertise includes:
+    const systemPrompt = `You are Dr. Anya, a compassionate and experienced mental health therapist specialized in providing evidence-based counseling. Your expertise includes:
 
 CORE COMPETENCIES:
 • Cognitive Behavioral Therapy (CBT) - helping identify and reframe negative thought patterns

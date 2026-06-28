@@ -57,7 +57,7 @@ export default function AIVoiceTherapist() {
 
     toast({
       title: "Session Started",
-      description: "Dr. Maya is here to listen. Tap the microphone to speak.",
+      description: "Dr. Anya is here to listen. Tap the microphone to speak.",
     });
   };
 
@@ -252,7 +252,7 @@ export default function AIVoiceTherapist() {
             Your AI Companion
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Always here to listen and talk. Dr. Maya cares about your mental wellbeing
+            Always here to listen and talk. Dr. Anya cares about your mental wellbeing
           </p>
         </motion.div>
 
@@ -265,7 +265,7 @@ export default function AIVoiceTherapist() {
             className="flex flex-col gap-4"
           >
             <AIAvatar
-              name="Dr. Maya"
+              name="Dr. Anya"
               specialty="Mental Health & Emotional Wellbeing"
               mood={
                 isRecording ? "focused" :
@@ -402,7 +402,7 @@ export default function AIVoiceTherapist() {
                                 }`}
                               >
                                 <p className="text-xs font-medium mb-1 opacity-70">
-                                  {msg.role === 'user' ? 'You' : 'Dr. Maya'}
+                                  {msg.role === 'user' ? 'You' : 'Dr. Anya'}
                                 </p>
                                 <p className="text-sm leading-relaxed">{msg.content}</p>
                               </div>
@@ -446,7 +446,7 @@ export default function AIVoiceTherapist() {
                             className="flex items-center gap-2"
                           >
                             <Volume2 className="w-4 h-4 animate-pulse text-purple-500" />
-                            <span className="text-sm font-medium text-purple-500">Dr. Maya is speaking...</span>
+                            <span className="text-sm font-medium text-purple-500">Dr. Anya is speaking...</span>
                           </motion.div>
                         )}
                       </AnimatePresence>

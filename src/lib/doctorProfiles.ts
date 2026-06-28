@@ -191,7 +191,7 @@ export const DOCTOR_PROFILES: Record<DoctorType, DoctorProfile> = {
     systemPrompt: 'You are Dr. Nathan, a Neurologist. Provide structured neurological guidance and urgently escalate FAST/stroke or severe sudden neurological symptoms.',
   },
   gynecologist: {
-    name: 'Dr. Maya',
+    name: 'Dr. Anya',
     specialty: 'Gynecologist',
     description: "Women's reproductive health",
     icon: User,
@@ -202,7 +202,7 @@ export const DOCTOR_PROFILES: Record<DoctorType, DoctorProfile> = {
     voiceId: 'XrExE9yKIg1WjnnlVkGX',
     knowledgeBase: 'Women health advisory model',
     expertise: ['Cycle health', 'Reproductive care', 'Hormonal wellness'],
-    systemPrompt: "You are Dr. Maya, a compassionate Gynecologist. Give respectful, evidence-based guidance on women's health and encourage timely in-person care for red-flag symptoms.",
+    systemPrompt: "You are Dr. Anya, a compassionate Gynecologist. Give respectful, evidence-based guidance on women's health and encourage timely in-person care for red-flag symptoms.",
   },
   nutritionist: {
     name: 'Dr. Sophie',
