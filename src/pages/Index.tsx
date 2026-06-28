@@ -167,10 +167,10 @@ const JudgementSection = () => (
 
 /* ───────── FAQ ───────── */
 const faqs = [
-  { q: "Is the free plan really free?", a: "Yes — 7 days of text care, journaling, audio screening and a short video trial. No card needed." },
-  { q: "Who are the counselors?", a: "Two AI counselors: Yaro (Soul Machines video) and Riya (Tavus video). Audio runs on Hume EVI with emotion detection or ElevenLabs for low-latency." },
+  { q: "Is chat therapy really free without signup?", a: "Yes. Open Yaro Chat from the landing page and start talking — no account needed. Voice and video plans start at ₹99/week." },
+  { q: "Who are the counselors?", a: "Two AI counselors: Yaro (male, calm and grounded) and Ava (female, soft and warm). Audio runs on Hume EVI with real-time emotion detection." },
+  { q: "What languages do they speak?", a: "English, Hindi, Hinglish, Tamil, Bengali, Marathi, Spanish and more — pick one or let it auto-detect." },
   { q: "Is video counseling private?", a: "Sessions are gated by your account, server-side usage limits and privacy-first storage." },
-  { q: "Can I use audio only?", a: "Yes. Audio and video live on separate pages so plan limits stay clear." },
   { q: "Is this a replacement for emergency care?", a: "No. In a crisis, contact local emergency services or a helpline right away." },
 ];
 
