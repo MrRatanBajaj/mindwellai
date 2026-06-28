@@ -75,6 +75,8 @@ const App = () => (
             <Route path="/consultation/video" element={<VideoConsultation />} />
             <Route path="/consultation/audio" element={<AudioConsultation />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chat/yaro" element={<YaroChatPage />} />
+            <Route path="/chat" element={<YaroChatPage />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
