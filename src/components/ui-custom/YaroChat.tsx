@@ -73,7 +73,7 @@ export default function YaroChat({ embedded = false }: Props) {
       if (error) throw error;
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
       // mark user msg delivered/read
-      setMessages((m) => m.map((x) => (x === userMsg ? { ...x, status: "read" } : x)).concat({ sender: "ai", content: String(reply), ts: Date.now(), status: "read" }));
+      setMessages((m) => m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({ sender: "ai", content: String(reply), ts: Date.now(), status: "read" }));
     } catch {
       setMessages((m) => [...m, { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" }]);
     } finally {
