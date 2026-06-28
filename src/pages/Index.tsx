@@ -205,7 +205,7 @@ const FAQ = () => {
 const Index = () => {
   useSEO({
     title: "WellMindAI — A judgement-free space for mental wellbeing",
-    description: "Talk, type, or just breathe. AI counselors Yaro and Riya help you reflect, find patterns, and grow at your own pace.",
+    description: "Talk, type, or just breathe. AI counselors Yaro and Ava help you reflect, find patterns, and grow at your own pace.",
     path: "/",
   });
 
