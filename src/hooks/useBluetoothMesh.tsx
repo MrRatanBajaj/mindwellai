@@ -429,7 +429,7 @@ export const useBluetoothMesh = () => {
     const simulatedPeers: Partial<MeshPeer>[] = [
       { name: 'Sarah M.', status: 'online', rssi: -45 },
       { name: 'James K.', status: 'online', rssi: -55 },
-      { name: 'Maya P.', status: 'busy', rssi: -65 },
+      { name: 'Anya P.', status: 'busy', rssi: -65 },
       { name: 'Alex R.', status: 'online', rssi: -48 },
       { name: 'Emma T.', status: 'away', rssi: -72 },
       { name: 'David L.', status: 'online', rssi: -58 }

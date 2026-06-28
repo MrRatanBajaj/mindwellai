@@ -60,7 +60,7 @@ const mockNearbyPeers: BluetoothPeer[] = [
   },
   {
     id: 'bt-3',
-    name: 'Maya P.',
+    name: 'Anya P.',
     avatar: 'M',
     distance: 8,
     signalStrength: -72,

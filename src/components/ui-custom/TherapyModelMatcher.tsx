@@ -157,7 +157,7 @@ const TherapyModelMatcher: React.FC<TherapyModelMatcherProps> = ({ onMatch }) =>
         },
         {
           id: '3',
-          name: 'Maya P.',
+          name: 'Anya P.',
           avatar: 'M',
           models: ['mindfulness', 'psychodynamic'],
           experience: 'advanced',

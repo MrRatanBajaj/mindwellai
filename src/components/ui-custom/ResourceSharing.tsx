@@ -71,7 +71,7 @@ const mockResources: Resource[] = [
     type: 'audio',
     category: 'Mindfulness',
     url: 'https://example.com/meditation',
-    author: 'Maya Rodriguez',
+    author: 'Anya Rodriguez',
     authorAvatar: 'MR',
     createdAt: '1 day ago',
     likes: 89,
