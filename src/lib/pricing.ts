@@ -85,11 +85,11 @@ export const PLANS: Plan[] = [
     periodDays: 30,
     cycle: "monthly",
     features: [
-      "💬 Unlimited chat + standard audio therapy",
-      "🎤 Voice therapy: 180 min / month, clinical-grade",
-      "📹 Video counselling: 30 min / month (6 × 5 min)",
-      "🧠 DSM-5 & PHQ-9 automated clinical profiling",
-      "⚡ Priority cloud rendering — zero queue",
+      "Unlimited chat + standard audio therapy",
+      "Voice therapy: 180 min / month, clinical-grade",
+      "Video counselling: 30 min / month (6 × 5 min)",
+      "DSM-5 & PHQ-9 automated clinical profiling",
+      "Priority cloud rendering — zero queue",
     ],
     cta: "Go Pro Ultimate",
     quota: {
