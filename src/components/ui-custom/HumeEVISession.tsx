@@ -149,7 +149,7 @@ const Inner = ({
   );
 };
 
-const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
+const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [configId, setConfigId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -190,6 +190,7 @@ const HumeEVISession = ({ counselorName, systemPrompt, onEnd }: Props) => {
         token={token}
         configId={configId}
         systemPrompt={systemPrompt}
+        voiceGender={voiceGender}
         onEnd={onEnd}
       />
     </VoiceProvider>
