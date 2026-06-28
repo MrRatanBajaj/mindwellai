@@ -5,10 +5,10 @@ import logoAsset from "@/assets/wellmindai-logo.jpeg.asset.json";
 
 const items = [
   { label: "Home", href: "/" },
+  { label: "Chat with Yaro", href: "/chat/yaro" },
   { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
   { label: "Research", href: "/judgement-free-space" },
-  { label: "News", href: "/blog" },
 ];
 
 const LandingNav = () => (
