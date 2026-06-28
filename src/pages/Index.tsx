@@ -267,6 +267,7 @@ const Index = () => {
       <main>
         <Hero />
         <FeatureGrid />
+        <ChatTherapySection />
         <JudgementSection />
         <FAQ />
       </main>
