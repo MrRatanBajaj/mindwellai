@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/Footer";
 import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
-import { Mic, MessageCircle, Sparkles, ChevronDown } from "lucide-react";
+import { Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, BookHeart } from "lucide-react";
 import judgementArt from "@/assets/judgement-feather.png";
+import YaroChat from "@/components/ui-custom/YaroChat";
 
 /* ───────── Hero ───────── */
 const Hero = () => (
