@@ -134,6 +134,57 @@ const FeatureGrid = () => (
   </section>
 );
 
+/* ───────── Live Chat Therapy preview (no signup) ───────── */
+const ChatTherapySection = () => (
+  <section className="px-6 py-20 bg-gradient-to-b from-background via-[#fdf6ec] to-background">
+    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
+      <div>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-xs font-medium mb-5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Live · no signup needed
+        </div>
+        <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight">
+          Chat therapy with <span className="italic">Yaro</span> —
+          <br className="hidden md:block" /> like texting a friend who actually trained for this.
+        </h2>
+        <p className="mt-5 text-foreground/75 leading-relaxed text-lg">
+          Open the chat. Type in Hindi, English, Hinglish or any language. Yaro is trained on
+          <strong> DSM-5, ICD-11, PHQ-9, GAD-7 and PCL-5</strong> — so behind the friendly tone
+          is a careful, evidence-based listener.
+        </p>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          {[
+            { icon: <Globe className="w-4 h-4" />, text: "Multilingual · auto-detects" },
+            { icon: <Shield className="w-4 h-4" />, text: "Encrypted · private" },
+            { icon: <BookHeart className="w-4 h-4" />, text: "Clinical screeners on consent" },
+          ].map((f, i) => (
+            <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-card border border-border/60">
+              <span className="text-emerald-600">{f.icon}</span>
+              <span className="text-foreground/80">{f.text}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Button asChild className="h-12 px-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Link to="/chat/yaro">Open full chat →</Link>
+          </Button>
+          <Button asChild variant="outline" className="h-12 px-6 rounded-full">
+            <Link to="/consultation/audio">Talk by voice instead</Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="relative">
+        <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-emerald-200/40 via-teal-200/30 to-amber-100/40 blur-2xl" />
+        <div className="relative">
+          <YaroChat embedded />
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+
 /* ───────── Judgement-free split ───────── */
 const JudgementSection = () => (
   <section className="px-6 py-16">
