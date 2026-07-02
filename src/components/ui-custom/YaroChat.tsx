@@ -142,10 +142,30 @@ export default function YaroChat({ embedded = false }: Props) {
         >
           <Phone className="w-5 h-5" />
         </button>
-        <button className="p-2.5 hover:bg-white/10 rounded-full" aria-label="More">
+        <button
+          onClick={() => setShowClinical((s) => !s)}
+          className={`p-2.5 rounded-full ${showClinical ? "bg-emerald-500/20 text-emerald-300" : "hover:bg-white/10"}`}
+          aria-label="Clinical insight"
+          title="Real-time DSM-5 / PHQ-9 / GAD-7 signal"
+        >
           <MoreVertical className="w-5 h-5" />
         </button>
       </div>
+
+      {showClinical && clinical && (
+        <div className="px-3 py-2 bg-[#0f1c22] border-b border-emerald-500/20 text-[11px] text-white/80 space-y-1">
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            <span>PHQ-9 <b className="text-emerald-300">{clinical.phq9.score}</b> · {clinical.phq9.band}</span>
+            <span>GAD-7 <b className="text-emerald-300">{clinical.gad7.score}</b> · {clinical.gad7.band}</span>
+            {clinical.pcl5.symptoms.length > 0 && <span>PCL-5 signals: {clinical.pcl5.symptoms.length}</span>}
+            {clinical.crisis && <span className="text-rose-400 font-semibold">C-SSRS: crisis flag</span>}
+          </div>
+          {clinical.dsmHints.length > 0 && (
+            <div className="text-white/60">DSM/ICD hypotheses: {clinical.dsmHints.join(" · ")}</div>
+          )}
+          <div className="text-white/40">Silent pattern engine — not a diagnosis.</div>
+        </div>
+      )}
 
       {/* Language strip */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#111b21] border-b border-white/5 overflow-x-auto">
