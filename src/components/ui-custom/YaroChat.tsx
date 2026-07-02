@@ -4,6 +4,13 @@ import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loa
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+type Clinical = {
+  phq9: { score: number; band: string; symptoms: string[] };
+  gad7: { score: number; band: string; symptoms: string[] };
+  pcl5: { symptoms: string[] };
+  crisis: boolean;
+  dsmHints: string[];
+};
 type Msg = { sender: "user" | "ai"; content: string; ts: number; status?: "sent" | "delivered" | "read" };
 
 const QUICK_EMOJI = ["😊","🙏","😔","😢","😨","😡","❤️","💪","✨","🌧️","☀️","🫂"];
