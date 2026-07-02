@@ -48,6 +48,8 @@ export default function YaroChat({ embedded = false }: Props) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
+  const [clinical, setClinical] = useState<Clinical | null>(null);
+  const [showClinical, setShowClinical] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function YaroChat({ embedded = false }: Props) {
 
     const langInstruction =
       lang === "auto"
-        ? "Mirror the user's language exactly (Hindi/English/Hinglish/Tamil/Bengali/Spanish etc.)."
+        ? "Mirror the user's language exactly."
         : `Respond primarily in ${LANGS.find((l) => l.code === lang)?.label}.`;
 
     try {
@@ -79,10 +81,21 @@ export default function YaroChat({ embedded = false }: Props) {
       });
       if (error) throw error;
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
-      // mark user msg delivered/read
-      setMessages((m) => m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({ sender: "ai", content: String(reply), ts: Date.now(), status: "read" }));
+      const cl = (data as any)?.clinical as Clinical | undefined;
+      if (cl) setClinical(cl);
+      setMessages((m) =>
+        m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({
+          sender: "ai",
+          content: String(reply),
+          ts: Date.now(),
+          status: "read",
+        }),
+      );
     } catch {
-      setMessages((m) => [...m, { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" }]);
+      setMessages((m) => [
+        ...m,
+        { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" },
+      ]);
     } finally {
       setSending(false);
     }
