@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, BookOpen, Calendar, Phone,
-  Crown, Gift, Sparkles, ChevronDown, User,
+  Crown, Gift, Sparkles, ChevronDown, User, MessageCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +40,7 @@ const Header = () => {
 
   const primaryLinks = user ? [
     { to: "/dashboard", label: "Home", icon: User },
+    { to: "/chat/yaro", label: "Chat with Yaro", icon: MessageCircle },
     { to: "/journal", label: "Journal", icon: BookOpen },
     { to: "/consultation/video", label: "Video", icon: Calendar },
     { to: "/consultation/audio", label: "Audio", icon: Phone },

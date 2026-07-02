@@ -4,6 +4,13 @@ import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loa
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
+type Clinical = {
+  phq9: { score: number; band: string; symptoms: string[] };
+  gad7: { score: number; band: string; symptoms: string[] };
+  pcl5: { symptoms: string[] };
+  crisis: boolean;
+  dsmHints: string[];
+};
 type Msg = { sender: "user" | "ai"; content: string; ts: number; status?: "sent" | "delivered" | "read" };
 
 const QUICK_EMOJI = ["😊","🙏","😔","😢","😨","😡","❤️","💪","✨","🌧️","☀️","🫂"];
@@ -41,6 +48,8 @@ export default function YaroChat({ embedded = false }: Props) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
+  const [clinical, setClinical] = useState<Clinical | null>(null);
+  const [showClinical, setShowClinical] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,7 +68,7 @@ export default function YaroChat({ embedded = false }: Props) {
 
     const langInstruction =
       lang === "auto"
-        ? "Mirror the user's language exactly (Hindi/English/Hinglish/Tamil/Bengali/Spanish etc.)."
+        ? "Mirror the user's language exactly."
         : `Respond primarily in ${LANGS.find((l) => l.code === lang)?.label}.`;
 
     try {
@@ -72,10 +81,21 @@ export default function YaroChat({ embedded = false }: Props) {
       });
       if (error) throw error;
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
-      // mark user msg delivered/read
-      setMessages((m) => m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({ sender: "ai", content: String(reply), ts: Date.now(), status: "read" }));
+      const cl = (data as any)?.clinical as Clinical | undefined;
+      if (cl) setClinical(cl);
+      setMessages((m) =>
+        m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({
+          sender: "ai",
+          content: String(reply),
+          ts: Date.now(),
+          status: "read",
+        }),
+      );
     } catch {
-      setMessages((m) => [...m, { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" }]);
+      setMessages((m) => [
+        ...m,
+        { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" },
+      ]);
     } finally {
       setSending(false);
     }
@@ -122,10 +142,30 @@ export default function YaroChat({ embedded = false }: Props) {
         >
           <Phone className="w-5 h-5" />
         </button>
-        <button className="p-2.5 hover:bg-white/10 rounded-full" aria-label="More">
+        <button
+          onClick={() => setShowClinical((s) => !s)}
+          className={`p-2.5 rounded-full ${showClinical ? "bg-emerald-500/20 text-emerald-300" : "hover:bg-white/10"}`}
+          aria-label="Clinical insight"
+          title="Real-time DSM-5 / PHQ-9 / GAD-7 signal"
+        >
           <MoreVertical className="w-5 h-5" />
         </button>
       </div>
+
+      {showClinical && clinical && (
+        <div className="px-3 py-2 bg-[#0f1c22] border-b border-emerald-500/20 text-[11px] text-white/80 space-y-1">
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            <span>PHQ-9 <b className="text-emerald-300">{clinical.phq9.score}</b> · {clinical.phq9.band}</span>
+            <span>GAD-7 <b className="text-emerald-300">{clinical.gad7.score}</b> · {clinical.gad7.band}</span>
+            {clinical.pcl5.symptoms.length > 0 && <span>PCL-5 signals: {clinical.pcl5.symptoms.length}</span>}
+            {clinical.crisis && <span className="text-rose-400 font-semibold">C-SSRS: crisis flag</span>}
+          </div>
+          {clinical.dsmHints.length > 0 && (
+            <div className="text-white/60">DSM/ICD hypotheses: {clinical.dsmHints.join(" · ")}</div>
+          )}
+          <div className="text-white/40">Silent pattern engine — not a diagnosis.</div>
+        </div>
+      )}
 
       {/* Language strip */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#111b21] border-b border-white/5 overflow-x-auto">

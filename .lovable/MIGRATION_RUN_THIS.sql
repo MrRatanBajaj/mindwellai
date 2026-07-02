@@ -37,3 +37,27 @@ create index if not exists idx_audio_usage_user_started
 -- 2) period_type on subscriptions (weekly | monthly)
 alter table public.subscriptions
   add column if not exists period_type text not null default 'monthly';
+
+-- ============================================================
+-- SECURITY FIX: b2b_invites — restrict SELECT to invitee or admin
+-- ============================================================
+drop policy if exists "Authenticated users can view all invites" on public.b2b_invites;
+drop policy if exists "authenticated_users_view_all_invites" on public.b2b_invites;
+drop policy if exists "Anyone authenticated can view invites" on public.b2b_invites;
+drop policy if exists "authenticated can view invites" on public.b2b_invites;
+drop policy if exists "b2b_invites_select_authenticated" on public.b2b_invites;
+
+alter table public.b2b_invites enable row level security;
+
+create policy "invitee_or_company_admin_can_view_invite"
+on public.b2b_invites
+for select
+to authenticated
+using (
+  lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+  or exists (
+    select 1 from public.b2b_company_admins a
+    where a.company_id = b2b_invites.company_id
+      and a.user_id = auth.uid()
+  )
+);
