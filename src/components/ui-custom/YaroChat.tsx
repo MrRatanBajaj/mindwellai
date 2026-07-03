@@ -50,7 +50,24 @@ export default function YaroChat({ embedded = false }: Props) {
   const [showEmoji, setShowEmoji] = useState(false);
   const [clinical, setClinical] = useState<Clinical | null>(null);
   const [showClinical, setShowClinical] = useState(false);
+  const [engineStatus, setEngineStatus] = useState<"online" | "degraded" | "checking">("checking");
+  const [lastError, setLastError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Health check — ping ai-counselor once on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ai-counselor", {
+          body: { message: "ping", counselorId: "yaro", conversationHistory: [] },
+        });
+        if (error || !data) setEngineStatus("degraded");
+        else setEngineStatus("online");
+      } catch {
+        setEngineStatus("degraded");
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
