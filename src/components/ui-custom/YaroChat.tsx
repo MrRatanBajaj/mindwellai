@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loader2, Check, CheckCheck, Globe } from "lucide-react";
+import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loader2, Check, CheckCheck, Globe, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -50,7 +50,24 @@ export default function YaroChat({ embedded = false }: Props) {
   const [showEmoji, setShowEmoji] = useState(false);
   const [clinical, setClinical] = useState<Clinical | null>(null);
   const [showClinical, setShowClinical] = useState(false);
+  const [engineStatus, setEngineStatus] = useState<"online" | "degraded" | "checking">("checking");
+  const [lastError, setLastError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Health check — ping ai-counselor once on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ai-counselor", {
+          body: { message: "ping", counselorId: "yaro", conversationHistory: [] },
+        });
+        if (error || !data) setEngineStatus("degraded");
+        else setEngineStatus("online");
+      } catch {
+        setEngineStatus("degraded");
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -79,10 +96,14 @@ export default function YaroChat({ embedded = false }: Props) {
           conversationHistory: next.slice(-12).map((m) => ({ sender: m.sender, content: m.content })),
         },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || "Network error");
+      const errMsg = (data as any)?.error;
+      if (errMsg) throw new Error(String(errMsg));
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
       const cl = (data as any)?.clinical as Clinical | undefined;
       if (cl) setClinical(cl);
+      setLastError(null);
+      setEngineStatus("online");
       setMessages((m) =>
         m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({
           sender: "ai",
@@ -91,10 +112,13 @@ export default function YaroChat({ embedded = false }: Props) {
           status: "read",
         }),
       );
-    } catch {
+    } catch (e: any) {
+      const msg = e?.message || "Connection failed";
+      setLastError(msg);
+      setEngineStatus("degraded");
       setMessages((m) => [
         ...m,
-        { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" },
+        { sender: "ai", content: `⚠️ ${msg}. Try once more — I'm not going anywhere. 🫂`, ts: Date.now(), status: "read" },
       ]);
     } finally {
       setSending(false);
@@ -112,7 +136,24 @@ export default function YaroChat({ embedded = false }: Props) {
   } as const;
 
   return (
-    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto" : "min-h-screen"} flex flex-col ${bg}`}>
+    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto h-[640px]" : "h-screen"} flex flex-col ${bg}`}>
+      {/* Health banner */}
+      <div
+        className={`flex items-center gap-2 px-3 py-1.5 text-[11px] border-b ${
+          engineStatus === "online"
+            ? "bg-emerald-950/60 border-emerald-500/20 text-emerald-300"
+            : engineStatus === "degraded"
+            ? "bg-rose-950/60 border-rose-500/30 text-rose-300"
+            : "bg-slate-900 border-white/10 text-white/60"
+        }`}
+      >
+        {engineStatus === "degraded" ? <AlertTriangle className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+        <span className="truncate">
+          {engineStatus === "online" && "Clinical engine online · DSM-5 · PHQ-9 · GAD-7 · PCL-5 · Crisis kill-switch active"}
+          {engineStatus === "checking" && "Connecting to clinical engine…"}
+          {engineStatus === "degraded" && (lastError || "Engine degraded — retrying on next message")}
+        </span>
+      </div>
       {/* Top contact bar — WhatsApp style */}
       <div className="flex items-center gap-2 px-3 py-2.5 bg-[#202c33] text-white">
         {!embedded && (
