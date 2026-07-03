@@ -96,10 +96,14 @@ export default function YaroChat({ embedded = false }: Props) {
           conversationHistory: next.slice(-12).map((m) => ({ sender: m.sender, content: m.content })),
         },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || "Network error");
+      const errMsg = (data as any)?.error;
+      if (errMsg) throw new Error(String(errMsg));
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
       const cl = (data as any)?.clinical as Clinical | undefined;
       if (cl) setClinical(cl);
+      setLastError(null);
+      setEngineStatus("online");
       setMessages((m) =>
         m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({
           sender: "ai",
@@ -108,10 +112,13 @@ export default function YaroChat({ embedded = false }: Props) {
           status: "read",
         }),
       );
-    } catch {
+    } catch (e: any) {
+      const msg = e?.message || "Connection failed";
+      setLastError(msg);
+      setEngineStatus("degraded");
       setMessages((m) => [
         ...m,
-        { sender: "ai", content: "I'm here. Connection was slow — try once more, I'm not going anywhere. 🫂", ts: Date.now(), status: "read" },
+        { sender: "ai", content: `⚠️ ${msg}. Try once more — I'm not going anywhere. 🫂`, ts: Date.now(), status: "read" },
       ]);
     } finally {
       setSending(false);
