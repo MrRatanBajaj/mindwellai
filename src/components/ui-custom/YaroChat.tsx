@@ -136,7 +136,24 @@ export default function YaroChat({ embedded = false }: Props) {
   } as const;
 
   return (
-    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto" : "min-h-screen"} flex flex-col ${bg}`}>
+    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto h-[640px]" : "h-screen"} flex flex-col ${bg}`}>
+      {/* Health banner */}
+      <div
+        className={`flex items-center gap-2 px-3 py-1.5 text-[11px] border-b ${
+          engineStatus === "online"
+            ? "bg-emerald-950/60 border-emerald-500/20 text-emerald-300"
+            : engineStatus === "degraded"
+            ? "bg-rose-950/60 border-rose-500/30 text-rose-300"
+            : "bg-slate-900 border-white/10 text-white/60"
+        }`}
+      >
+        {engineStatus === "degraded" ? <AlertTriangle className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+        <span className="truncate">
+          {engineStatus === "online" && "Clinical engine online · DSM-5 · PHQ-9 · GAD-7 · PCL-5 · Crisis kill-switch active"}
+          {engineStatus === "checking" && "Connecting to clinical engine…"}
+          {engineStatus === "degraded" && (lastError || "Engine degraded — retrying on next message")}
+        </span>
+      </div>
       {/* Top contact bar — WhatsApp style */}
       <div className="flex items-center gap-2 px-3 py-2.5 bg-[#202c33] text-white">
         {!embedded && (
