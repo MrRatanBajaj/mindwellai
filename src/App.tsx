@@ -37,6 +37,7 @@ import B2BAdminDashboard from "./pages/B2BAdminDashboard";
 import B2BTestAccess from "./pages/B2BTestAccess";
 import JudgementFreeSpace from "./pages/JudgementFreeSpace";
 import YaroChatPage from "./pages/YaroChatPage";
+import Alternative from "./pages/Alternative";
 
 const queryClient = new QueryClient();
 
