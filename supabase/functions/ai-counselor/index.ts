@@ -269,7 +269,14 @@ ${LIVE_SIGNALS}`,
         break;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        providerErrors.push(msg);
+        const safeMsg = msg.includes("402")
+          ? "Primary multilingual model needs credits"
+          : msg.includes("429")
+          ? "Primary multilingual model is rate limited"
+          : msg.includes("401") || msg.toLowerCase().includes("key")
+          ? "Fallback model credential needs attention"
+          : "A fallback model was unavailable";
+        providerErrors.push(safeMsg);
         console.error("Yaro provider fallback", msg.slice(0, 400));
       }
     }
@@ -313,7 +320,7 @@ ${LIVE_SIGNALS}`,
           provider: aiResult.provider,
           model: aiResult.model,
           degraded: !!aiResult.degraded,
-          providerErrors: aiResult.degraded ? providerErrors.slice(0, 2) : [],
+          providerErrors: aiResult.degraded ? Array.from(new Set(providerErrors)).slice(0, 2) : [],
         clinical,
         crisis: false,
         sessionId,
