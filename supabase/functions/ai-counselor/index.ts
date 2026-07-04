@@ -224,11 +224,10 @@ ${LIVE_SIGNALS}`,
 
     const callOpenSource = async (): Promise<ProviderResult> => {
       const key = Deno.env.get("HUGGINGFACE_API_KEY");
-      if (!key) throw new Error("Open-source model key missing");
       const prompt = modelMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
       const resp = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", {
         method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        headers: { ...(key ? { Authorization: `Bearer ${key}` } : {}), "Content-Type": "application/json" },
         body: JSON.stringify({
           inputs: `<s>[INST] ${prompt}\n\nReply as Yaro now. [/INST]`,
           parameters: { max_new_tokens: 260, temperature: 0.65, return_full_text: false },

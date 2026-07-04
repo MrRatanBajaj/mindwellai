@@ -56,8 +56,8 @@ to authenticated
 using (
   lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
   or exists (
-    select 1 from public.b2b_company_admins a
-    where a.company_id = b2b_invites.company_id
-      and a.user_id = auth.uid()
+    select 1 from public.b2b_companies c
+    where c.id = b2b_invites.company_id
+      and c.admin_user_id = auth.uid()
   )
 );
