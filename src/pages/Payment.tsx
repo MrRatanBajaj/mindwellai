@@ -42,10 +42,10 @@ const Payment = () => {
   }, [planId, navigate]);
 
   useEffect(() => {
-    if (user?.email && !paymentDetails.email) {
+    if (user?.email) {
       setPaymentDetails((p) => ({ ...p, email: user.email! }));
     }
-  }, [user]);
+  }, [user?.email]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,23 +59,34 @@ const Payment = () => {
       navigate(`/auth?redirect=/payment?plan=${selectedPlan.id}`);
       return;
     }
-    if (!paymentDetails.name || !paymentDetails.email) {
+    const lockedEmail = user.email?.trim().toLowerCase() || "";
+    const enteredEmail = paymentDetails.email.trim().toLowerCase();
+    if (!paymentDetails.name || !enteredEmail) {
       toast.error("Please fill in your name and email");
+      return;
+    }
+    if (enteredEmail !== lockedEmail) {
+      toast.error("Subscription must be bought with your signed-in email.");
+      setPaymentDetails((p) => ({ ...p, email: lockedEmail }));
       return;
     }
     setIsProcessing(true);
     try {
       const amount = selectedPlan.pricePaise / 100;
+      const { data: sessionData } = await supabase.auth.getSession();
       const { data: orderData, error } = await supabase.functions.invoke("razorpay-payment", {
         body: {
           amount,
           currency: "INR",
           name: paymentDetails.name,
-          email: paymentDetails.email,
+          email: lockedEmail,
           phone: paymentDetails.phone,
           planId: selectedPlan.id,
           paymentMethod,
         },
+        headers: sessionData.session?.access_token
+          ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+          : undefined,
       });
       if (error) throw error;
 
@@ -100,6 +111,9 @@ const Payment = () => {
                   razorpayOrderId: response.razorpay_order_id,
                   razorpaySignature: response.razorpay_signature,
                 },
+                headers: sessionData.session?.access_token
+                  ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+                  : undefined,
               });
               if (vErr) throw vErr;
               toast.success(`${selectedPlan.name} active! Enjoy your sessions.`);
@@ -238,7 +252,8 @@ const Payment = () => {
                     <div className="space-y-1.5">
                       <Label htmlFor="email">Email</Label>
                       <Input id="email" name="email" type="email" placeholder="you@example.com"
-                        value={paymentDetails.email} onChange={handleInputChange} required />
+                        value={paymentDetails.email} readOnly required className="bg-secondary/50 cursor-not-allowed" />
+                      <p className="text-xs text-muted-foreground">Locked to your signed-in account for subscription security.</p>
                     </div>
 
                     <div className="space-y-2">

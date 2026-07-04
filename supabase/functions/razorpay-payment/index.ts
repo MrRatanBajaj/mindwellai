@@ -39,6 +39,31 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Please sign in before buying a subscription.' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (userError || !user?.id || !user.email) {
+      return new Response(JSON.stringify({ error: 'Invalid login session. Please sign in again.' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const normalizedEmail = email.trim().toLowerCase()
+    const accountEmail = user.email.trim().toLowerCase()
+    if (normalizedEmail !== accountEmail) {
+      return new Response(JSON.stringify({ error: 'Subscription email must match your signed-in account email.' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID')
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
 
@@ -54,7 +79,8 @@ serve(async (req) => {
       notes: {
         planId: planId || '',
         name: name,
-        email: email,
+        email: accountEmail,
+        userId: user.id,
         phone: phone || '',
         paymentMethod: paymentMethod || 'card'
       }
@@ -78,14 +104,7 @@ serve(async (req) => {
 
     const razorpayOrder = await razorpayResponse.json()
 
-    const authHeader = req.headers.get('authorization')
-    let userId = null
-    
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '')
-      const { data: { user } } = await supabase.auth.getUser(token)
-      userId = user?.id
-    }
+    const userId = user.id
 
     if (userId) {
       await supabase
@@ -105,7 +124,7 @@ serve(async (req) => {
       const consultationData = {
         user_id: userId,
         name: name,
-        email: email,
+          email: accountEmail,
         phone: phone,
         concerns: `Payment for ${planId || 'consultation'} plan`,
         status: 'payment_pending',
@@ -136,9 +155,9 @@ serve(async (req) => {
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         keyId: razorpayKeyId,
-        name: 'MindwellAI',
+        name: 'WellMindAI',
         description: `Payment for ${planId || 'consultation'} plan`,
-        prefill: { name, email, contact: phone || '' },
+        prefill: { name, email: accountEmail, contact: phone || '' },
         theme: { color: '#10B981' },
         upiOptions: { vpa: 'mindwellai@paytm', flow: 'intent' },
         method: { upi: true, card: true, netbanking: true, wallet: true, emi: false, paylater: false }

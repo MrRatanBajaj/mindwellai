@@ -5,38 +5,109 @@ import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/Footer";
 import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
-import { Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, BookHeart } from "lucide-react";
+import { Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, BookHeart, Video, Lock, HeartHandshake, Languages, Moon, Infinity, Users } from "lucide-react";
 import judgementArt from "@/assets/judgement-feather.png";
 import YaroChat from "@/components/ui-custom/YaroChat";
 
 /* ───────── Hero ───────── */
 const Hero = () => (
-  <section id="home" className="pt-32 pb-20 px-6">
-    <div className="max-w-5xl mx-auto text-center">
+  <section id="home" className="pt-28 pb-16 px-6">
+    <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+      <div className="text-center lg:text-left">
       <motion.h1
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
-        className="font-display text-5xl md:text-7xl font-normal leading-[1.05] text-foreground tracking-tight"
+        className="font-display text-4xl md:text-6xl font-normal leading-[1.05] text-foreground tracking-tight"
       >
-        AI for mental wellbeing
+        Moved away for college and the silence of your room hitting hard?
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
-        className="mt-6 text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto"
+        className="mt-6 text-lg md:text-xl text-foreground/70 max-w-2xl lg:mx-0 mx-auto"
       >
-        Talk, type, or just breathe. WellMindAI connects the dots between your thoughts,
-        feelings and behaviors — one quiet conversation at a time.
+        Don't sit alone with your stress, anxiety, or loneliness. Meet Panda, your
+        24/7 conversational companion who is just here to listen.
       </motion.p>
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-        className="mt-10 flex flex-wrap items-center justify-center gap-3"
+        className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-3"
       >
-        <Button asChild className="h-14 px-8 rounded-full bg-[#2A2522] hover:bg-[#2A2522]/90 text-[#F5EFE6] text-base">
-          <Link to="/auth">Get started free</Link>
+        <Button asChild className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-base shadow-[0_0_32px_hsl(var(--primary)/0.35)]">
+          <Link to="/payment?plan=starter_weekly"><Video className="mr-2 h-5 w-5" /> Talk to Panda on Video Call (Just ₹99)</Link>
         </Button>
         <Button asChild variant="ghost" className="h-14 px-6 rounded-full text-base text-foreground/80">
-          <Link to="/about">How it works</Link>
+          <Link to="/chat/yaro">Chat with Yaro first</Link>
         </Button>
       </motion.div>
+      </div>
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="relative">
+        <div className="rounded-[2rem] border border-foreground/10 bg-card/75 backdrop-blur-xl p-8 min-h-[420px] shadow-crayon flex flex-col items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/20 to-accent/10" />
+          <div className="relative h-48 w-48 rounded-full bg-background border-4 border-foreground/10 shadow-pencil flex items-center justify-center text-7xl">
+            🐼
+          </div>
+          <p className="relative mt-6 text-sm text-muted-foreground text-center max-w-xs">Interactive 3D Panda mascot placeholder — ready for Spline/Midjourney asset.</p>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+const PandaSection = () => (
+  <section className="px-6 py-16">
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center max-w-3xl mx-auto mb-10">
+        <h2 className="font-display text-4xl md:text-5xl">Panda: Your No-Judgment Zone</h2>
+        <p className="mt-4 text-foreground/70">A soft, private space for students who need to vent without being fixed, judged, or exposed.</p>
+      </div>
+      <div className="grid md:grid-cols-3 gap-5">
+        {[
+          { icon: Languages, title: "He Knows How You Feel", body: "Supports native languages through a Bhashini-ready multilingual pipeline." },
+          { icon: HeartHandshake, title: "No Unsolicited Advice", body: "Pure listening, validation and one gentle next step only when you want it." },
+          { icon: Lock, title: "100% Incognito Mode", body: "Anonymous-first, encrypted and designed for private emotional release." },
+        ].map((item) => (
+          <div key={item.title} className="rounded-3xl bg-card border border-foreground/10 p-6 hover-lift">
+            <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mb-5"><item.icon className="w-6 h-6 text-secondary-foreground" /></div>
+            <h3 className="font-display text-2xl mb-2">{item.title}</h3>
+            <p className="text-sm text-foreground/70 leading-relaxed">{item.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const StudentPainSection = () => (
+  <section className="px-6 py-16 bg-card/40">
+    <div className="max-w-6xl mx-auto">
+      <h2 className="font-display text-4xl md:text-5xl text-center mb-10">Does this sound like your evening?</h2>
+      <div className="grid md:grid-cols-3 gap-5">
+        {[
+          { icon: Moon, title: "The Empty Room", body: "Coming back to a lonely hostel or room after class, away from family noise and comfort." },
+          { icon: Infinity, title: "The Overthinking Loop", body: "Scrolling Reels at night just to block the midnight anxiety that keeps replaying." },
+          { icon: Users, title: "The Venting Block", body: "Having 500 contacts but nobody you can call without feeling like a burden." },
+        ].map((item) => (
+          <div key={item.title} className="group rounded-3xl border border-foreground/10 bg-background p-7 transition-all duration-300 hover:-translate-y-2 hover:shadow-crayon">
+            <item.icon className="w-9 h-9 text-primary mb-6 transition-transform group-hover:scale-110" />
+            <h3 className="font-display text-2xl mb-3">{item.title}</h3>
+            <p className="text-foreground/70 leading-relaxed">{item.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const StudentPricingCTA = () => (
+  <section className="px-6 py-16">
+    <div className="max-w-4xl mx-auto rounded-[2rem] bg-foreground text-background p-8 md:p-12 text-center shadow-crayon">
+      <h2 className="font-display text-3xl md:text-5xl">Cheaper than a college canteen burger. Priceless for your peace of mind.</h2>
+      <form className="mt-8 grid sm:grid-cols-[1fr_auto] gap-3" onSubmit={(e) => e.preventDefault()}>
+        <input aria-label="Mobile number or email" placeholder="Enter Mobile Number / Email" className="h-14 rounded-full bg-background/95 text-foreground px-5 outline-none" />
+        <Button asChild className="h-14 rounded-full px-7 bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Link to="/payment?plan=starter_weekly">Claim Your ₹99 Video Session Now</Link>
+        </Button>
+      </form>
+      <p className="mt-5 text-sm text-background/70">100% Encrypted & Anonymous.</p>
     </div>
   </section>
 );
@@ -266,9 +337,12 @@ const Index = () => {
       <LandingNav />
       <main>
         <Hero />
+        <PandaSection />
+        <StudentPainSection />
         <FeatureGrid />
         <ChatTherapySection />
         <JudgementSection />
+        <StudentPricingCTA />
         <FAQ />
       </main>
       <Footer />

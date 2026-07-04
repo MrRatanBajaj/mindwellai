@@ -11,6 +11,7 @@ type Competitor = {
   tagline: string;
   positioning: string;
   gaps: string[];
+  comparison: { label: string; competitor: string; wellmind: string }[];
   wellmindWins: { title: string; body: string }[];
   faqs: { q: string; a: string }[];
 };
@@ -27,6 +28,11 @@ const COMPETITORS: Record<string, Competitor> = {
       "Paywalled human coaching; free tier is limited to scripted CBT cards",
       "No live video / audio grounding with real-time clinical signal",
       "No transparent DSM-5 / PHQ-9 / GAD-7 mapping surfaced to the user",
+    ],
+    comparison: [
+      { label: "Best for", competitor: "Scripted CBT self-help", wellmind: "Multilingual chat, audio and video grounding" },
+      { label: "India language fit", competitor: "Mostly English-first", wellmind: "Hindi, Hinglish, Tamil, Bengali and code-mixed input" },
+      { label: "Starter price", competitor: "Premium tiers vary", wellmind: "₹99/week entry plan" },
     ],
     wellmindWins: [
       { title: "Native multilingual", body: "22 Indian languages + English. Yaro mirrors your exact language, including Hinglish and Tanglish." },
@@ -52,6 +58,11 @@ const COMPETITORS: Record<string, Competitor> = {
       "Long onboarding and matching before first session",
       "Not transparent about DSM-5 / PHQ-9 scoring surfaced to the user",
     ],
+    comparison: [
+      { label: "Access", competitor: "Employer-sponsored EAP", wellmind: "Individual signup plus B2B" },
+      { label: "Market fit", competitor: "US enterprise first", wellmind: "India-first pricing and languages" },
+      { label: "Time to first support", competitor: "Onboarding and matching", wellmind: "Yaro chat opens instantly" },
+    ],
     wellmindWins: [
       { title: "Available to individuals", body: "No employer required. Sign up, chat with Yaro in 30 seconds." },
       { title: "Built for India", body: "Bhashini ASR + regional voices + ₹ pricing, not $." },
@@ -76,6 +87,11 @@ const COMPETITORS: Record<string, Competitor> = {
       "No real-time crisis detection with hotline handoff",
       "No integrated audio/video therapy option",
     ],
+    comparison: [
+      { label: "Core use", competitor: "Peer-style venting", wellmind: "Evidence-informed grounding" },
+      { label: "Clinical safety", competitor: "Limited structured screening", wellmind: "DSM/ICD + PHQ-9/GAD-7/PCL-5 signals" },
+      { label: "Formats", competitor: "Text-led", wellmind: "Text, audio and video" },
+    ],
     wellmindWins: [
       { title: "Clinical framework, not just chat", body: "Trained on DSM-5, ICD-11, PHQ-9, GAD-7 and PCL-5 — with C-SSRS crisis kill-switch." },
       { title: "Multilingual voice", body: "Hume EVI voice with Yaro (male) and Ava (female) across English, Hindi, Hinglish, Tamil, Bengali and more." },
@@ -95,7 +111,7 @@ const Alternative = () => {
   const data = slug ? COMPETITORS[slug] : undefined;
 
   useSEO({
-    title: data ? `${data.name} Alternative — WellMindAI · Multilingual AI Therapy` : "Alternatives — WellMindAI",
+    title: data ? `Top 5 ${data.name} Alternatives in 2026 | WellMindAI` : "Alternatives — WellMindAI",
     description: data
       ? `Looking for a ${data.name} alternative? WellMindAI is a Hinglish-first, clinically grounded AI therapist trained on DSM-5, PHQ-9, GAD-7 and PCL-5. Starts at ₹99/week.`
       : "Compare WellMindAI with Wysa, Lyra Health and Whisper.",
@@ -158,6 +174,19 @@ const Alternative = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="max-w-5xl mx-auto px-6 mt-16">
+          <h2 className="font-display text-3xl mb-6">{data.name} vs WellMindAI: quick comparison</h2>
+          <div className="overflow-hidden rounded-3xl border bg-card">
+            {data.comparison.map((row) => (
+              <div key={row.label} className="grid md:grid-cols-3 gap-4 p-5 border-b last:border-b-0">
+                <div className="font-semibold">{row.label}</div>
+                <div className="text-foreground/65">{data.name}: {row.competitor}</div>
+                <div className="text-foreground">WellMindAI: {row.wellmind}</div>
+              </div>
+            ))}
           </div>
         </section>
 

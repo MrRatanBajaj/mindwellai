@@ -32,6 +32,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) throw new Error('Please sign in before verifying payment')
+    const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (userError || !user?.id) throw new Error('Invalid login session')
+    const userId = user.id
+
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!
 
     const expectedSignature = createHmac('sha256', razorpayKeySecret)
@@ -39,16 +45,10 @@ serve(async (req) => {
       .digest('hex')
     if (expectedSignature !== razorpaySignature) throw new Error('Invalid payment signature')
 
-    const authHeader = req.headers.get('authorization')
-    let userId: string | null = null
-    if (authHeader) {
-      const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-      userId = user?.id ?? null
-    }
-
-    // Mark payment completed
+    // Mark payment completed only for the signed-in account that created the order.
     const { data: existingPayment } = await supabase
-      .from('payments').select('*').eq('order_id', razorpayOrderId).maybeSingle()
+      .from('payments').select('*').eq('order_id', razorpayOrderId).eq('user_id', userId).maybeSingle()
+    if (!existingPayment) throw new Error('Payment order does not belong to this account')
     if (existingPayment) {
       await supabase.from('payments').update({
         payment_id: razorpayPaymentId, status: 'completed',
@@ -60,7 +60,7 @@ serve(async (req) => {
       .from('consultations').select('*')
       .contains('notes', { razorpayOrderId }).limit(1)
 
-    let planId: string | null = null
+    let planId: string | null = existingPayment?.plan_id ?? null
     if (consultations?.length) {
       const c = consultations[0]
       const notes = typeof c.notes === 'string' ? JSON.parse(c.notes) : c.notes
@@ -74,8 +74,6 @@ serve(async (req) => {
         }),
       }).eq('id', c.id)
     }
-
-    if (!planId && existingPayment?.plan_id) planId = existingPayment.plan_id
 
     // Upsert subscription
     if (userId && planId) {

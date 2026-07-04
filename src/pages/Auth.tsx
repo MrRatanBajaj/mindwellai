@@ -107,18 +107,8 @@ const Auth = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [signupCooldown, setSignupCooldown] = useState(0);
 
-  const routeAfterAuth = async (userId: string) => {
-    const { data } = await supabase
-      .from("subscriptions")
-      .select("status, plan_id, current_period_end")
-      .eq("user_id", userId)
-      .eq("status", "active")
-      .maybeSingle();
-    const active =
-      !!data &&
-      data.plan_id !== "free" &&
-      (!data.current_period_end || new Date(data.current_period_end) > new Date());
-    navigate(active ? "/dashboard" : "/plans");
+  const routeAfterAuth = async (_userId: string) => {
+    navigate("/dashboard", { replace: true });
   };
 
   useEffect(() => {
@@ -162,7 +152,7 @@ const Auth = () => {
       toast.success("Welcome back!");
       const { data: { user: signedInUser } } = await supabase.auth.getUser();
       if (signedInUser) await routeAfterAuth(signedInUser.id);
-      else navigate("/plans");
+      else navigate("/dashboard", { replace: true });
     } catch {
       logLoginAttempt(false, loginData.email);
       toast.error("An unexpected error occurred");
@@ -253,10 +243,10 @@ const Auth = () => {
 
       if (data?.mode === "recovered") {
         toast.success("Your earlier account was repaired and you are now signed in.", { duration: 6000 });
-        navigate("/plans");
+        navigate("/dashboard", { replace: true });
       } else {
-        toast.success("Account created! Choose a plan to start your journey.", { duration: 6000 });
-        navigate("/plans");
+        toast.success("Account created! Welcome to your dashboard.", { duration: 6000 });
+        navigate("/dashboard", { replace: true });
       }
     } catch {
       logSignupAttempt(false, signupData.email);
@@ -331,7 +321,7 @@ const Auth = () => {
       toast.success("Verified successfully! Welcome!");
       const { data: { user: verifiedUser } } = await supabase.auth.getUser();
       if (verifiedUser) await routeAfterAuth(verifiedUser.id);
-      else navigate("/plans");
+      else navigate("/dashboard", { replace: true });
     } catch {
       toast.error("Verification failed");
     } finally {
