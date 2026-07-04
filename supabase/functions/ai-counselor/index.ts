@@ -166,57 +166,117 @@ ${LIVE_SIGNALS}`,
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const modelMessages = [
+      { role: "system", content: selected.systemPrompt },
+      ...conversationHistory.slice(-12).map((m) => ({
+        role: m.sender === "user" ? "user" : "assistant",
+        content: m.content,
+      })),
+      { role: "user", content: message },
+    ];
+
+    type ProviderResult = { text: string; provider: string; model: string; degraded?: boolean };
+    const providerErrors: string[] = [];
+
+    const callLovableGemini = async (): Promise<ProviderResult> => {
+      const key = Deno.env.get("LOVABLE_API_KEY");
+      if (!key) throw new Error("Lovable AI key missing");
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Lovable-API-Key": key,
+          "X-Lovable-AIG-SDK": "wellmindai-edge",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: modelMessages,
+          temperature: 0.65,
+          max_tokens: 420,
+        }),
       });
+      if (!resp.ok) throw new Error(`Lovable Gemini ${resp.status}: ${await resp.text()}`);
+      const json = await resp.json();
+      const text = json.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("Lovable Gemini empty response");
+      return { text, provider: "Lovable AI", model: "Gemini 3 Flash" };
+    };
+
+    const callChatGPT = async (): Promise<ProviderResult> => {
+      const key = Deno.env.get("OPENAI_API_KEY");
+      if (!key) throw new Error("OpenAI key missing");
+      const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: modelMessages,
+          temperature: 0.65,
+          max_tokens: 420,
+        }),
+      });
+      if (!resp.ok) throw new Error(`ChatGPT ${resp.status}: ${await resp.text()}`);
+      const json = await resp.json();
+      const text = json.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("ChatGPT empty response");
+      return { text, provider: "ChatGPT", model: "gpt-4o-mini" };
+    };
+
+    const callOpenSource = async (): Promise<ProviderResult> => {
+      const key = Deno.env.get("HUGGINGFACE_API_KEY");
+      if (!key) throw new Error("Open-source model key missing");
+      const prompt = modelMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
+      const resp = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inputs: `<s>[INST] ${prompt}\n\nReply as Yaro now. [/INST]`,
+          parameters: { max_new_tokens: 260, temperature: 0.65, return_full_text: false },
+        }),
+      });
+      if (!resp.ok) throw new Error(`Open-source model ${resp.status}: ${await resp.text()}`);
+      const json = await resp.json();
+      const text = (Array.isArray(json) ? json[0]?.generated_text : json?.generated_text)?.trim();
+      if (!text) throw new Error("Open-source model empty response");
+      return { text, provider: "Open-source", model: "Mistral 7B" };
+    };
+
+    const detectReplyLanguage = (text: string) => {
+      if (/[\u0900-\u097F]/.test(text)) return "hi";
+      if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
+      if (/\b(kya|nahi|hai|main|mujhe|yaar|tension|mann|dil)\b/i.test(text)) return "hinglish";
+      return "en";
+    };
+
+    const localGroundedReply = (): ProviderResult => {
+      const language = detectReplyLanguage(message);
+      const anxious = clinical.gad7.score >= 5;
+      const low = clinical.phq9.score >= 5;
+      const trauma = clinical.pcl5.symptoms.length > 0;
+      const focus = trauma ? "trauma-stress" : anxious ? "anxiety" : low ? "low mood" : "stress";
+      const replies: Record<string, string> = {
+        hi: `मैं सुन रहा हूँ। जो आप बता रहे हैं उसमें ${focus} का संकेत दिख रहा है, पर मैं कोई diagnosis नहीं करूँगा। अभी बस 30 सेकंड: धीरे सांस लें, कमरे में 3 चीजें देखें, फिर मुझे बताइए — इस समय सबसे भारी हिस्सा क्या है?`,
+        ta: `நான் கேட்கிறேன். நீங்கள் சொல்வதில் ${focus} pattern மாதிரி தெரிகிறது, ஆனால் நான் diagnosis செய்ய மாட்டேன். இப்போது 30 விநாடி மெதுவாக மூச்சு விடுங்கள், அறையில் 3 விஷயங்களை கவனியுங்கள் — பிறகு இப்போது அதிகமாக கஷ்டப்படுத்துவது என்ன என்று சொல்லுங்கள்.`,
+        hinglish: `Main sun raha hoon. Jo tum bata rahe ho usme ${focus} ka pattern dikh raha hai, par main diagnosis nahi karunga. Abhi 30 seconds: slow breath lo, room me 3 cheeze notice karo, phir mujhe batao — iss moment sabse heavy kya lag raha hai?`,
+        en: `I'm listening. What you shared shows a ${focus} pattern, but I won't diagnose you. For the next 30 seconds, take one slow breath, notice three things in the room, then tell me the heaviest part of this moment.`,
+      };
+      return { text: replies[language], provider: "Protective local fallback", model: "DSM/PHQ/GAD/PCL rules", degraded: true };
+    };
+
+    let aiResult: ProviderResult | null = null;
+    for (const call of [callLovableGemini, callChatGPT, callOpenSource]) {
+      try {
+        aiResult = await call();
+        break;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        providerErrors.push(msg);
+        console.error("Yaro provider fallback", msg.slice(0, 400));
+      }
     }
 
-    const gwResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: selected.systemPrompt },
-          ...conversationHistory.slice(-12).map((m) => ({
-            role: m.sender === "user" ? "user" : "assistant",
-            content: m.content,
-          })),
-          { role: "user", content: message },
-        ],
-        temperature: 0.7,
-        max_tokens: 400,
-      }),
-    });
-
-    if (!gwResp.ok) {
-      const errText = await gwResp.text();
-      console.error("Gateway error", gwResp.status, errText);
-      if (gwResp.status === 429) {
-        return new Response(JSON.stringify({ error: "Too many requests. Please wait a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (gwResp.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "AI temporarily unavailable" }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const aiData = await gwResp.json();
-    const aiMessage =
-      aiData.choices?.[0]?.message?.content ||
-      "I'm here with you. Tell me a little more about what's on your mind.";
+    if (!aiResult) aiResult = localGroundedReply();
+    const aiMessage = aiResult.text;
 
     if (userId && sessionId) {
       try {
@@ -251,6 +311,10 @@ ${LIVE_SIGNALS}`,
         message: aiMessage,
         response: aiMessage,
         counselor: { name: selected.name },
+          provider: aiResult.provider,
+          model: aiResult.model,
+          degraded: !!aiResult.degraded,
+          providerErrors: aiResult.degraded ? providerErrors.slice(0, 2) : [],
         clinical,
         crisis: false,
         sessionId,
