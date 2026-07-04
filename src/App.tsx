@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { SubscriptionRoute } from "@/components/auth/SubscriptionRoute";
@@ -40,6 +40,18 @@ import YaroChatPage from "./pages/YaroChatPage";
 import Alternative from "./pages/Alternative";
 
 const queryClient = new QueryClient();
+
+const AppChrome = () => {
+  const location = useLocation();
+  const isFocusedChat = location.pathname === "/chat/yaro" || location.pathname === "/chat";
+
+  return (
+    <>
+      <CookieBanner />
+      {!isFocusedChat && <NainaChatbot />}
+    </>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -82,8 +94,7 @@ const App = () => (
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <CookieBanner />
-          <NainaChatbot />
+          <AppChrome />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
