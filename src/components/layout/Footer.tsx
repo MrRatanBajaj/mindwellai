@@ -21,7 +21,7 @@ const Footer = () => {
         { to: "/about", label: "About" },
         { to: "/careers", label: "Careers" },
         { to: "/blog", label: "Blog" },
-        { to: "/business", label: "For business" },
+        { to: "/business/buy", label: "For business" },
       ],
     },
     {
@@ -30,7 +30,7 @@ const Footer = () => {
         { to: "/privacy", label: "Privacy" },
         { to: "/terms", label: "Terms" },
         { to: "/subscription", label: "Plans" },
-        { to: "/referrals", label: "Refer & earn" },
+        { to: "/alternatives/wysa-alternative", label: "Compare" },
       ],
     },
   ];

@@ -1,82 +1,66 @@
-# Plan — Counselor Images + Soul Machines + Full B2B Self-Serve
+# WellMindAI — Scope of this build
 
-## 1. Restore your 3 uploaded images for YARO & AVA
-Earlier I changed copy but didn't actually wire your uploaded PNGs into the cards. I will:
-- Copy the 3 uploads from `user-uploads://` into `src/assets/counselors/` (`yaro.png`, `ava.png`, plus the 3rd as `yaro-ava-hero.png` for the landing oil-pastel hero panel).
-- Reference them by ES6 import in `Index.tsx`, `VideoConsultation.tsx`, `AudioConsultation.tsx`, and `src/lib/counselors.ts`.
-- Only the names/labels were ever supposed to change — keep your artwork exactly as uploaded inside the hand-drawn pastel frames.
+## 1. Database migration (one SQL file, you run it)
+Adds to `.lovable/MIGRATION_RUN_THIS.sql`:
+- `app_role` enum (`admin`, `moderator`, `user`) + `user_roles` table + `has_role()` security-definer function.
+- `research_papers` table (title, slug, authors, abstract, pdf_url, published_at, tags).
+- `demo_access_grants` table (user_id, granted_by, expires_at, is_active) — powers 1-day full-feature demos.
+- `invoices` table (user_id, invoice_no auto-seq, amount, plan, razorpay_payment_id, issued_at).
+- GRANTS + RLS on all of the above.
+- Seeds your email as first `admin` role.
 
-(Please re-attach the 3 images on the next message — they're not in the project tree right now. I'll wire them the moment they land.)
+## 2. Admin panel (`/admin`)
+Single page, role-gated via `has_role(auth.uid(),'admin')`:
+- Tabs: Blog posts | Research papers | Careers/Job applications | Leads | Demo access | Invoices.
+- Full CRUD for blog + research papers (title, slug, cover, markdown body, publish toggle).
+- Careers: view/edit `job_applications` rows, mark reviewed.
+- Leads: view `leads` + `content_drafts`.
+- Demo access: input email → grants 24-hour full-feature access (adds row to `demo_access_grants`).
+- All non-admin users redirected to `/dashboard`.
 
-## 2. Replace Tavus video with Soul Machines virtual humans
-Tavus has been flaky. Switch the video counselor to **Soul Machines Workforce** (`workforce.soulmachines.com`) digital people for YARO and AVA.
+## 3. Yaro chat fix
+- Rewire `YaroChat.tsx` to call existing `ai-counselor` edge function (already on Lovable AI Gateway → `google/gemini-3-flash-preview`, multi-modal, Hindi/Hinglish native).
+- Restore the earlier working chat therapy prompt (clinical DSM-5/PHQ-9/GAD-7/PCL-5 pattern engine) inside `ai-counselor`.
+- Fix `/chat/yaro` page width: constrain to `max-w-2xl mx-auto` with WhatsApp-style card, not full-viewport wide.
+- Keep name "Yaro" everywhere.
 
-- New page component `SoulMachinesSession.tsx` that mounts the official `@soulmachines/smwebsdk` `Scene` + `Persona` and renders the WebRTC `<video>` from `scene.videoElement`.
-- New edge function `soulmachines-jwt` — mints the short-lived JWT from `SOULMACHINES_API_KEY` + `SOULMACHINES_API_SECRET` using the documented HS256 payload (`sm-control`, `sm-control-via-browser`, expiry 60s). Returns `{ url, jwt }`.
-- Secrets to add (I'll request via `add_secret` after you approve):
-  - `SOULMACHINES_API_KEY`
-  - `SOULMACHINES_API_SECRET`
-  - `SOULMACHINES_YARO_PERSONA` (Persona ID from your dashboard)
-  - `SOULMACHINES_AVA_PERSONA`
-- `VideoConsultation.tsx` → swap `TavusVideoConsultation` for `SoulMachinesSession` with counselor prop.
-- Keep `video-session-gate` 15s heartbeat untouched (still enforces Free 2-min / paid minute caps).
-- Tavus code stays in repo unused (no deletion) so you can revert if needed.
+## 4. Invoice generation
+- New `src/lib/invoice.ts` — client-side PDF via `jspdf` (already common dep, will add if missing).
+- WellMindAI logo + name header, invoice number, plan, amount, GST-ready format.
+- `Subscription.tsx` gets "Download Invoice" button per payment row.
+- On successful Razorpay verify, `verify-payment` edge function inserts an `invoices` row.
 
-## 3. Full B2B self-serve (DB + checkout + gatekeeper + admin dashboard)
+## 5. Page removals (delete files + routes + nav links)
+- Delete: `src/pages/Business.tsx`, `src/pages/B2BTestAccess.tsx`, `src/pages/Referrals.tsx`, `src/pages/BlogPost.tsx`.
+- Remove routes from `App.tsx`: `/business`, `/business/test-access`, `/referrals`, `/blog/:slug`.
+- Any link pointing to `/business` → repoint to `/business/buy`.
+- Remove nav links to Referrals and Blog-post detail. Blog listing stays.
 
-### 3a. Schema migration — your exact spec
-```sql
-CREATE TABLE public.b2b_accounts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_name TEXT NOT NULL,
-  organization_type TEXT NOT NULL CHECK (organization_type IN ('corporate','college','coaching')),
-  admin_email TEXT NOT NULL,
-  admin_user_id UUID REFERENCES auth.users(id),
-  is_active BOOLEAN NOT NULL DEFAULT false,
-  max_seats INT NOT NULL DEFAULT 10,
-  seats_consumed INT NOT NULL DEFAULT 0,
-  contract_start TIMESTAMPTZ NOT NULL DEFAULT now(),
-  contract_end TIMESTAMPTZ NOT NULL,
-  razorpay_payment_id TEXT UNIQUE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE TABLE public.b2b_gateways (...);          -- domain_match | secure_passcode
-CREATE TABLE public.b2b_monthly_analytics (...); -- anonymous aggregates
-ALTER TABLE public.profiles ADD COLUMN b2b_account_id UUID REFERENCES public.b2b_accounts(id);
-```
-All three tables get explicit `GRANT`s, RLS enabled, policies:
-- `b2b_accounts`: admin reads own row (`admin_user_id = auth.uid()`), service_role writes.
-- `b2b_gateways`: service_role only (secrets — never expose passcodes to clients).
-- `b2b_monthly_analytics`: admin of the matching `account_id` reads.
+## 6. `/business/buy` — make it fully functional
+- Already scaffolded. Fix: Pay & Activate opens Razorpay directly with seat pricing, on success calls `b2b-activate` which is already wired to verify signature + create account + gateway. Test end-to-end.
+- Ensure `VITE_RAZORPAY_KEY_ID` fallback reads from Supabase-injected env; if missing, show clear error not silent fail.
 
-Plus a SECURITY DEFINER RPC `b2b_increment_seat(account_id)` for atomic seat counting (your inline UPDATE has a race condition).
+## 7. Landing page content overhaul
+- Remove ALL student-specific copy (pain-point grid, "student pricing", "campus" mentions).
+- Remove "Panda" text everywhere. Where mascot is referenced, keep the 3D mascot visual but never label it "Panda" — it's just the WellMindAI companion. Human names remain Yaro (male) / Ava (female).
+- Rewrite hero + sections around universal audience: grief counselling, anxiety, workplace stress, relationships, sleep, general mental wellness.
+- Add dedicated "Grief Counselling" section with copy + CTA to `/chat/yaro`.
+- Remove the symbolic-only decorative page/section flagged (locate and remove any orphan `symbol`/decorative-only route).
 
-### 3b. Pages & routes
-- `/business/buy` — `B2BBillingEngine.tsx` (org form, seat slider, live price: corporate ₹149, college ₹49, coaching ₹79 per seat/yr, Razorpay checkout).
-- `/business/dashboard` — `B2BAdminDashboard.tsx` (live seat utilization bar + monthly engagement reports, PDF/CSV download via `jspdf`).
-- Existing `/business` stays as the marketing landing; add CTA → `/business/buy`.
+## 8. Competitor pages fix
+- Verify `/alternatives/wysa-alternative`, `/alternatives/lyra-health-alternative`, `/alternatives/whisper-alternative` all render (route is `/alternatives/:slug`, page reads slug).
+- Confirm entries exist in `public/sitemap.xml` and internal footer links.
 
-### 3c. Edge functions
-- `b2b-activate` — called by Razorpay handler. Verifies the payment signature against `RAZORPAY_KEY_SECRET`, then creates `b2b_accounts` + `b2b_gateways` rows. (Doing this server-side instead of from the browser is critical — the client snippet you shared lets anyone forge accounts.)
-- `b2b-verify-member` — replaces inline `verifyAndRegisterMember`. Takes `{ email, passcode? }`, looks up gateway, checks seat cap, calls `b2b_increment_seat`, sets `profiles.b2b_account_id`. Wired into `Auth.tsx` post-signup and into the existing `SubscriptionRoute` bypass (replacing the old `b2b-gatekeeper`).
-- `b2b-monthly-report` — cron-friendly endpoint that rolls up anonymous counts from `ai_counseling_sessions` + `therapy_sessions` into `b2b_monthly_analytics` for the previous month.
+## 9. Cleanup
+- Remove "Panda" string from `Index.tsx`, `PsychologyHero.tsx`, any component/asset naming.
+- Remove `student` copy from `Pricing.tsx`, `Plans.tsx`, `Payment.tsx`.
 
-### 3d. Header/footer
-- Keep "For Business" in footer pointing at `/business`.
-- After login, if `profiles.b2b_account_id` is set AND the user's email matches the admin, show "Admin Dashboard" link in the header dropdown.
+## Files to touch (approx)
+Create: `src/pages/Admin.tsx`, `src/components/admin/*` (4 tabs), `src/lib/invoice.ts`, `src/hooks/useAdmin.tsx`.
+Edit: `.lovable/MIGRATION_RUN_THIS.sql`, `src/App.tsx`, `src/components/layout/Header.tsx`, `src/components/layout/LandingNav.tsx`, `src/components/layout/Footer.tsx`, `src/pages/Index.tsx`, `src/components/ui-custom/PsychologyHero.tsx`, `src/components/ui-custom/YaroChat.tsx`, `src/pages/Subscription.tsx`, `src/pages/Plans.tsx`, `src/pages/Payment.tsx`, `src/components/ui-custom/Pricing.tsx`, `src/pages/B2BBillingEngine.tsx`, `supabase/functions/ai-counselor/index.ts`, `supabase/functions/verify-payment/index.ts`, `public/sitemap.xml`.
+Delete: `src/pages/Business.tsx`, `src/pages/B2BTestAccess.tsx`, `src/pages/Referrals.tsx`, `src/pages/BlogPost.tsx`.
 
-## 4. Testing checklist I'll run before handing back
-1. Build passes (`tsgo`).
-2. Playwright: open `/business/buy`, fill the form with `mytestfirm.com`, simulate Razorpay test success → confirm `b2b_accounts` + `b2b_gateways` rows via `supabase--read_query`.
-3. Playwright: sign up `employee1@mytestfirm.com` → land on `/dashboard` with premium unlocked (no paywall).
-4. Visit `/consultation/video` as that user → Soul Machines `<video>` element renders (or surface the SDK error if persona IDs aren't set yet).
-5. Visit `/business/dashboard` as the admin → seat counter shows `1 / 50`.
+## Action you must take after
+Run the updated `.lovable/MIGRATION_RUN_THIS.sql` in Supabase SQL editor. Everything else deploys automatically.
 
-## Out of scope (ask if you want these next)
-- Custom-domain SSO (SAML/Okta).
-- Auto-generating coupon codes for insurance partners (the old `b2b_coupons` table is left intact, just unused).
-- Removing the legacy `b2b_companies` / `b2b_access_rules` tables — I'll leave them so nothing breaks; we can drop them in a cleanup pass.
-
-## Action required from you
-1. **Re-attach the 3 YARO/AVA images** — they aren't in the repo, so I can't wire them until you upload them again.
-2. Approve this plan so I can request the 4 Soul Machines secrets and run the migration.
+Approve to proceed, or tell me what to change.

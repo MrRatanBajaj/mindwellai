@@ -7,7 +7,12 @@ const YaroChatPage = () => {
     description: "WhatsApp-style chat therapy with Yaro. Free, no signup. Multilingual. Trained on DSM-5, ICD-11, PHQ-9, GAD-7, PCL-5.",
     path: "/chat/yaro",
   });
-  return <YaroChat />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 px-2 sm:px-4">
+      <YaroChat />
+    </div>
+  );
 };
 
 export default YaroChatPage;
+
