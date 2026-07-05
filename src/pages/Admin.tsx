@@ -87,7 +87,7 @@ const ResearchTab = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [form, setForm] = useState({ title: "", slug: "", authors: "", abstract: "", pdf_url: "", published: false });
   const load = async () => {
-    const { data } = await supabase.from("research_papers").select("*").order("created_at", { ascending: false });
+    const { data } = await (supabase as any).from("research_papers").select("*").order("created_at", { ascending: false });
     setRows(data || []);
   };
   useEffect(() => { load(); }, []);
@@ -95,7 +95,7 @@ const ResearchTab = () => {
     if (!form.title || !form.slug) return toast.error("Title & slug required");
     const payload: any = { ...form };
     if (form.published) payload.published_at = new Date().toISOString();
-    const { error } = await supabase.from("research_papers").insert(payload);
+    const { error } = await (supabase as any).from("research_papers").insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Paper saved");
     setForm({ title: "", slug: "", authors: "", abstract: "", pdf_url: "", published: false });
@@ -137,13 +137,13 @@ const DemoTab = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [email, setEmail] = useState("");
   const load = async () => {
-    const { data } = await supabase.from("demo_access_grants").select("*").order("created_at", { ascending: false });
+    const { data } = await (supabase as any).from("demo_access_grants").select("*").order("created_at", { ascending: false });
     setRows(data || []);
   };
   useEffect(() => { load(); }, []);
   const grant = async () => {
     if (!email) return;
-    const { error } = await supabase.from("demo_access_grants").insert({ email: email.toLowerCase(), expires_at: new Date(Date.now() + 86400_000).toISOString() });
+    const { error } = await (supabase as any).from("demo_access_grants").insert({ email: email.toLowerCase(), expires_at: new Date(Date.now() + 86400_000).toISOString() });
     if (error) return toast.error(error.message);
     toast.success(`1-day full access granted to ${email}`);
     setEmail(""); load();
@@ -161,7 +161,7 @@ const DemoTab = () => {
 
 const InvoicesTab = () => {
   const [rows, setRows] = useState<Row[]>([]);
-  useEffect(() => { supabase.from("invoices").select("*").order("issued_at", { ascending: false }).limit(200).then(({ data }) => setRows(data || [])); }, []);
+  useEffect(() => { (supabase as any).from("invoices").select("*").order("issued_at", { ascending: false }).limit(200).then(({ data }) => setRows(data || [])); }, []);
   return <Table rows={rows} cols={["invoice_no", "plan_id", "amount", "status", "issued_at"]} />;
 };
 

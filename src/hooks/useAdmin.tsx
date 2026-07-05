@@ -10,7 +10,7 @@ export function useAdmin() {
     if (authLoading) return;
     if (!user) { setIsAdmin(false); return; }
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
