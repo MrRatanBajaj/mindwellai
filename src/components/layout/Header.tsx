@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, BookOpen, Calendar, Phone,
-  Crown, Gift, Sparkles, ChevronDown, User, MessageCircle,
+  Crown, Sparkles, ChevronDown, User, MessageCircle, Shield,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -105,10 +105,10 @@ const Header = () => {
                     <User className="w-4 h-4 mr-2" /> Home
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/subscription")}>
-                    <Crown className="w-4 h-4 mr-2" /> Plan & usage
+                    <Crown className="w-4 h-4 mr-2" /> Plan & invoices
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/referrals")}>
-                    <Gift className="w-4 h-4 mr-2" /> Refer
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <Shield className="w-4 h-4 mr-2" /> Admin
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
@@ -162,9 +162,6 @@ const Header = () => {
                   <div className="text-xs text-muted-foreground px-3 mb-2 truncate">{user.email}</div>
                   <NavLink to="/subscription" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/60 text-sm">
                     <Crown className="w-4 h-4" /> Plan
-                  </NavLink>
-                  <NavLink to="/referrals" onClick={() => setIsMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-secondary/60 text-sm">
-                    <Gift className="w-4 h-4" /> Refer
                   </NavLink>
                   <Button variant="outline" size="sm" onClick={handleSignOut} className="mx-3 mt-2 rounded-full">
                     <LogOut className="w-4 h-4 mr-2" /> Sign out
