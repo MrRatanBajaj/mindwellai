@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getPlan } from "@/lib/pricing";
+import { generateInvoicePDF } from "@/lib/invoice";
 
 interface Payment {
   id: string;
@@ -139,8 +140,24 @@ const PaymentHistory = () => {
                 <p className="text-[11px] text-muted-foreground truncate">
                   Txn: <span className="font-mono">{p.payment_id}</span>
                 </p>
-                <Button variant="ghost" size="sm" className="text-primary text-xs h-7">
-                  <Download className="w-3 h-3 mr-1" /> Receipt
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary text-xs h-7"
+                  onClick={() =>
+                    generateInvoicePDF({
+                      invoiceNo: `WMA-${new Date(p.created_at).getFullYear()}-${p.id.slice(0, 6).toUpperCase()}`,
+                      issuedAt: p.created_at,
+                      customerName: user?.email?.split("@")[0] || "Customer",
+                      customerEmail: user?.email || "",
+                      planName: plan?.name || p.plan_id,
+                      amount: Number(p.amount),
+                      currency: p.currency || "INR",
+                      paymentId: p.payment_id,
+                    })
+                  }
+                >
+                  <Download className="w-3 h-3 mr-1" /> Invoice
                 </Button>
               </div>
             )}

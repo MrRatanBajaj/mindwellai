@@ -99,6 +99,19 @@ serve(async (req) => {
       }
     }
 
+    // Log branded invoice
+    try {
+      await supabase.from('invoices').insert({
+        user_id: userId,
+        plan_id: planId,
+        amount: existingPayment.amount,
+        currency: existingPayment.currency || 'INR',
+        razorpay_payment_id: razorpayPaymentId,
+        razorpay_order_id: razorpayOrderId,
+        status: 'paid',
+      })
+    } catch (e) { console.error('invoice log fail', e) }
+
     await supabase.from('analytics').insert({
       event_type: 'payment_success',
       event_data: { orderId: razorpayOrderId, paymentId: razorpayPaymentId, planId },
