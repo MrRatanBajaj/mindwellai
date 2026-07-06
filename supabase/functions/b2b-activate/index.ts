@@ -13,6 +13,8 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 const RZP_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET")!;
 
+const RZP_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID") ?? "";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -26,6 +28,33 @@ Deno.serve(async (req) => {
     if (!user) return json({ error: "no user" }, 401);
 
     const body = await req.json();
+
+    // === Step 1: create the Razorpay order server-side ===
+    if (body?.action === "create_order") {
+      const amount = Math.max(1, parseInt(body.amount, 10) || 0);
+      if (!amount) return json({ error: "invalid amount" }, 400);
+      if (!RZP_KEY_ID || !RZP_SECRET) return json({ error: "Razorpay keys not configured on the server" }, 500);
+      const auth = btoa(`${RZP_KEY_ID}:${RZP_SECRET}`);
+      const resp = await fetch("https://api.razorpay.com/v1/orders", {
+        method: "POST",
+        headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: amount * 100,
+          currency: "INR",
+          receipt: `b2b_${Date.now()}`,
+          payment_capture: 1,
+          notes: { kind: "b2b", user_id: user.id },
+        }),
+      });
+      if (!resp.ok) {
+        const t = await resp.text();
+        console.error("Razorpay order fail", resp.status, t);
+        return json({ error: `Razorpay order failed (${resp.status})` }, 400);
+      }
+      const order = await resp.json();
+      return json({ orderId: order.id, keyId: RZP_KEY_ID, amount: order.amount, currency: order.currency }, 200);
+    }
+
     const {
       organization_name,
       organization_type,

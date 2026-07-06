@@ -14,11 +14,6 @@ type OrgType = "corporate" | "college" | "coaching";
 type AuthStrategy = "domain_match" | "secure_passcode";
 
 const PRICE: Record<OrgType, number> = { corporate: 149, college: 49, coaching: 79 };
-const RZP_KEY = (import.meta.env.VITE_RAZORPAY_KEY_ID as string | undefined) ?? "";
-
-// Razorpay is loaded via the checkout.js script; typed as any to avoid global collisions.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RZP: any = (typeof window !== "undefined" ? (window as any).Razorpay : undefined);
 
 const B2BBillingEngine = () => {
   const navigate = useNavigate();
@@ -51,15 +46,25 @@ const B2BBillingEngine = () => {
 
   const startCheckout = async () => {
     if (!orgName || !identifier || !adminEmail) return toast.error("Fill all fields.");
-    if (!RZP_KEY) return toast.error("Razorpay key missing. Set VITE_RAZORPAY_KEY_ID.");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Rzp = (window as any).Razorpay ?? RZP;
-    if (!Rzp) return toast.error("Payment script still loading. Try again in a second.");
+    const Rzp = (window as any).Razorpay;
+    if (!Rzp) return toast.error("Payment script still loading. Try again in a moment.");
     setBusy(true);
+
+    // Create the order + fetch publishable key from the server (no VITE_ envs needed).
+    const { data: order, error: orderErr } = await supabase.functions.invoke("b2b-activate", {
+      body: { action: "create_order", amount: total },
+    });
+    if (orderErr || !order?.orderId || !order?.keyId) {
+      setBusy(false);
+      return toast.error(order?.error ?? orderErr?.message ?? "Could not start payment.");
+    }
+
     const rzp = new Rzp({
-      key: RZP_KEY,
-      amount: total * 100,
-      currency: "INR",
+      key: order.keyId,
+      order_id: order.orderId,
+      amount: order.amount,
+      currency: order.currency,
       name: "WellMind AI for Business",
       description: `${seats} premium seats — 1 year`,
       prefill: { email: adminEmail, name: orgName },
@@ -81,9 +86,11 @@ const B2BBillingEngine = () => {
         navigate("/business/dashboard");
       },
       modal: { ondismiss: () => setBusy(false) },
+      theme: { color: "#10B981" },
     });
     rzp.open();
   };
+
 
   return (
     <div className="min-h-screen flex flex-col">
