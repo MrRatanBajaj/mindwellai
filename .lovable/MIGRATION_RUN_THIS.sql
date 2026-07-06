@@ -197,3 +197,33 @@ using (exists (select 1 from public.b2b_accounts a where a.id = b2b_gateways.acc
 
 -- profiles.b2b_account_id (used to link buyer)
 alter table public.profiles add column if not exists b2b_account_id uuid;
+
+-- =========================================================
+-- 8) SECURITY: hide blog author email + referral user_id
+-- =========================================================
+-- Blog posts: drop the "all columns" authenticated read, replace with a
+-- safe view that omits author_email.
+drop policy if exists "Authenticated can read published posts" on public.blog_posts;
+drop policy if exists "authenticated can read published posts" on public.blog_posts;
+create policy "public reads published (no email)" on public.blog_posts
+  for select using (published = true);
+-- Also revoke the sensitive column from anon/authenticated at column level.
+revoke select (author_email) on public.blog_posts from anon, authenticated;
+create or replace view public.published_blog_posts as
+  select id, title, slug, excerpt, content, cover_url, tags, published, published_at, created_at
+  from public.blog_posts where published = true;
+grant select on public.published_blog_posts to anon, authenticated;
+
+-- Referral codes: hide user_id from other users. Provide a SECURITY DEFINER
+-- lookup that only returns whether a code is valid + its owner id (for signup attribution),
+-- never the whole row.
+drop policy if exists "Authenticated users can lookup referral codes" on public.referral_codes;
+drop policy if exists "authenticated users can lookup referral codes" on public.referral_codes;
+create policy "users read own referral row" on public.referral_codes
+  for select to authenticated using (user_id = auth.uid());
+
+create or replace function public.resolve_referral_code(_code text)
+returns table(owner_id uuid) language sql stable security definer set search_path = public as $$
+  select user_id from public.referral_codes where lower(code) = lower(_code) limit 1
+$$;
+grant execute on function public.resolve_referral_code(text) to anon, authenticated;

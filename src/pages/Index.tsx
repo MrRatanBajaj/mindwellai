@@ -7,6 +7,7 @@ import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 import { Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, BookHeart, Video, Lock, HeartHandshake, Languages, Heart, CloudRain, Users } from "lucide-react";
 import YaroChat from "@/components/ui-custom/YaroChat";
+import RealStoriesSection from "@/components/ui-custom/RealStoriesSection";
 
 /* ───────── Hero ───────── */
 const Hero = () => (
@@ -242,8 +243,8 @@ const Index = () => {
       <main>
         <Hero />
         <GriefSection />
+        <RealStoriesSection />
         <CompanionSection />
-        <FeatureGrid />
         <ChatTherapySection />
         <FAQ />
       </main>

@@ -30,7 +30,7 @@ const Footer = () => {
         { to: "/privacy", label: "Privacy" },
         { to: "/terms", label: "Terms" },
         { to: "/subscription", label: "Plans" },
-        { to: "/alternatives/wysa-alternative", label: "Compare" },
+        { to: "/compare", label: "Compare" },
       ],
     },
   ];

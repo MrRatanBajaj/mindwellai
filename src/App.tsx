@@ -33,6 +33,7 @@ import JudgementFreeSpace from "./pages/JudgementFreeSpace";
 import YaroChatPage from "./pages/YaroChatPage";
 import Alternative from "./pages/Alternative";
 import Admin from "./pages/Admin";
+import Compare from "./pages/Compare";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/chat/yaro" element={<YaroChatPage />} />
             <Route path="/chat" element={<YaroChatPage />} />
             <Route path="/alternatives/:slug" element={<Alternative />} />
+            <Route path="/compare" element={<Compare />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

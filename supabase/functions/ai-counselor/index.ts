@@ -222,23 +222,48 @@ ${LIVE_SIGNALS}`,
       return { text, provider: "ChatGPT", model: "gpt-4o-mini" };
     };
 
-    const callOpenSource = async (): Promise<ProviderResult> => {
-      const key = Deno.env.get("HUGGINGFACE_API_KEY");
-      const prompt = modelMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n\n");
-      const resp = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", {
+    // Groq — free tier, open-source LLaMA-3.3-70B, excellent Hinglish + reasoning
+    const callGroq = async (): Promise<ProviderResult> => {
+      const key = Deno.env.get("GROQ_API_KEY");
+      if (!key) throw new Error("Groq key missing (add GROQ_API_KEY to enable free open-source fallback)");
+      const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
-        headers: { ...(key ? { Authorization: `Bearer ${key}` } : {}), "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          inputs: `<s>[INST] ${prompt}\n\nReply as Yaro now. [/INST]`,
-          parameters: { max_new_tokens: 260, temperature: 0.65, return_full_text: false },
+          model: "llama-3.3-70b-versatile",
+          messages: modelMessages,
+          temperature: 0.65,
+          max_tokens: 420,
         }),
       });
-      if (!resp.ok) throw new Error(`Open-source model ${resp.status}: ${await resp.text()}`);
+      if (!resp.ok) throw new Error(`Groq ${resp.status}: ${await resp.text()}`);
       const json = await resp.json();
-      const text = (Array.isArray(json) ? json[0]?.generated_text : json?.generated_text)?.trim();
-      if (!text) throw new Error("Open-source model empty response");
-      return { text, provider: "Open-source", model: "Mistral 7B" };
+      const text = json.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("Groq empty response");
+      return { text, provider: "Groq (open-source)", model: "LLaMA 3.3 70B" };
     };
+
+    // OpenRouter free tier — Meta LLaMA 3.2 free
+    const callOpenRouter = async (): Promise<ProviderResult> => {
+      const key = Deno.env.get("OPENROUTER_API_KEY");
+      if (!key) throw new Error("OpenRouter key missing");
+      const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "meta-llama/llama-3.2-3b-instruct:free",
+          messages: modelMessages,
+          temperature: 0.65,
+          max_tokens: 420,
+        }),
+      });
+      if (!resp.ok) throw new Error(`OpenRouter ${resp.status}: ${await resp.text()}`);
+      const json = await resp.json();
+      const text = json.choices?.[0]?.message?.content?.trim();
+      if (!text) throw new Error("OpenRouter empty response");
+      return { text, provider: "OpenRouter (open-source)", model: "LLaMA 3.2 3B free" };
+    };
+
 
     const detectReplyLanguage = (text: string) => {
       if (/[\u0900-\u097F]/.test(text)) return "hi";
@@ -263,7 +288,7 @@ ${LIVE_SIGNALS}`,
     };
 
     let aiResult: ProviderResult | null = null;
-    for (const call of [callLovableGemini, callChatGPT, callOpenSource]) {
+    for (const call of [callGroq, callLovableGemini, callOpenRouter, callChatGPT]) {
       try {
         aiResult = await call();
         break;
