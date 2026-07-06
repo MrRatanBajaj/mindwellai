@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "wellmindai-mcp",
+      "version": "0.1.0",
+      "title": "WellMindAI MCP"
+    },
+    "tools": [
+      {
+        "name": "chat_with_yaro",
+        "title": "Chat with Yaro (AI therapist)",
+        "description": "Send a message to WellMindAI's Yaro — a compassionate multilingual (Hindi/English/Hinglish/Tamil/Bengali/Spanish) AI therapist trained on DSM-5, ICD-11, PHQ-9, GAD-7, PCL-5. Returns Yaro's reply plus a real-time clinical pattern read (PHQ-9/GAD-7 bands, DSM hints, crisis flag).",
+        "annotations": {
+          "readOnlyHint": false,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The user's message to Yaro."
+            },
+            "language": {
+              "description": "Language hint. 'auto' mirrors the user's language.",
+              "type": "string",
+              "enum": [
+                "auto",
+                "en",
+                "hi",
+                "hinglish",
+                "ta",
+                "bn",
+                "es"
+              ]
+            },
+            "history": {
+              "description": "Recent conversation turns for context.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "sender": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "ai"
+                    ]
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sender",
+                  "content"
+                ]
+              }
+            }
+          },
+          "required": [
+            "message"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "clinical_screen",
+        "title": "Run a clinical screener",
+        "description": "Score a PHQ-9 (depression), GAD-7 (anxiety) or PCL-5 (PTSD) screener from item responses (0-3 per item; PCL-5 0-4). Returns total score, severity band, and safe next-step guidance. Not a diagnosis.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "instrument": {
+              "type": "string",
+              "enum": [
+                "phq9",
+                "gad7",
+                "pcl5"
+              ]
+            },
+            "answers": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "description": "Item answers in order. PHQ-9: 9 items 0-3. GAD-7: 7 items 0-3. PCL-5: 20 items 0-4."
+            }
+          },
+          "required": [
+            "instrument",
+            "answers"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "crisis_resources",
+        "title": "Get crisis helplines",
+        "description": "Return verified mental-health crisis helplines for a country (ISO-2). Falls back to an international directory.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "country": {
+              "description": "ISO-2 country code, e.g. IN, US, GB",
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
