@@ -10,6 +10,8 @@ interface Props {
   systemPrompt?: string;
   voiceGender?: "male" | "female";
   onEnd?: () => void;
+  /** Rendered inside the error card so the user can switch to another voice route. */
+  fallbackAction?: React.ReactNode;
 }
 
 const Inner = ({
@@ -165,7 +167,7 @@ const Inner = ({
   );
 };
 
-const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Props) => {
+const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd, fallbackAction }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [configId, setConfigId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -186,8 +188,9 @@ const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Pro
   if (error) {
     return (
       <div className="rounded-3xl p-8 bg-[#2A2522] text-[#F5EFE6] text-center max-w-md">
-        <p className="font-display text-lg mb-2">Hume EVI unavailable</p>
+        <p className="font-display text-lg mb-2">Voice line unavailable right now</p>
         <p className="text-sm opacity-75">{error}</p>
+        {fallbackAction && <div className="mt-5">{fallbackAction}</div>}
       </div>
     );
   }
