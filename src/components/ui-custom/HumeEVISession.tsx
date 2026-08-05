@@ -32,32 +32,35 @@ const Inner = ({
     isPlaying, lastAssistantProsodyMessage,
   } = useVoice();
   const [duration, setDuration] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (hasStarted) return;
-    setHasStarted(true);
+    if (startedRef.current) return;
+    startedRef.current = true;
     (async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
         // Hume hosted voices: ITO (male, warm), KORA (female, soft)
         const voiceName = voiceGender === "male" ? "ITO" : "KORA";
+        const sessionSettings: Record<string, unknown> = {
+          voice: { provider: "HUME_AI", name: voiceName },
+        };
+        if (systemPrompt) sessionSettings.systemPrompt = systemPrompt;
         await connect({
           auth: { type: "accessToken", value: token },
           ...(configId ? { configId } : {}),
-          sessionSettings: {
-            type: "session_settings",
-            ...(systemPrompt ? { systemPrompt } : {}),
-            voice: { provider: "HUME_AI", name: voiceName },
-          } as any,
+          sessionSettings: sessionSettings as any,
         });
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not connect to Hume EVI");
+        const msg = e instanceof Error ? e.message : "Could not connect to Hume EVI";
+        onError?.(msg);
+        toast.error(msg);
       }
     })();
     return () => { disconnect(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   useEffect(() => {
     if (status.value !== "connected") return;
