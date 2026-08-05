@@ -17,7 +17,7 @@ const VideoConsultation = () => {
   const counselor = getCounselor(activeId);
 
   useSEO({
-    title: "Video therapy — Yaro or Riya | WellMind AI",
+    title: "Video therapy — Yaro or Ava | WellMind AI",
     description: "Face-to-face AI therapy. Private, encrypted, session limits enforced server-side.",
     path: "/consultation/video",
   });

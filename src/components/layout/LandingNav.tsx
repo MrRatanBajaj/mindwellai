@@ -1,30 +1,21 @@
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoAsset from "@/assets/wellmindai-logo.jpeg.asset.json";
+import BrandLogo from "@/components/layout/BrandLogo";
 
 const items = [
   { label: "Home", href: "/" },
   { label: "Chat with Yaro", href: "/chat/yaro" },
   { label: "About", href: "/about" },
   { label: "Blog", href: "/blog" },
-  { label: "Research", href: "/judgement-free-space" },
+  { label: "Research", href: "/research" },
 ];
 
 const LandingNav = () => (
   <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md">
     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-      <Link to="/" className="flex items-center gap-2">
-        <img
-          src={logoAsset.url}
-          alt="WellMindAI logo"
-          width={40}
-          height={40}
-          className="h-10 w-10 object-contain rounded-full"
-        />
-        <span className="font-display text-2xl text-foreground tracking-tight hidden sm:inline">
-          WellMindAI
-        </span>
+      <Link to="/" aria-label="WellMindAI home">
+        <BrandLogo size={44} textClassName="hidden sm:inline" />
       </Link>
       <nav className="hidden md:flex items-center gap-8 text-[15px] text-foreground/80">
         {items.map((it) => (

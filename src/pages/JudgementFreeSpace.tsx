@@ -37,7 +37,7 @@ const pillars = [
   {
     icon: MessageCircle,
     title: "Talk or type, 24/7",
-    body: "Voice with Yaro or Riya, or text when words are easier. Whatever feels right tonight.",
+    body: "Voice with Yaro or Ava, or text when words are easier. Whatever feels right tonight.",
   },
 ];
 
@@ -82,7 +82,7 @@ const JudgementFreeSpace = () => {
                 <Link to="/auth">Start free <Sparkles className="ml-1.5 h-4 w-4" /></Link>
               </Button>
               <Button asChild variant="ghost" className="h-12 px-5 rounded-full text-foreground/80">
-                <Link to="/consultation">Meet Yaro & Riya</Link>
+                <Link to="/consultation">Meet Yaro & Ava</Link>
               </Button>
             </div>
           </div>

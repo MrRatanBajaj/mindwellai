@@ -49,7 +49,7 @@ const Blog = () => {
         {
           id: "s2", slug: "voice-vs-text-therapy",
           title: "Voice or text? How to choose your first AI session",
-          excerpt: "A quick guide to picking between Yaro (voice), Riya (video) and journaling on your hardest days.",
+          excerpt: "A quick guide to picking between Yaro (voice), Ava (video) and journaling on your hardest days.",
           cover_image_url: null, tags: ["guide"],
           published_at: new Date().toISOString(), created_at: new Date().toISOString(),
         },

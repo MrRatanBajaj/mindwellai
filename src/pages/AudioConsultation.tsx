@@ -123,6 +123,11 @@ const AudioConsultation = () => {
                 voiceGender={counselor.pronoun === "he" ? "male" : "female"}
                 systemPrompt={`${counselor.audioPrompt}\n\nLANGUAGE: ${languageInstruction}`}
                 onEnd={() => setMode("done")}
+                fallbackAction={
+                  <Button asChild className="rounded-full bg-[#F5EFE6] text-[#2A2522] hover:bg-[#F5EFE6]/90">
+                    <a href="/chat/yaro">Continue by text with Yaro</a>
+                  </Button>
+                }
               />
             </motion.div>
           )}

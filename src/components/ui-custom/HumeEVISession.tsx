@@ -1,5 +1,5 @@
 import { VoiceProvider, useVoice } from "@humeai/voice-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Phone, PhoneOff, Mic, MicOff, Loader2, Heart, Sparkles, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -10,6 +10,8 @@ interface Props {
   systemPrompt?: string;
   voiceGender?: "male" | "female";
   onEnd?: () => void;
+  /** Rendered inside the error card so the user can switch to another voice route. */
+  fallbackAction?: React.ReactNode;
 }
 
 const Inner = ({
@@ -19,6 +21,7 @@ const Inner = ({
   systemPrompt,
   voiceGender,
   onEnd,
+  onError,
 }: {
   counselorName: string;
   token: string;
@@ -26,44 +29,59 @@ const Inner = ({
   systemPrompt?: string;
   voiceGender?: "male" | "female";
   onEnd?: () => void;
+  onError?: (msg: string) => void;
 }) => {
   const {
     connect, disconnect, status, isMuted, mute, unmute,
-    isPlaying, lastAssistantProsodyMessage,
+    isPlaying, lastAssistantProsodyMessage, sendSessionSettings,
   } = useVoice();
   const [duration, setDuration] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
+  const startedRef = useRef(false);
+  const settingsSentRef = useRef(false);
 
   useEffect(() => {
-    if (hasStarted) return;
-    setHasStarted(true);
+    if (startedRef.current) return;
+    startedRef.current = true;
     (async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Hume hosted voices: ITO (male, warm), KORA (female, soft)
-        const voiceName = voiceGender === "male" ? "ITO" : "KORA";
         await connect({
           auth: { type: "accessToken", value: token },
           ...(configId ? { configId } : {}),
-          sessionSettings: {
-            type: "session_settings",
-            ...(systemPrompt ? { systemPrompt } : {}),
-            voice: { provider: "HUME_AI", name: voiceName },
-          } as any,
         });
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not connect to Hume EVI");
+        const msg = e instanceof Error ? e.message : "Could not connect to Hume EVI";
+        onError?.(msg);
+        toast.error(msg);
       }
     })();
     return () => { disconnect(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Voice + language/system prompt are applied AFTER the socket opens.
+  // (Passing them into connect() makes the EVI handshake hang.)
+  useEffect(() => {
+    if (status.value !== "connected" || settingsSentRef.current) return;
+    settingsSentRef.current = true;
+    try {
+      // Hume hosted voices: ITO (male, warm), KORA (female, soft)
+      const voiceName = voiceGender === "male" ? "ITO" : "KORA";
+      sendSessionSettings({
+        voice: { provider: "HUME_AI", name: voiceName },
+        ...(systemPrompt ? { systemPrompt } : {}),
+      } as any);
+    } catch (e) {
+      console.error("Hume session settings failed", e);
+    }
+  }, [status.value, sendSessionSettings, voiceGender, systemPrompt]);
+
   useEffect(() => {
     if (status.value !== "connected") return;
     const i = setInterval(() => setDuration((d) => d + 1), 1000);
     return () => clearInterval(i);
   }, [status.value]);
+
 
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -149,7 +167,7 @@ const Inner = ({
   );
 };
 
-const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Props) => {
+const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd, fallbackAction }: Props) => {
   const [token, setToken] = useState<string | null>(null);
   const [configId, setConfigId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -170,8 +188,9 @@ const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Pro
   if (error) {
     return (
       <div className="rounded-3xl p-8 bg-[#2A2522] text-[#F5EFE6] text-center max-w-md">
-        <p className="font-display text-lg mb-2">Hume EVI unavailable</p>
+        <p className="font-display text-lg mb-2">Voice line unavailable right now</p>
         <p className="text-sm opacity-75">{error}</p>
+        {fallbackAction && <div className="mt-5">{fallbackAction}</div>}
       </div>
     );
   }
@@ -184,7 +203,17 @@ const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Pro
   }
 
   return (
-    <VoiceProvider>
+    <VoiceProvider
+      onError={(err) => {
+        console.error("Hume EVI error", err);
+        setError(err?.message ?? "Voice session error");
+      }}
+      onClose={(e: any) => {
+        if (e?.code && e.code !== 1000) {
+          console.error("Hume EVI closed", e.code, e.reason);
+        }
+      }}
+    >
       <Inner
         counselorName={counselorName}
         token={token}
@@ -192,6 +221,7 @@ const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Pro
         systemPrompt={systemPrompt}
         voiceGender={voiceGender}
         onEnd={onEnd}
+        onError={(m) => setError(m)}
       />
     </VoiceProvider>
   );
