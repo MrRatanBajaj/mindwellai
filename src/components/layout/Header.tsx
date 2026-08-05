@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import BrandLogo from "@/components/layout/BrandLogo";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -58,12 +59,7 @@ const Header = () => {
         <div className="flex items-center justify-between gap-2">
           {/* Hand-drawn brand */}
           <NavLink to="/" className="flex items-center gap-2 group">
-            <span className="w-9 h-9 rounded-full bg-primary/90 flex items-center justify-center border-2 border-foreground/80 shadow-pencil">
-              <span className="font-hand text-primary-foreground text-xl leading-none">W</span>
-            </span>
-            <span className="font-display text-xl font-semibold text-foreground hidden sm:inline">
-              wellmind
-            </span>
+            <BrandLogo size={40} textClassName="text-xl hidden sm:inline" />
           </NavLink>
 
           {/* Desktop Nav */}

@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { Heart, Mail } from "lucide-react";
+import BrandLogo from "@/components/layout/BrandLogo";
 
 const SUPPORT_EMAIL = "support@wellmindai.in";
 
@@ -41,10 +42,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10">
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center border-2 border-foreground/80 shadow-pencil">
-                <span className="font-hand text-primary-foreground text-2xl leading-none">W</span>
-              </span>
-              <span className="font-display text-2xl font-semibold">wellmind</span>
+              <BrandLogo size={48} />
             </div>
             <p className="font-hand text-xl text-foreground/80 max-w-xs leading-snug">
               drawn with care — like mom's crayons.
