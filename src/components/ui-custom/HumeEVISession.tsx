@@ -51,7 +51,6 @@ const Inner = ({
         await connect({
           auth: { type: "accessToken", value: token },
           ...(configId ? { configId } : {}),
-          sessionSettings: sessionSettings as any,
         });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Could not connect to Hume EVI";
