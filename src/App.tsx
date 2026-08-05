@@ -2,11 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import CookieBanner from "@/components/ui-custom/CookieBanner";
-import NainaChatbot from "@/components/ui-custom/NainaChatbot";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
@@ -34,19 +33,15 @@ import YaroChatPage from "./pages/YaroChatPage";
 import Alternative from "./pages/Alternative";
 import Admin from "./pages/Admin";
 import Compare from "./pages/Compare";
+import Research from "./pages/Research";
 
 const queryClient = new QueryClient();
 
-const AppChrome = () => {
-  const location = useLocation();
-  const isFocusedChat = location.pathname === "/chat/yaro" || location.pathname === "/chat" || location.pathname === "/admin";
-  return (
-    <>
-      <CookieBanner />
-      {!isFocusedChat && <NainaChatbot />}
-    </>
-  );
-};
+const AppChrome = () => (
+  <>
+    <CookieBanner />
+  </>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -80,6 +75,7 @@ const App = () => (
             <Route path="/chat/yaro" element={<YaroChatPage />} />
             <Route path="/chat" element={<YaroChatPage />} />
             <Route path="/alternatives/:slug" element={<Alternative />} />
+            <Route path="/research" element={<Research />} />
             <Route path="/compare" element={<Compare />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
