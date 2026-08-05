@@ -19,6 +19,7 @@ const Inner = ({
   systemPrompt,
   voiceGender,
   onEnd,
+  onError,
 }: {
   counselorName: string;
   token: string;
@@ -26,6 +27,7 @@ const Inner = ({
   systemPrompt?: string;
   voiceGender?: "male" | "female";
   onEnd?: () => void;
+  onError?: (msg: string) => void;
 }) => {
   const {
     connect, disconnect, status, isMuted, mute, unmute,
@@ -187,7 +189,17 @@ const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Pro
   }
 
   return (
-    <VoiceProvider>
+    <VoiceProvider
+      onError={(err) => {
+        console.error("Hume EVI error", err);
+        setError(err?.message ?? "Voice session error");
+      }}
+      onClose={(e: any) => {
+        if (e?.code && e.code !== 1000) {
+          console.error("Hume EVI closed", e.code, e.reason);
+        }
+      }}
+    >
       <Inner
         counselorName={counselorName}
         token={token}
@@ -195,6 +207,7 @@ const HumeEVISession = ({ counselorName, systemPrompt, voiceGender, onEnd }: Pro
         systemPrompt={systemPrompt}
         voiceGender={voiceGender}
         onEnd={onEnd}
+        onError={(m) => setError(m)}
       />
     </VoiceProvider>
   );
