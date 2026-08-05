@@ -24,8 +24,7 @@ const Hero = () => (
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
           className="mt-6 text-lg md:text-xl text-foreground/70 max-w-2xl lg:mx-0 mx-auto"
         >
-          Grief. Anxiety. Loneliness. Burnout. Meet <strong>Yaro</strong> and <strong>Ava</strong> — your 24/7 AI companions
-          trained on DSM-5, ICD-11, PHQ-9, GAD-7 & PCL-5. No judgement, in your language, whenever you need.
+          Talk to <strong>Yaro</strong> or <strong>Ava</strong>. Any hour, any language, no judgement.
         </motion.p>
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
@@ -61,10 +60,7 @@ const GriefSection = () => (
           <Heart className="w-3.5 h-3.5" /> Grief support
         </div>
         <h2 className="font-display text-4xl md:text-5xl">Grief doesn't follow a timeline. Neither do we.</h2>
-        <p className="mt-4 text-foreground/70">
-          Whether you lost a parent last week or you're still learning to breathe years after —
-          Yaro and Ava sit with you at 3 AM, at midday, whenever the wave hits. No "moving on" pressure.
-        </p>
+        <p className="mt-4 text-foreground/70">No timeline. No pressure to move on. Just someone there when the wave hits.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {[
@@ -94,7 +90,7 @@ const CompanionSection = () => (
     <div className="max-w-6xl mx-auto">
       <div className="text-center max-w-3xl mx-auto mb-10">
         <h2 className="font-display text-4xl md:text-5xl">Yaro & Ava: your no-judgement zone</h2>
-        <p className="mt-4 text-foreground/70">A soft, private space to vent, reflect, or just be heard.</p>
+        <p className="mt-4 text-foreground/70">A private space to vent, reflect, or just be heard.</p>
       </div>
       <div className="grid md:grid-cols-3 gap-5">
         {[
@@ -167,11 +163,10 @@ const ChatTherapySection = () => (
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live · no signup needed
         </div>
         <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight">
-          Chat therapy with <span className="italic">Yaro</span> —<br className="hidden md:block" /> like texting a friend who actually trained for this.
+          Like texting a friend<br className="hidden md:block" /> who actually trained for this.
         </h2>
         <p className="mt-5 text-foreground/75 leading-relaxed text-lg">
-          Open the chat. Type in Hindi, English, Hinglish or any language. Yaro is trained on
-          <strong> DSM-5, ICD-11, PHQ-9, GAD-7 and PCL-5</strong> — friendly on the surface, evidence-based underneath.
+          Type in any language. Friendly on the surface, evidence-based underneath.
         </p>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
           {[
