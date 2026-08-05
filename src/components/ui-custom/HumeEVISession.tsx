@@ -31,10 +31,11 @@ const Inner = ({
 }) => {
   const {
     connect, disconnect, status, isMuted, mute, unmute,
-    isPlaying, lastAssistantProsodyMessage,
+    isPlaying, lastAssistantProsodyMessage, sendSessionSettings,
   } = useVoice();
   const [duration, setDuration] = useState(0);
   const startedRef = useRef(false);
+  const settingsSentRef = useRef(false);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -42,12 +43,6 @@ const Inner = ({
     (async () => {
       try {
         await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Hume hosted voices: ITO (male, warm), KORA (female, soft)
-        const voiceName = voiceGender === "male" ? "ITO" : "KORA";
-        const sessionSettings: Record<string, unknown> = {
-          voice: { provider: "HUME_AI", name: voiceName },
-        };
-        if (systemPrompt) sessionSettings.systemPrompt = systemPrompt;
         await connect({
           auth: { type: "accessToken", value: token },
           ...(configId ? { configId } : {}),
@@ -62,12 +57,29 @@ const Inner = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Voice + language/system prompt are applied AFTER the socket opens.
+  // (Passing them into connect() makes the EVI handshake hang.)
+  useEffect(() => {
+    if (status.value !== "connected" || settingsSentRef.current) return;
+    settingsSentRef.current = true;
+    try {
+      // Hume hosted voices: ITO (male, warm), KORA (female, soft)
+      const voiceName = voiceGender === "male" ? "ITO" : "KORA";
+      sendSessionSettings({
+        voice: { provider: "HUME_AI", name: voiceName },
+        ...(systemPrompt ? { systemPrompt } : {}),
+      } as any);
+    } catch (e) {
+      console.error("Hume session settings failed", e);
+    }
+  }, [status.value, sendSessionSettings, voiceGender, systemPrompt]);
 
   useEffect(() => {
     if (status.value !== "connected") return;
     const i = setInterval(() => setDuration((d) => d + 1), 1000);
     return () => clearInterval(i);
   }, [status.value]);
+
 
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
