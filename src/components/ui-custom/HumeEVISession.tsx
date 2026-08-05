@@ -1,5 +1,5 @@
 import { VoiceProvider, useVoice } from "@humeai/voice-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Phone, PhoneOff, Mic, MicOff, Loader2, Heart, Sparkles, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
