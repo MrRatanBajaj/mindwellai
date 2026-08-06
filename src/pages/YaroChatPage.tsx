@@ -1,4 +1,5 @@
 import YaroChat from "@/components/ui-custom/YaroChat";
+import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 
 const YaroChatPage = () => {
@@ -8,11 +9,13 @@ const YaroChatPage = () => {
     path: "/chat/yaro",
   });
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 px-2 sm:px-4">
-      <YaroChat />
+    <div className="min-h-screen bg-background">
+      <LandingNav />
+      <main className="pt-20 pb-10 px-2 sm:px-4">
+        <YaroChat />
+      </main>
     </div>
   );
 };
 
 export default YaroChatPage;
-
