@@ -144,7 +144,7 @@ export default function YaroChat({ embedded = false }: Props) {
   } as const;
 
   return (
-    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto h-[640px]" : "max-w-2xl w-full mx-auto h-[calc(100vh-2rem)] my-4 rounded-3xl overflow-hidden shadow-2xl border border-white/10"} flex flex-col ${bg}`}>
+    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto h-[640px]" : "max-w-2xl w-full mx-auto h-[calc(100vh-8rem)] max-h-[820px] rounded-3xl overflow-hidden shadow-2xl border border-white/10"} flex flex-col ${bg}`}>
       {/* Health banner */}
       <div
         className={`flex items-center gap-2 px-3 py-1.5 text-[11px] border-b ${

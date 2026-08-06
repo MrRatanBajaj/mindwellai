@@ -18,8 +18,8 @@ const MOODS = [
   { emoji: "🌤️", label: "Okay" },
   { emoji: "🌧️", label: "Heavy" },
   { emoji: "🌪️", label: "Anxious" },
-  { emoji: "🫥", label: "Numb" },
-  { emoji: "🌱", label: "Hopeful" },
+  { emoji: "😶", label: "Numb" },
+  { emoji: "🌿", label: "Hopeful" },
 ];
 
 const today = () => new Date().toISOString().slice(0, 10);
