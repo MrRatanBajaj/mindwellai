@@ -83,19 +83,26 @@ export function usePushNotifications() {
       
       setSubscription(pushSubscription);
       
-      // Save to database
+      // Save to database (device-scoped so anonymous rows stay owned)
       const subscriptionJson = pushSubscription.toJSON();
+      let deviceId = localStorage.getItem('wm_device_id');
+      if (!deviceId) {
+        deviceId = crypto.randomUUID();
+        localStorage.setItem('wm_device_id', deviceId);
+      }
       const { error } = await supabase
         .from('push_subscriptions')
         .upsert({
           user_id: user?.id || null,
+          device_id: deviceId,
           endpoint: subscriptionJson.endpoint!,
           p256dh_key: subscriptionJson.keys?.p256dh || '',
           auth_key: subscriptionJson.keys?.auth || '',
           device_info: navigator.userAgent
-        }, {
+        } as never, {
           onConflict: 'endpoint'
         });
+
       
       if (error) {
         console.error('Error saving subscription:', error);
