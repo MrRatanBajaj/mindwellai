@@ -96,8 +96,8 @@
     background-color: hsl(var(--background));
     /* Paper-grain texture — subtle dotted noise overlay */
     background-image:
-      radial-gradient(hsl(0 0% 23% / 0.04) 1px, transparent 1px),
-      radial-gradient(hsl(14 55% 55% / 0.05) 1px, transparent 1px);
+      radial-gradient(hsl(200 24% 18% / 0.03) 1px, transparent 1px),
+      radial-gradient(hsl(158 30% 36% / 0.05) 1px, transparent 1px);
     background-size: 24px 24px, 36px 36px;
     background-position: 0 0, 12px 18px;
   }
@@ -150,14 +150,14 @@
   }
 
   /* Background washes */
-  .bg-pastel-peach { background: hsl(28 70% 88%); }
-  .bg-pastel-sage  { background: hsl(86 35% 80%); }
-  .bg-pastel-cream { background: hsl(36 60% 92%); }
+  .bg-pastel-peach { background: hsl(205 45% 92%); }
+  .bg-pastel-sage  { background: hsl(150 32% 88%); }
+  .bg-pastel-cream { background: hsl(38 46% 95%); }
   .bg-pastel-blend { background: var(--gradient-pastel); }
 
   /* Wobble + lift on hover, like picking up a paper card */
   .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:rotate-[-0.5deg];
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.35)];
   }
 
   .text-balance { text-wrap: balance; }
