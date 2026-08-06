@@ -1,19 +1,34 @@
-# WellMind AI
+# WellMindAI
 
-> Affordable, 24/7 AI-powered mental health platform offering video, phone, and chat counseling, journaling, and self-help resources for students and professionals in India.
+> WellMindAI is an AI-powered mental health companion providing 24/7 empathetic support, emotional validation and evidence-based clinical screening (DSM-5, ICD-11, PHQ-9, GAD-7, PCL-5) through text chat, voice therapy and video sessions — in English, Hindi, Hinglish, Tamil, Bengali, Marathi and Spanish.
 
-WellMind AI combines AI counselors (Sophia), human-style video sessions (via Tavus) and phone calls (via ElevenLabs) with journaling and CBT/DBT/ACT self-help tools. Plans start from ₹149/month with a free 15-minute trial.
+WellMindAI is built for anyone carrying grief, anxiety, burnout, loneliness or an ordinary heavy day. Two AI counselors — **Yaro** (calm, grounded) and **Ava** (soft, warm) — listen without judgement, remember context across conversations, and route to human crisis support when needed. Chat is free with no signup; voice and video plans start at ₹99/week.
+
+## Core Features
+
+- [Chat with Yaro](https://www.wellmindai.in/chat/yaro): Free, no-signup multilingual chat therapy with real-time CBT/DBT grounding and silent PHQ-9 / GAD-7 pattern analysis.
+- [Voice therapy](https://www.wellmindai.in/consultation/audio): Phone-call style audio sessions with Yaro (male voice) or Ava (female voice), paced for co-regulation.
+- [Video counseling](https://www.wellmindai.in/consultation/video): Face-to-face AI counseling sessions for visual grounding.
+- [Journal](https://www.wellmindai.in/journal): Mood tracking, streaks and guided reflective prompts.
+- [Self help](https://www.wellmindai.in/self-help): CBT, DBT and ACT exercises plus curated mental-health resources.
 
 ## Pages
 
-- [Home](/): Overview of WellMind AI, features, pricing and investor highlights.
-- [About](/about): Mission, vision, founder Ratan Bajaj, and the team.
-- [Plans & Pricing](/plans): Free, Student, Standard and Premium subscription tiers.
-- [Careers](/careers): Open roles and how to apply at WellMind AI.
-- [Feedback Wall](/feedback-wall): Public wall of user feedback and stories.
-- [Privacy Policy](/policy): Privacy, HIPAA-style protections and data handling.
-- [Sign In / Sign Up](/auth): Account creation and login.
+- [Home](https://www.wellmindai.in/): What WellMindAI is, who it helps and how to start.
+- [About](https://www.wellmindai.in/about): Mission, vision and founder Ratan Bajaj.
+- [Research](https://www.wellmindai.in/research): Clinical grounding, frameworks and published papers.
+- [Blog](https://www.wellmindai.in/blog): Articles on grief, anxiety, burnout and emotional health.
+- [Plans & Pricing](https://www.wellmindai.in/plans): Starter Weekly ₹99, Premium ₹499/mo, Pro Ultimate ₹999/mo.
+- [Compare](https://www.wellmindai.in/compare): How WellMindAI compares to other mental-health apps.
+- [A judgement-free space](https://www.wellmindai.in/judgement-free-space): The philosophy behind the product.
+- [Careers](https://www.wellmindai.in/careers): Open roles.
+- [Privacy Policy](https://www.wellmindai.in/policy): Data handling and privacy protections.
+
+## Clinical Safety
+
+WellMindAI is a support companion, not a replacement for emergency care. Crisis language triggers an immediate de-escalation protocol and routes users to local helplines — Tele-MANAS 14416, iCall 9152987821, Vandrevala 1860-266-2345 (India) and 988 (US). Screening scores are indicative signals shared with the user, never a diagnosis.
 
 ## Optional
 
-- [Memorial Chat](/memorial-chat): Compassionate AI conversations for grief support.
+- [Feedback Wall](https://www.wellmindai.in/feedback-wall): Public wall of user stories.
+- [Memorial Chat](https://www.wellmindai.in/memorial-chat): Compassionate AI conversations for grief support.
