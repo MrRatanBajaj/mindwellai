@@ -227,3 +227,47 @@ returns table(owner_id uuid) language sql stable security definer set search_pat
   select user_id from public.referral_codes where lower(code) = lower(_code) limit 1
 $$;
 grant execute on function public.resolve_referral_code(text) to anon, authenticated;
+
+-- ============================================================
+-- SECURITY PATCH (Aug 2026) — run this block in the SQL editor
+-- ============================================================
+
+-- 1) b2b_invites: remove the open "anyone authed can read by token" policy
+drop policy if exists "Anyone authed can read invite by token query" on public.b2b_invites;
+drop policy if exists "anyone_authed_read_invite_by_token" on public.b2b_invites;
+-- (the invitee_or_company_admin_can_view_invite policy above stays as the only SELECT path)
+
+-- 2) blog_posts: author_email must never reach anon/authenticated
+revoke select (author_email) on public.blog_posts from anon, authenticated;
+
+-- 3) push_subscriptions: no orphan anonymous rows
+--    require a device-scoped owner so anonymous subscribers manage only their own row
+alter table public.push_subscriptions
+  add column if not exists device_id text;
+
+-- purge unowned legacy anonymous rows (nobody can manage them today)
+delete from public.push_subscriptions where user_id is null and device_id is null;
+
+drop policy if exists "Anyone can insert push subscriptions" on public.push_subscriptions;
+drop policy if exists "anon_insert_push_subscriptions" on public.push_subscriptions;
+drop policy if exists "Users can view own push subscriptions" on public.push_subscriptions;
+drop policy if exists "Users can delete own push subscriptions" on public.push_subscriptions;
+
+alter table public.push_subscriptions enable row level security;
+
+-- authenticated users own their rows by user_id
+create policy "auth_manage_own_push_subscription" on public.push_subscriptions
+  for all to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- anonymous devices may only insert a row that carries a device_id and no user_id;
+-- they cannot read or delete anything (management happens via the device_id + edge function)
+create policy "anon_insert_device_push_subscription" on public.push_subscriptions
+  for insert to anon
+  with check (user_id is null and device_id is not null);
+
+revoke select, update, delete on public.push_subscriptions from anon;
+grant insert on public.push_subscriptions to anon;
+grant select, insert, update, delete on public.push_subscriptions to authenticated;
+grant all on public.push_subscriptions to service_role;
