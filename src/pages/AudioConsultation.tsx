@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import HumeEVISession from "@/components/ui-custom/HumeEVISession";
+import FreeVoiceSession from "@/components/ui-custom/FreeVoiceSession";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowLeft, Heart, Mic, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
