@@ -71,7 +71,7 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
   const respond = useCallback(
     async (userText: string) => {
       setThinking(true);
-      historyRef.current = [...historyRef.current, { sender: "user", content: userText }].slice(-12);
+      historyRef.current = [...historyRef.current, { sender: "user" as const, content: userText }].slice(-12);
       let reply = "I'm here with you. Tell me more.";
       try {
         const { data } = await supabase.functions.invoke("ai-counselor", {
@@ -85,7 +85,7 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
       } catch {
         reply = "I'm still here. Say that again for me?";
       }
-      historyRef.current = [...historyRef.current, { sender: "ai", content: reply }].slice(-12);
+      historyRef.current = [...historyRef.current, { sender: "ai" as const, content: reply }].slice(-12);
       setTurns((t) => [...t, { who: "them", text: reply }]);
       setThinking(false);
       await speak(reply);
