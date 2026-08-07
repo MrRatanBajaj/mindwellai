@@ -126,13 +126,20 @@ export default function YaroChat({ embedded = false }: Props) {
 
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
-    if (!content || sending) return;
+    if (!content || sending || locked) return;
+    if (!user && secondsLeft === null) {
+      const now = Date.now();
+      localStorage.setItem(KEY, String(now));
+      setStartedAt(now);
+      setSecondsLeft(TRIAL);
+    }
     const userMsg: Msg = { sender: "user", content, ts: Date.now(), status: "sent" };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
     setSending(true);
     setShowEmoji(false);
+
 
     const langInstruction =
       lang === "auto"
