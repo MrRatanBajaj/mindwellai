@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import HumeEVISession from "@/components/ui-custom/HumeEVISession";
+import FreeVoiceSession from "@/components/ui-custom/FreeVoiceSession";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowLeft, Heart, Mic, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -118,17 +118,14 @@ const AudioConsultation = () => {
               <Button variant="ghost" onClick={() => setMode("selection")} className="mb-4 rounded-full">
                 <ArrowLeft className="w-4 h-4 mr-1" /> back
               </Button>
-              <HumeEVISession
+              <FreeVoiceSession
                 counselorName={counselor.name}
                 voiceGender={counselor.pronoun === "he" ? "male" : "female"}
+                language={language}
                 systemPrompt={`${counselor.audioPrompt}\n\nLANGUAGE: ${languageInstruction}`}
                 onEnd={() => setMode("done")}
-                fallbackAction={
-                  <Button asChild className="rounded-full bg-[#F5EFE6] text-[#2A2522] hover:bg-[#F5EFE6]/90">
-                    <a href="/chat/yaro">Continue by text with Yaro</a>
-                  </Button>
-                }
               />
+
             </motion.div>
           )}
 
