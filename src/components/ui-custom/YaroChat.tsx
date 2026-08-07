@@ -59,6 +59,48 @@ export default function YaroChat({ embedded = false }: Props) {
   const [lastError, setLastError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  /* ── 2-minute free window for signed-out visitors ── */
+  const { user } = useAuth();
+  const TRIAL = 120;
+  const KEY = "wm_yaro_trial_started_at";
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const locked = !user && secondsLeft === 0;
+
+  useEffect(() => {
+    if (user) { setSecondsLeft(null); return; }
+    const saved = localStorage.getItem(KEY);
+    if (!saved) return;
+    setStartedAt(Number(saved));
+    const left = Math.max(0, TRIAL - Math.floor((Date.now() - Number(saved)) / 1000));
+    setSecondsLeft(left);
+  }, [user]);
+
+  useEffect(() => {
+    if (user || secondsLeft === null || secondsLeft <= 0) return;
+    const t = setInterval(() => setSecondsLeft((s) => (s === null ? s : Math.max(0, s - 1))), 1000);
+    return () => clearInterval(t);
+  }, [user, secondsLeft]);
+
+  const [buildingReport, setBuildingReport] = useState(false);
+  const downloadReport = async () => {
+    setBuildingReport(true);
+    try {
+      await generateSessionReportPDF({
+        sessionId: Math.random().toString(36).slice(2, 8).toUpperCase(),
+        startedAt: startedAt ?? Date.now() - TRIAL * 1000,
+        endedAt: Date.now(),
+        messageCount: messages.filter((m) => m.sender === "user").length,
+        language: LANGS.find((l) => l.code === lang)?.label ?? "Auto",
+        transcript: messages.map(({ sender, content, ts }) => ({ sender, content, ts })),
+        clinical,
+      });
+    } finally {
+      setBuildingReport(false);
+    }
+  };
+
+
   // Health check — ping ai-counselor once on mount
   useEffect(() => {
     (async () => {
