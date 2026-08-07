@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loader2, Check, CheckCheck, Globe, ShieldCheck, AlertTriangle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loader2, Check, CheckCheck, Globe, ShieldCheck, AlertTriangle, Lock, FileDown, Clock } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { generateSessionReportPDF } from "@/lib/sessionReport";
+
 
 type Clinical = {
   phq9: { score: number; band: string; symptoms: string[] };
