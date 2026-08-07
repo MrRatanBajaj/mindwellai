@@ -204,37 +204,49 @@ const FeatureGrid = () => (
   </section>
 );
 
-/* ───────── Live chat preview ───────── */
+/* ───────── Live chat: 2 free minutes → report → account ───────── */
+const steps = [
+  { n: "1", t: "Say one honest sentence", d: "No form, no name. Just start." },
+  { n: "2", t: "2 minutes, fully free", d: "Yaro listens and quietly reads PHQ-9 / GAD-7 / PCL-5 signals." },
+  { n: "3", t: "Get your Wellbeing Snapshot", d: "A real PDF report with your scores — logo, watermark, next steps." },
+  { n: "4", t: "Log in and keep going", d: "Nothing you said is lost. Voice and video unlock from ₹99/week." },
+];
+
 const ChatTherapySection = () => (
   <section className="px-6 py-20 bg-gradient-to-b from-background via-secondary/30 to-background">
     <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
       <div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border text-primary text-xs font-medium mb-5">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Live · no signup needed
+          <Clock className="w-3.5 h-3.5" /> 2 minutes free · no signup · report included
         </div>
         <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight text-balance">
-          Like texting a friend who actually trained for this.
+          Two minutes. One honest sentence. A report you can actually hold.
         </h2>
         <p className="mt-5 text-foreground/75 leading-relaxed text-lg">
-          Type in any language. Friendly on the surface, evidence-based underneath.
+          Start typing in any language. When the two minutes end, we hand you a
+          Wellbeing Snapshot PDF — then you decide whether to stay.
         </p>
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-          {[
-            { icon: <Globe className="w-4 h-4" />, text: "Multilingual" },
-            { icon: <Shield className="w-4 h-4" />, text: "Encrypted · private" },
-            { icon: <BookHeart className="w-4 h-4" />, text: "Clinical screeners" },
-          ].map((f, i) => (
-            <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-card border border-border">
-              <span className="text-primary">{f.icon}</span><span className="text-foreground/80">{f.text}</span>
-            </div>
+
+        <ol className="mt-8 space-y-3">
+          {steps.map((s) => (
+            <li key={s.n} className="flex gap-4 items-start rounded-2xl bg-card border border-border p-4">
+              <span className="shrink-0 h-8 w-8 rounded-full bg-primary/12 text-primary font-medium flex items-center justify-center text-sm">
+                {s.n}
+              </span>
+              <span>
+                <span className="block text-foreground font-medium">{s.t}</span>
+                <span className="block text-sm text-foreground/65 mt-0.5">{s.d}</span>
+              </span>
+            </li>
           ))}
-        </div>
-        <div className="mt-7 flex flex-wrap gap-3">
+        </ol>
+
+        <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild className="h-12 px-6 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Link to="/chat/yaro">Open full chat →</Link>
+            <Link to="/chat/yaro">Start my 2 free minutes →</Link>
           </Button>
           <Button asChild variant="outline" className="h-12 px-6 rounded-full bg-card">
-            <Link to="/consultation/audio">Talk by voice instead</Link>
+            <Link to="/consultation/audio">Rather talk out loud?</Link>
           </Button>
         </div>
       </div>
@@ -245,6 +257,7 @@ const ChatTherapySection = () => (
     </div>
   </section>
 );
+
 
 const faqs = [
   { q: "Is chat therapy really free without signup?", a: "Yes. Open Yaro Chat from the landing page and start talking — no account needed. Voice and video plans start at ₹99/week." },
