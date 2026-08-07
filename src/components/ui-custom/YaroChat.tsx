@@ -351,7 +351,49 @@ export default function YaroChat({ embedded = false }: Props) {
         </div>
       )}
 
-      {/* Composer */}
+      {/* Free-window countdown for signed-out visitors */}
+      {!user && secondsLeft !== null && secondsLeft > 0 && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-[#101d24] border-t border-white/5 text-[11px] text-emerald-300">
+          <Clock className="w-3.5 h-3.5" />
+          <span className="tabular-nums">
+            {String(Math.floor(secondsLeft / 60))}:{String(secondsLeft % 60).padStart(2, "0")}
+          </span>
+          <span className="text-white/50">free · then I'll save this and hand you a report</span>
+        </div>
+      )}
+
+      {locked ? (
+        <div className="px-5 py-6 bg-[#111b21] border-t border-emerald-500/20 text-center space-y-4">
+          <div className="mx-auto w-11 h-11 rounded-full bg-emerald-500/15 flex items-center justify-center">
+            <Lock className="w-5 h-5 text-emerald-300" />
+          </div>
+          <div>
+            <p className="text-white font-medium">Your 2 free minutes are up.</p>
+            <p className="text-white/60 text-sm mt-1">
+              I've saved everything you said. Log in and we pick up exactly here — nothing lost.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Link to="/auth?next=/chat/yaro">
+              <button className="h-11 px-6 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium w-full sm:w-auto">
+                Log in & continue free
+              </button>
+            </Link>
+            <button
+              onClick={downloadReport}
+              disabled={buildingReport}
+              className="h-11 px-5 rounded-full border border-white/15 text-white/85 hover:bg-white/5 text-sm inline-flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {buildingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              Download my report (PDF)
+            </button>
+          </div>
+          <p className="text-[10px] text-white/40">
+            Report uses PHQ-9 · GAD-7 · PCL-5 public-domain scoring. Screening only, not a diagnosis.
+          </p>
+        </div>
+      ) : (
+      /* Composer */
       <div className="flex items-end gap-2 px-2 py-2 bg-[#202c33]">
         <button
           onClick={() => setShowEmoji((s) => !s)}
@@ -397,6 +439,8 @@ export default function YaroChat({ embedded = false }: Props) {
           </button>
         )}
       </div>
+      )}
+
 
       <div className="text-[10px] text-white/40 text-center py-1.5 bg-[#0b141a]">
         Trained on DSM-5 · ICD-11 · PHQ-9 · GAD-7 · PCL-5 · Crisis? Call iCall 9152987821
