@@ -19,8 +19,9 @@ const Hero = () => (
     <div className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-primary/10 blur-3xl" aria-hidden />
     <div className="absolute top-10 -right-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" aria-hidden />
 
-    <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
-      <div className="text-center lg:text-left">
+    <div className="relative max-w-3xl mx-auto">
+      <div className="text-center">
+
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground/70"
@@ -38,7 +39,7 @@ const Hero = () => (
 
         <motion.p
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
-          className="mt-6 text-lg md:text-xl text-foreground/70 max-w-xl lg:mx-0 mx-auto"
+          className="mt-6 text-lg md:text-xl text-foreground/70 max-w-xl mx-auto"
         >
           Talk to <strong className="text-foreground">Yaro</strong> or <strong className="text-foreground">Ava</strong>.
           Any hour, any language, no judgement.
@@ -46,7 +47,7 @@ const Hero = () => (
 
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-          className="mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-3"
+          className="mt-9 flex flex-wrap items-center justify-center gap-3"
         >
           <Button asChild className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-base shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.8)]">
             <Link to="/chat/yaro"><MessageCircle className="mr-2 h-5 w-5" /> Start talking — free</Link>
@@ -58,7 +59,7 @@ const Hero = () => (
 
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
-          className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground"
+          className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground"
         >
           <span className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4 text-primary" /> Encrypted &amp; anonymous</span>
           <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> Replies in seconds, 24/7</span>
@@ -66,17 +67,6 @@ const Hero = () => (
         </motion.div>
       </div>
 
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="relative">
-        <div className="relative rounded-[2.5rem] border border-border bg-card p-8 min-h-[420px] shadow-[var(--shadow-crayon)] flex flex-col items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/40 to-accent/10" aria-hidden />
-          <div className="relative h-56 w-56 rounded-full bg-gradient-to-br from-secondary to-[hsl(var(--calm-sky))] border-8 border-card shadow-[var(--shadow-pencil)] flex items-center justify-center">
-            <div className="text-8xl animate-float">🫂</div>
-          </div>
-          <p className="relative mt-8 text-sm text-muted-foreground text-center max-w-xs">
-            Your WellMindAI companion — private, patient, always here.
-          </p>
-        </div>
-      </motion.div>
     </div>
   </section>
 );
