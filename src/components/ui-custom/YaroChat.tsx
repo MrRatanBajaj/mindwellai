@@ -131,7 +131,7 @@ export default function YaroChat({ embedded = false }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
-  const send = async (text?: string) => {
+  const send = async (text?: string, voice?: { url: string; seconds: number }) => {
     const content = (text ?? input).trim();
     if (!content || sending || locked) return;
     if (!user && secondsLeft === null) {
@@ -140,7 +140,7 @@ export default function YaroChat({ embedded = false }: Props) {
       setStartedAt(now);
       setSecondsLeft(TRIAL);
     }
-    const userMsg: Msg = { sender: "user", content, ts: Date.now(), status: "sent" };
+    const userMsg: Msg = { sender: "user", content, ts: Date.now(), status: "sent", audioUrl: voice?.url, audioSeconds: voice?.seconds };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
