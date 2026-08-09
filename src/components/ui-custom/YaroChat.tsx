@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loader2, Check, CheckCheck, Globe, ShieldCheck, AlertTriangle, Lock, FileDown, Clock } from "lucide-react";
+import { Send, Phone, Video, ArrowLeft, MoreVertical, Smile, Paperclip, Mic, Loader2, Check, CheckCheck, Globe, ShieldCheck, AlertTriangle, Lock, FileDown, Clock, Trash2, Play, Pause } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,7 +14,14 @@ type Clinical = {
   crisis: boolean;
   dsmHints: string[];
 };
-type Msg = { sender: "user" | "ai"; content: string; ts: number; status?: "sent" | "delivered" | "read" };
+type Msg = {
+  sender: "user" | "ai";
+  content: string;
+  ts: number;
+  status?: "sent" | "delivered" | "read";
+  audioUrl?: string;
+  audioSeconds?: number;
+};
 type EngineStatus = "online" | "degraded" | "checking";
 
 const QUICK_EMOJI = ["😊","🙏","😔","😢","😨","😡","❤️","💪","✨","🌧️","☀️","🫂"];
@@ -124,7 +131,7 @@ export default function YaroChat({ embedded = false }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
-  const send = async (text?: string) => {
+  const send = async (text?: string, voice?: { url: string; seconds: number }) => {
     const content = (text ?? input).trim();
     if (!content || sending || locked) return;
     if (!user && secondsLeft === null) {
@@ -133,7 +140,7 @@ export default function YaroChat({ embedded = false }: Props) {
       setStartedAt(now);
       setSecondsLeft(TRIAL);
     }
-    const userMsg: Msg = { sender: "user", content, ts: Date.now(), status: "sent" };
+    const userMsg: Msg = { sender: "user", content, ts: Date.now(), status: "sent", audioUrl: voice?.url, audioSeconds: voice?.seconds };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
@@ -187,6 +194,126 @@ export default function YaroChat({ embedded = false }: Props) {
 
   const fmtTime = (t: number) =>
     new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  /* ── WhatsApp-style voice notes ── */
+  const [recording, setRecording] = useState(false);
+  const [recSeconds, setRecSeconds] = useState(0);
+  const [recLevel, setRecLevel] = useState(0);
+  const [transcribing, setTranscribing] = useState(false);
+  const [voiceNote, setVoiceNote] = useState("");
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const recogRef = useRef<any>(null);
+  const transcriptRef = useRef("");
+  const cancelledRef = useRef(false);
+  const rafRef = useRef<number>();
+
+  const teardownRecorder = () => {
+    try { recogRef.current?.stop(); } catch { /* noop */ }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    streamRef.current = null;
+    recorderRef.current = null;
+    setRecording(false);
+    setRecLevel(0);
+  };
+
+  useEffect(() => {
+    if (!recording) return;
+    const t = setInterval(() => setRecSeconds((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [recording]);
+
+  const startRecording = async () => {
+    if (locked || sending) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
+      streamRef.current = stream;
+      cancelledRef.current = false;
+      transcriptRef.current = "";
+      setVoiceNote("");
+      setRecSeconds(0);
+      chunksRef.current = [];
+
+      const rec = new MediaRecorder(stream);
+      recorderRef.current = rec;
+      rec.ondataavailable = (e) => { if (e.data.size) chunksRef.current.push(e.data); };
+      rec.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        const seconds = recSeconds;
+        teardownRecorder();
+        if (cancelledRef.current) return;
+        const url = URL.createObjectURL(blob);
+        setTranscribing(true);
+        // give the speech engine a beat to flush its final result
+        await new Promise((r) => setTimeout(r, 350));
+        const text = transcriptRef.current.trim();
+        setTranscribing(false);
+        setVoiceNote("");
+        if (!text) {
+          setMessages((m) => [...m, {
+            sender: "ai",
+            content: "I couldn't catch that voice note — try again a little closer to the mic, or type it out. 🫂",
+            ts: Date.now(), status: "read",
+          }]);
+          return;
+        }
+        send(text, { url, seconds: Math.max(1, seconds) });
+      };
+      rec.start();
+      setRecording(true);
+
+      // live transcription while recording
+      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SR) {
+        const recog = new SR();
+        recog.continuous = true;
+        recog.interimResults = true;
+        recog.lang = lang === "hi" ? "hi-IN" : lang === "ta" ? "ta-IN" : lang === "bn" ? "bn-IN" : lang === "es" ? "es-ES" : "en-IN";
+        recog.onresult = (e: any) => {
+          let partial = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const r = e.results[i];
+            if (r.isFinal) transcriptRef.current += `${r[0].transcript} `;
+            else partial += r[0].transcript;
+          }
+          setVoiceNote((transcriptRef.current + partial).trim());
+        };
+        recog.onerror = () => { /* keep recording; audio still sends */ };
+        recogRef.current = recog;
+        try { recog.start(); } catch { /* noop */ }
+      }
+
+      // level meter
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteTimeDomainData(buf);
+        let peak = 0;
+        for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i] - 128) / 128);
+        setRecLevel(peak);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      setMessages((m) => [...m, {
+        sender: "ai",
+        content: "I need microphone permission for voice notes. Allow the mic and tap the mic button again.",
+        ts: Date.now(), status: "read",
+      }]);
+    }
+  };
+
+  const stopAndSend = () => { cancelledRef.current = false; try { recorderRef.current?.stop(); } catch { teardownRecorder(); } };
+  const cancelRecording = () => { cancelledRef.current = true; try { recorderRef.current?.stop(); } catch { teardownRecorder(); } setVoiceNote(""); };
+  useEffect(() => () => teardownRecorder(), []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // WhatsApp-ish chat background
   const bg = "bg-[#0b141a]";
@@ -314,7 +441,15 @@ export default function YaroChat({ embedded = false }: Props) {
                     : "bg-[#202c33] text-white rounded-2xl rounded-tl-sm"
                 }`}
               >
-                {m.content}
+                {m.audioUrl && (
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <audio src={m.audioUrl} controls className="h-8 max-w-[190px]" />
+                    <span className="text-[10px] text-white/60 tabular-nums">
+                      {Math.floor((m.audioSeconds ?? 0) / 60)}:{String((m.audioSeconds ?? 0) % 60).padStart(2, "0")}
+                    </span>
+                  </div>
+                )}
+                {m.audioUrl ? <span className="text-white/85 italic">{m.content}</span> : m.content}
                 <div className="flex items-center justify-end gap-1 mt-1 -mb-0.5">
                   <span className="text-[10px] text-white/55">{fmtTime(m.ts)}</span>
                   {m.sender === "user" && (
@@ -394,7 +529,37 @@ export default function YaroChat({ embedded = false }: Props) {
         </div>
       ) : (
       /* Composer */
-      <div className="flex items-end gap-2 px-2 py-2 bg-[#202c33]">
+      recording ? (
+        <div className="flex items-center gap-2 sm:gap-3 px-3 py-3 bg-[#202c33]">
+          <button onClick={cancelRecording} className="p-2 text-red-400 hover:text-red-300 shrink-0" aria-label="Cancel voice note">
+            <Trash2 className="w-5 h-5" />
+          </button>
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+          <span className="text-white text-sm tabular-nums shrink-0">
+            {Math.floor(recSeconds / 60)}:{String(recSeconds % 60).padStart(2, "0")}
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-end gap-[3px] h-6">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="flex-1 rounded-full bg-emerald-400/80 transition-all duration-100"
+                  style={{ height: Math.max(3, Math.min(24, recLevel * (0.5 + Math.random()) * 46)) }}
+                />
+              ))}
+            </div>
+            {voiceNote && <p className="text-[11px] text-white/50 truncate mt-1">{voiceNote}</p>}
+          </div>
+          <button
+            onClick={stopAndSend}
+            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white shrink-0"
+            aria-label="Send voice note"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      ) : (
+      <div className="flex items-end gap-1 sm:gap-2 px-2 py-2 bg-[#202c33]">
         <button
           onClick={() => setShowEmoji((s) => !s)}
           className="p-2.5 text-white/70 hover:text-white"
@@ -402,10 +567,14 @@ export default function YaroChat({ embedded = false }: Props) {
         >
           <Smile className="w-6 h-6" />
         </button>
-        <button className="p-2.5 text-white/70 hover:text-white" aria-label="Attach">
-          <Paperclip className="w-5 h-5" />
+        <button
+          onClick={() => navigate("/consultation/audio")}
+          className="p-2.5 text-white/70 hover:text-white hidden sm:block"
+          aria-label="Voice call"
+        >
+          <Phone className="w-5 h-5" />
         </button>
-        <div className="flex-1 bg-[#2a3942] rounded-3xl px-4 py-2">
+        <div className="flex-1 bg-[#2a3942] rounded-3xl px-4 py-2 min-w-0">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -416,7 +585,7 @@ export default function YaroChat({ embedded = false }: Props) {
               }
             }}
             rows={1}
-            placeholder="Message — any language…"
+            placeholder={transcribing ? "Transcribing your voice note…" : "Message — any language…"}
             className="w-full bg-transparent resize-none text-white placeholder:text-white/40 text-[15px] outline-none max-h-32"
           />
         </div>
@@ -431,14 +600,16 @@ export default function YaroChat({ embedded = false }: Props) {
           </button>
         ) : (
           <button
-            onClick={() => navigate("/consultation/audio")}
-            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white shrink-0"
-            aria-label="Voice"
+            onClick={startRecording}
+            disabled={transcribing}
+            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white shrink-0 disabled:opacity-60"
+            aria-label="Record voice note"
           >
-            <Mic className="w-5 h-5" />
+            {transcribing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
           </button>
         )}
       </div>
+      )
       )}
 
 
