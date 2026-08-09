@@ -441,7 +441,15 @@ export default function YaroChat({ embedded = false }: Props) {
                     : "bg-[#202c33] text-white rounded-2xl rounded-tl-sm"
                 }`}
               >
-                {m.content}
+                {m.audioUrl && (
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <audio src={m.audioUrl} controls className="h-8 max-w-[190px]" />
+                    <span className="text-[10px] text-white/60 tabular-nums">
+                      {Math.floor((m.audioSeconds ?? 0) / 60)}:{String((m.audioSeconds ?? 0) % 60).padStart(2, "0")}
+                    </span>
+                  </div>
+                )}
+                {m.audioUrl ? <span className="text-white/85 italic">{m.content}</span> : m.content}
                 <div className="flex items-center justify-end gap-1 mt-1 -mb-0.5">
                   <span className="text-[10px] text-white/55">{fmtTime(m.ts)}</span>
                   {m.sender === "user" && (
