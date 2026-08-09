@@ -14,7 +14,14 @@ type Clinical = {
   crisis: boolean;
   dsmHints: string[];
 };
-type Msg = { sender: "user" | "ai"; content: string; ts: number; status?: "sent" | "delivered" | "read" };
+type Msg = {
+  sender: "user" | "ai";
+  content: string;
+  ts: number;
+  status?: "sent" | "delivered" | "read";
+  audioUrl?: string;
+  audioSeconds?: number;
+};
 type EngineStatus = "online" | "degraded" | "checking";
 
 const QUICK_EMOJI = ["😊","🙏","😔","😢","😨","😡","❤️","💪","✨","🌧️","☀️","🫂"];
