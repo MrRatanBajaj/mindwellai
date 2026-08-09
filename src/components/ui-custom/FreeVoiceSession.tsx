@@ -1,23 +1,32 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Mic, MicOff, PhoneOff, Loader2, Volume2, AlertTriangle } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Loader2, Volume2, AlertTriangle, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Free, open-standard voice therapy.
- * Speech-in  : Web Speech API (SpeechRecognition) — no key, runs in browser.
- * Brain      : ai-counselor edge function (multi-model fallback).
- * Speech-out : SpeechSynthesis with a gendered voice pick — no key, no credits.
+ * Free, open-standard voice therapy — real turn-taking.
+ * Speech-in  : Web Speech API (SpeechRecognition), single-utterance turns (no echo loop).
+ * Brain      : ai-counselor edge function — open-source LLaMA 3.3 70B first, with
+ *              real-time DSM-5 / PHQ-9 / GAD-7 / PCL-5 / C-SSRS pattern analysis per turn.
+ * Speech-out : SpeechSynthesis, gendered voice. Mic is hard-stopped while she/he speaks.
  */
 
 interface Props {
   counselorName: string;
   voiceGender: "male" | "female";
-  language: string; // BCP-47-ish code or "auto"
+  language: string;
   systemPrompt?: string;
   onEnd?: () => void;
 }
+
+type Clinical = {
+  phq9: { score: number; band: string; symptoms: string[] };
+  gad7: { score: number; band: string; symptoms: string[] };
+  pcl5: { symptoms: string[] };
+  crisis: boolean;
+  dsmHints: string[];
+};
 
 const LOCALE: Record<string, string> = {
   auto: "en-IN",
@@ -31,79 +40,149 @@ const LOCALE: Record<string, string> = {
 };
 
 type Turn = { who: "you" | "them"; text: string };
+type Phase = "idle" | "listening" | "thinking" | "speaking" | "error";
 
 const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, onEnd }: Props) => {
   const [supported, setSupported] = useState(true);
-  const [listening, setListening] = useState(false);
-  const [thinking, setThinking] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [micDenied, setMicDenied] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [interim, setInterim] = useState("");
+  const [clinical, setClinical] = useState<Clinical | null>(null);
+  const [level, setLevel] = useState(0);
+
   const recogRef = useRef<any>(null);
   const historyRef = useRef<{ sender: "user" | "ai"; content: string }[]>([]);
-  const activeRef = useRef(true);
+  const aliveRef = useRef(true);
+  const busyRef = useRef(false); // thinking or speaking → mic must stay off
+  const mutedRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const rafRef = useRef<number>();
 
   const locale = LOCALE[language] ?? "en-IN";
 
+  /* ── mic level meter (visual proof the mic is live) ── */
+  const startMeter = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      streamRef.current = stream;
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteTimeDomainData(buf);
+        let peak = 0;
+        for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i] - 128) / 128);
+        setLevel(peak);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+      return true;
+    } catch {
+      setMicDenied(true);
+      setNotice("Microphone blocked. Allow mic access in your browser, then reload this page.");
+      return false;
+    }
+  }, []);
+
+  /* ── speak, with mic hard-stopped so it never hears itself ── */
   const speak = useCallback(
     (text: string) =>
       new Promise<void>((resolve) => {
         if (!("speechSynthesis" in window)) return resolve();
+        window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         const voices = window.speechSynthesis.getVoices();
-        const wanted = voiceGender === "male" ? /male|ravi|daniel|alex|rishi|george/i : /female|kalpana|samantha|veena|zira|karen/i;
+        const wanted = voiceGender === "male"
+          ? /male|ravi|daniel|alex|rishi|george|hemant/i
+          : /female|kalpana|samantha|veena|zira|karen|lekha|swara/i;
         const byLang = voices.filter((v) => v.lang?.toLowerCase().startsWith(locale.slice(0, 2)));
         const pool = byLang.length ? byLang : voices;
-        u.voice = pool.find((v) => wanted.test(v.name)) ?? pool[voiceGender === "male" ? 0 : pool.length - 1] ?? null;
+        u.voice = pool.find((v) => wanted.test(v.name)) ?? pool[0] ?? null;
         u.lang = locale;
-        u.rate = 0.95;
-        u.pitch = voiceGender === "male" ? 0.9 : 1.08;
-        u.onend = () => resolve();
-        u.onerror = () => resolve();
-        setSpeaking(true);
+        u.rate = 0.97;
+        u.pitch = voiceGender === "male" ? 0.9 : 1.1;
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        u.onend = finish;
+        u.onerror = finish;
         window.speechSynthesis.speak(u);
-      }).then(() => setSpeaking(false)),
+        // safety net: some browsers never fire onend
+        setTimeout(finish, Math.min(30000, 2500 + text.length * 75));
+      }),
     [voiceGender, locale],
   );
 
+  const stopMic = useCallback(() => {
+    try { recogRef.current?.stop(); } catch { /* noop */ }
+  }, []);
+
+  const startMic = useCallback(() => {
+    if (!aliveRef.current || busyRef.current || mutedRef.current || micDenied) return;
+    try {
+      recogRef.current?.start();
+      setPhase("listening");
+    } catch { /* already running */ }
+  }, [micDenied]);
+
   const respond = useCallback(
     async (userText: string) => {
-      setThinking(true);
-      historyRef.current = [...historyRef.current, { sender: "user" as const, content: userText }].slice(-12);
-      let reply = "I'm here with you. Tell me more.";
+      busyRef.current = true;
+      stopMic();
+      setPhase("thinking");
+      historyRef.current = [...historyRef.current, { sender: "user" as const, content: userText }].slice(-14);
+
+      let reply = "";
       try {
-        const { data } = await supabase.functions.invoke("ai-counselor", {
+        const { data, error } = await supabase.functions.invoke("ai-counselor", {
           body: {
-            message: `${userText}\n\n[VOICE_MODE: reply in 2-3 short spoken sentences. ${systemPrompt ?? ""}]`,
+            message: `${userText}\n\n[VOICE_MODE: this is a spoken call. Reply in 2-3 short spoken sentences, no markdown, no emoji, no lists. Use CBT / DBT / grounding micro-steps. ${systemPrompt ?? ""}]`,
             counselorId: voiceGender === "male" ? "yaro" : "ava",
             conversationHistory: historyRef.current,
           },
         });
-        reply = String((data as any)?.response || (data as any)?.message || reply);
+        if (error) throw error;
+        reply = String((data as any)?.response || (data as any)?.message || "");
+        const cl = (data as any)?.clinical as Clinical | undefined;
+        if (cl) setClinical(cl);
+        setNotice((data as any)?.degraded ? "Running on the safe local clinical fallback right now." : null);
       } catch {
-        reply = "I'm still here. Say that again for me?";
+        setNotice("Connection hiccup — I'm still here, say that again.");
       }
-      historyRef.current = [...historyRef.current, { sender: "ai" as const, content: reply }].slice(-12);
+      if (!reply) reply = "I'm still here with you. Tell me a little more about that.";
+
+      historyRef.current = [...historyRef.current, { sender: "ai" as const, content: reply }].slice(-14);
       setTurns((t) => [...t, { who: "them", text: reply }]);
-      setThinking(false);
+      setPhase("speaking");
       await speak(reply);
+      busyRef.current = false;
+      if (aliveRef.current) startMic();
     },
-    [speak, systemPrompt, voiceGender],
+    [speak, systemPrompt, voiceGender, startMic, stopMic],
   );
 
-  // Set up recognition
+  /* ── set up recognition once per locale ── */
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      setSupported(false);
-      return;
-    }
+    if (!SR) { setSupported(false); return; }
+
+    aliveRef.current = true;
+    let cancelled = false;
+
     const recog = new SR();
-    recog.continuous = true;
+    recog.continuous = false;      // one utterance per turn → no echo, no runaway
     recog.interimResults = true;
+    recog.maxAlternatives = 1;
     recog.lang = locale;
+
     recog.onresult = (e: any) => {
       let final = "";
       let partial = "";
@@ -119,26 +198,48 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
         respond(final.trim());
       }
     };
-    recog.onend = () => {
-      if (activeRef.current && !muted) {
-        try { recog.start(); } catch { /* already started */ }
-      } else setListening(false);
-    };
-    recog.onerror = () => setListening(false);
-    recogRef.current = recog;
-    activeRef.current = true;
-    try {
-      recog.start();
-      setListening(true);
-    } catch { /* noop */ }
 
-    // greeting
-    speak(`Hi, I'm ${counselorName}. I'm listening. Take your time.`);
+    recog.onend = () => {
+      if (!aliveRef.current) { setPhase("idle"); return; }
+      if (busyRef.current || mutedRef.current) return;
+      setTimeout(() => startMic(), 250); // auto re-arm for the next turn
+    };
+
+    recog.onerror = (e: any) => {
+      const err = e?.error;
+      if (err === "not-allowed" || err === "service-not-allowed") {
+        setMicDenied(true);
+        setPhase("error");
+        setNotice("Microphone blocked. Allow mic access in your browser, then reload.");
+        return;
+      }
+      if (err === "no-speech" || err === "aborted") return; // normal, onend re-arms
+      setNotice("Speech service blipped — retrying.");
+    };
+
+    recogRef.current = recog;
+
+    (async () => {
+      const ok = await startMeter();
+      if (cancelled || !ok) return;
+      busyRef.current = true;
+      setPhase("speaking");
+      await speak(
+        voiceGender === "male"
+          ? `Hey, I'm ${counselorName}. I'm listening — take your time, speak in whatever language feels natural.`
+          : `Hi, I'm ${counselorName}. I'm right here — take your time, speak in whatever language feels natural.`,
+      );
+      busyRef.current = false;
+      if (!cancelled) startMic();
+    })();
 
     return () => {
-      activeRef.current = false;
-      try { recog.stop(); } catch { /* noop */ }
+      cancelled = true;
+      aliveRef.current = false;
+      try { recog.abort?.(); recog.stop(); } catch { /* noop */ }
       window.speechSynthesis?.cancel();
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      streamRef.current?.getTracks().forEach((t) => t.stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale]);
@@ -151,16 +252,21 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
   const toggleMute = () => {
     const next = !muted;
     setMuted(next);
-    try {
-      if (next) recogRef.current?.stop();
-      else { recogRef.current?.start(); setListening(true); }
-    } catch { /* noop */ }
+    mutedRef.current = next;
+    if (next) {
+      window.speechSynthesis?.cancel();
+      stopMic();
+      setPhase("idle");
+    } else {
+      startMic();
+    }
   };
 
   const end = () => {
-    activeRef.current = false;
-    try { recogRef.current?.stop(); } catch { /* noop */ }
+    aliveRef.current = false;
+    stopMic();
     window.speechSynthesis?.cancel();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     onEnd?.();
   };
 
@@ -168,11 +274,11 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
 
   if (!supported) {
     return (
-      <div className="max-w-md w-full rounded-[2rem] bg-card border border-border p-8 text-center">
+      <div className="w-full max-w-md mx-auto rounded-[1.75rem] bg-card border border-border p-6 sm:p-8 text-center">
         <AlertTriangle className="w-10 h-10 text-primary mx-auto mb-3" />
-        <h3 className="font-display text-2xl mb-2">Voice needs Chrome or Edge</h3>
+        <h3 className="font-display text-xl sm:text-2xl mb-2">Voice needs Chrome, Edge or Android</h3>
         <p className="text-foreground/70 text-sm mb-5">
-          Your browser doesn't support live speech. Open WellMindAI in Chrome, Edge or Android — or keep talking by text.
+          This browser has no live speech engine. Keep talking by text — same clinical brain, same Yaro.
         </p>
         <Button asChild className="rounded-full"><a href="/chat/yaro">Continue by text</a></Button>
       </div>
@@ -180,27 +286,58 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
   }
 
   return (
-    <div className="max-w-md w-full rounded-[2rem] bg-card border border-border shadow-elegant p-8 text-center">
-      <div className="relative mx-auto w-36 h-36 mb-6">
+    <div className="w-full max-w-[min(28rem,100%)] mx-auto rounded-[1.75rem] bg-card border border-border shadow-elegant p-5 sm:p-8 text-center">
+      <div className="relative mx-auto w-28 h-28 sm:w-36 sm:h-36 mb-5">
         <motion.span
           className="absolute inset-0 rounded-full bg-primary/20"
-          animate={{ scale: speaking ? [1, 1.25, 1] : listening ? [1, 1.1, 1] : 1, opacity: [0.6, 0.2, 0.6] }}
-          transition={{ duration: speaking ? 1.1 : 2.4, repeat: Infinity }}
+          animate={{
+            scale: phase === "speaking" ? [1, 1.25, 1] : 1 + Math.min(level * 0.6, 0.35),
+            opacity: [0.6, 0.25, 0.6],
+          }}
+          transition={{ duration: phase === "speaking" ? 1.1 : 1.8, repeat: Infinity }}
         />
-        <div className="absolute inset-4 rounded-full bg-primary/90 flex items-center justify-center text-primary-foreground font-display text-4xl">
+        <div className="absolute inset-4 rounded-full bg-primary/90 flex items-center justify-center text-primary-foreground font-display text-3xl sm:text-4xl">
           {counselorName[0]}
         </div>
       </div>
 
-      <h3 className="font-display text-2xl text-foreground">{counselorName}</h3>
-      <p className="text-sm text-foreground/60 mt-1 flex items-center justify-center gap-2">
-        {thinking ? (<><Loader2 className="w-3.5 h-3.5 animate-spin" /> thinking…</>)
-          : speaking ? (<><Volume2 className="w-3.5 h-3.5" /> speaking…</>)
-          : listening ? "listening…" : muted ? "mic off" : "paused"}
+      <h3 className="font-display text-xl sm:text-2xl text-foreground">{counselorName}</h3>
+      <p className="text-sm text-foreground/60 mt-1 flex items-center justify-center gap-2 flex-wrap">
+        {phase === "thinking" ? (<><Loader2 className="w-3.5 h-3.5 animate-spin" /> thinking…</>)
+          : phase === "speaking" ? (<><Volume2 className="w-3.5 h-3.5" /> speaking…</>)
+          : phase === "listening" ? "listening…"
+          : muted ? "mic off" : phase === "error" ? "mic blocked" : "connecting…"}
         <span className="tabular-nums text-foreground/40">· {mmss}</span>
       </p>
 
-      <div className="mt-5 min-h-[64px] rounded-2xl bg-secondary/60 border border-border p-3 text-sm text-foreground/80 text-left">
+      {/* live mic bars */}
+      <div className="mt-4 flex items-end justify-center gap-1 h-8">
+        {Array.from({ length: 16 }).map((_, i) => {
+          const active = phase === "listening" || phase === "speaking";
+          const h = active
+            ? Math.max(4, Math.min(32, (phase === "speaking" ? 0.35 + Math.random() * 0.5 : level * (0.6 + Math.random())) * 40))
+            : 4;
+          return <span key={i} className="w-1 rounded-full bg-primary/70 transition-all duration-100" style={{ height: h }} />;
+        })}
+      </div>
+
+      {clinical && (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-secondary text-foreground/70">
+            <Activity className="w-3 h-3" /> live analysis
+          </span>
+          <span className="px-2 py-1 rounded-full bg-secondary text-foreground/70">PHQ-9 {clinical.phq9.score} · {clinical.phq9.band}</span>
+          <span className="px-2 py-1 rounded-full bg-secondary text-foreground/70">GAD-7 {clinical.gad7.score} · {clinical.gad7.band}</span>
+          {clinical.pcl5.symptoms.length > 0 && (
+            <span className="px-2 py-1 rounded-full bg-secondary text-foreground/70">PCL-5 signals {clinical.pcl5.symptoms.length}</span>
+          )}
+          {clinical.crisis && (
+            <span className="px-2 py-1 rounded-full bg-destructive/15 text-destructive font-medium">safety check active</span>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 min-h-[64px] max-h-32 overflow-y-auto rounded-2xl bg-secondary/60 border border-border p-3 text-sm text-foreground/80 text-left">
         {interim && <p className="italic text-foreground/50">{interim}</p>}
         {[...turns].slice(-2).map((t, i) => (
           <p key={i} className={t.who === "you" ? "text-foreground/60" : "text-foreground"}>
@@ -210,16 +347,18 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
         {!turns.length && !interim && <p className="text-foreground/50">Just start talking — in any language.</p>}
       </div>
 
+      {notice && <p className="mt-3 text-[11px] text-destructive/80">{notice}</p>}
+
       <div className="mt-6 flex items-center justify-center gap-3">
-        <Button onClick={toggleMute} variant="outline" size="icon" className="h-14 w-14 rounded-full">
+        <Button onClick={toggleMute} variant="outline" size="icon" className="h-12 w-12 sm:h-14 sm:w-14 rounded-full">
           {muted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
         </Button>
-        <Button onClick={end} size="icon" className="h-14 w-14 rounded-full bg-destructive hover:bg-destructive/90">
+        <Button onClick={end} size="icon" className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-destructive hover:bg-destructive/90">
           <PhoneOff className="w-5 h-5" />
         </Button>
       </div>
       <p className="mt-4 text-[11px] text-foreground/45">
-        Free open-standard voice · nothing recorded · crisis? Tele-MANAS 14416
+        Open-source model · CBT / DBT grounding · PHQ-9 · GAD-7 · nothing recorded · crisis? Tele-MANAS 14416
       </p>
     </div>
   );
