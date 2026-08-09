@@ -10,7 +10,7 @@ import {
   HeartHandshake, Languages, Heart, CloudRain, Users, Clock, Leaf, Star,
 } from "lucide-react";
 import YaroChat from "@/components/ui-custom/YaroChat";
-import RealStoriesSection from "@/components/ui-custom/RealStoriesSection";
+
 import CalmStreak from "@/components/ui-custom/CalmStreak";
 
 /* ───────── Hero ───────── */
@@ -305,7 +305,7 @@ const Index = () => {
         <TrustStrip />
         <CalmStreak />
         <GriefSection />
-        <RealStoriesSection />
+        
         <CompanionSection />
         <FeatureGrid />
         <ChatTherapySection />
