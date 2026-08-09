@@ -195,6 +195,126 @@ export default function YaroChat({ embedded = false }: Props) {
   const fmtTime = (t: number) =>
     new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
+  /* ── WhatsApp-style voice notes ── */
+  const [recording, setRecording] = useState(false);
+  const [recSeconds, setRecSeconds] = useState(0);
+  const [recLevel, setRecLevel] = useState(0);
+  const [transcribing, setTranscribing] = useState(false);
+  const [voiceNote, setVoiceNote] = useState("");
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const recogRef = useRef<any>(null);
+  const transcriptRef = useRef("");
+  const cancelledRef = useRef(false);
+  const rafRef = useRef<number>();
+
+  const teardownRecorder = () => {
+    try { recogRef.current?.stop(); } catch { /* noop */ }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    streamRef.current = null;
+    recorderRef.current = null;
+    setRecording(false);
+    setRecLevel(0);
+  };
+
+  useEffect(() => {
+    if (!recording) return;
+    const t = setInterval(() => setRecSeconds((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [recording]);
+
+  const startRecording = async () => {
+    if (locked || sending) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+      });
+      streamRef.current = stream;
+      cancelledRef.current = false;
+      transcriptRef.current = "";
+      setVoiceNote("");
+      setRecSeconds(0);
+      chunksRef.current = [];
+
+      const rec = new MediaRecorder(stream);
+      recorderRef.current = rec;
+      rec.ondataavailable = (e) => { if (e.data.size) chunksRef.current.push(e.data); };
+      rec.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        const seconds = recSeconds;
+        teardownRecorder();
+        if (cancelledRef.current) return;
+        const url = URL.createObjectURL(blob);
+        setTranscribing(true);
+        // give the speech engine a beat to flush its final result
+        await new Promise((r) => setTimeout(r, 350));
+        const text = transcriptRef.current.trim();
+        setTranscribing(false);
+        setVoiceNote("");
+        if (!text) {
+          setMessages((m) => [...m, {
+            sender: "ai",
+            content: "I couldn't catch that voice note — try again a little closer to the mic, or type it out. 🫂",
+            ts: Date.now(), status: "read",
+          }]);
+          return;
+        }
+        send(text, { url, seconds: Math.max(1, seconds) });
+      };
+      rec.start();
+      setRecording(true);
+
+      // live transcription while recording
+      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SR) {
+        const recog = new SR();
+        recog.continuous = true;
+        recog.interimResults = true;
+        recog.lang = lang === "hi" ? "hi-IN" : lang === "ta" ? "ta-IN" : lang === "bn" ? "bn-IN" : lang === "es" ? "es-ES" : "en-IN";
+        recog.onresult = (e: any) => {
+          let partial = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const r = e.results[i];
+            if (r.isFinal) transcriptRef.current += `${r[0].transcript} `;
+            else partial += r[0].transcript;
+          }
+          setVoiceNote((transcriptRef.current + partial).trim());
+        };
+        recog.onerror = () => { /* keep recording; audio still sends */ };
+        recogRef.current = recog;
+        try { recog.start(); } catch { /* noop */ }
+      }
+
+      // level meter
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteTimeDomainData(buf);
+        let peak = 0;
+        for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i] - 128) / 128);
+        setRecLevel(peak);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {
+      setMessages((m) => [...m, {
+        sender: "ai",
+        content: "I need microphone permission for voice notes. Allow the mic and tap the mic button again.",
+        ts: Date.now(), status: "read",
+      }]);
+    }
+  };
+
+  const stopAndSend = () => { cancelledRef.current = false; try { recorderRef.current?.stop(); } catch { teardownRecorder(); } };
+  const cancelRecording = () => { cancelledRef.current = true; try { recorderRef.current?.stop(); } catch { teardownRecorder(); } setVoiceNote(""); };
+  useEffect(() => () => teardownRecorder(), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+
   // WhatsApp-ish chat background
   const bg = "bg-[#0b141a]";
   const wallpaper = {
