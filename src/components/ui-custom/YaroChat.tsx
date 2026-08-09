@@ -609,6 +609,7 @@ export default function YaroChat({ embedded = false }: Props) {
           </button>
         )}
       </div>
+      )
       )}
 
 
