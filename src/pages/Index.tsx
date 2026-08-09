@@ -39,7 +39,7 @@ const Hero = () => (
 
         <motion.p
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
-          className="mt-6 text-lg md:text-xl text-foreground/70 max-w-xl lg:mx-0 mx-auto"
+          className="mt-6 text-lg md:text-xl text-foreground/70 max-w-xl mx-auto"
         >
           Talk to <strong className="text-foreground">Yaro</strong> or <strong className="text-foreground">Ava</strong>.
           Any hour, any language, no judgement.
@@ -47,7 +47,7 @@ const Hero = () => (
 
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-          className="mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-3"
+          className="mt-9 flex flex-wrap items-center justify-center gap-3"
         >
           <Button asChild className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-base shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.8)]">
             <Link to="/chat/yaro"><MessageCircle className="mr-2 h-5 w-5" /> Start talking — free</Link>
@@ -59,7 +59,7 @@ const Hero = () => (
 
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
-          className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground"
+          className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground"
         >
           <span className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4 text-primary" /> Encrypted &amp; anonymous</span>
           <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> Replies in seconds, 24/7</span>
