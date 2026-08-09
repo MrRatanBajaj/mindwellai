@@ -529,7 +529,37 @@ export default function YaroChat({ embedded = false }: Props) {
         </div>
       ) : (
       /* Composer */
-      <div className="flex items-end gap-2 px-2 py-2 bg-[#202c33]">
+      recording ? (
+        <div className="flex items-center gap-2 sm:gap-3 px-3 py-3 bg-[#202c33]">
+          <button onClick={cancelRecording} className="p-2 text-red-400 hover:text-red-300 shrink-0" aria-label="Cancel voice note">
+            <Trash2 className="w-5 h-5" />
+          </button>
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+          <span className="text-white text-sm tabular-nums shrink-0">
+            {Math.floor(recSeconds / 60)}:{String(recSeconds % 60).padStart(2, "0")}
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-end gap-[3px] h-6">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="flex-1 rounded-full bg-emerald-400/80 transition-all duration-100"
+                  style={{ height: Math.max(3, Math.min(24, recLevel * (0.5 + Math.random()) * 46)) }}
+                />
+              ))}
+            </div>
+            {voiceNote && <p className="text-[11px] text-white/50 truncate mt-1">{voiceNote}</p>}
+          </div>
+          <button
+            onClick={stopAndSend}
+            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white shrink-0"
+            aria-label="Send voice note"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+      ) : (
+      <div className="flex items-end gap-1 sm:gap-2 px-2 py-2 bg-[#202c33]">
         <button
           onClick={() => setShowEmoji((s) => !s)}
           className="p-2.5 text-white/70 hover:text-white"
@@ -537,10 +567,14 @@ export default function YaroChat({ embedded = false }: Props) {
         >
           <Smile className="w-6 h-6" />
         </button>
-        <button className="p-2.5 text-white/70 hover:text-white" aria-label="Attach">
-          <Paperclip className="w-5 h-5" />
+        <button
+          onClick={() => navigate("/consultation/audio")}
+          className="p-2.5 text-white/70 hover:text-white hidden sm:block"
+          aria-label="Voice call"
+        >
+          <Phone className="w-5 h-5" />
         </button>
-        <div className="flex-1 bg-[#2a3942] rounded-3xl px-4 py-2">
+        <div className="flex-1 bg-[#2a3942] rounded-3xl px-4 py-2 min-w-0">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -551,7 +585,7 @@ export default function YaroChat({ embedded = false }: Props) {
               }
             }}
             rows={1}
-            placeholder="Message — any language…"
+            placeholder={transcribing ? "Transcribing your voice note…" : "Message — any language…"}
             className="w-full bg-transparent resize-none text-white placeholder:text-white/40 text-[15px] outline-none max-h-32"
           />
         </div>
@@ -566,11 +600,12 @@ export default function YaroChat({ embedded = false }: Props) {
           </button>
         ) : (
           <button
-            onClick={() => navigate("/consultation/audio")}
-            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white shrink-0"
-            aria-label="Voice"
+            onClick={startRecording}
+            disabled={transcribing}
+            className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white shrink-0 disabled:opacity-60"
+            aria-label="Record voice note"
           >
-            <Mic className="w-5 h-5" />
+            {transcribing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
           </button>
         )}
       </div>
