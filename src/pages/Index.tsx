@@ -66,17 +66,6 @@ const Hero = () => (
         </motion.div>
       </div>
 
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="relative">
-        <div className="relative rounded-[2.5rem] border border-border bg-card p-8 min-h-[420px] shadow-[var(--shadow-crayon)] flex flex-col items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/40 to-accent/10" aria-hidden />
-          <div className="relative h-56 w-56 rounded-full bg-gradient-to-br from-secondary to-[hsl(var(--calm-sky))] border-8 border-card shadow-[var(--shadow-pencil)] flex items-center justify-center">
-            <div className="text-8xl animate-float">🫂</div>
-          </div>
-          <p className="relative mt-8 text-sm text-muted-foreground text-center max-w-xs">
-            Your WellMindAI companion — private, patient, always here.
-          </p>
-        </div>
-      </motion.div>
     </div>
   </section>
 );
