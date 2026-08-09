@@ -19,8 +19,9 @@ const Hero = () => (
     <div className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-primary/10 blur-3xl" aria-hidden />
     <div className="absolute top-10 -right-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" aria-hidden />
 
-    <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
-      <div className="text-center lg:text-left">
+    <div className="relative max-w-3xl mx-auto">
+      <div className="text-center">
+
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground/70"
