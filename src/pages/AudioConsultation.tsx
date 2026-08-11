@@ -29,7 +29,7 @@ const AudioConsultation = () => {
 
   useSEO({
     title: "Audio therapy — Yaro or Ava | WellMindAI",
-    description: "Voice-to-voice AI therapy in your language. Hume EVI detects emotion in real-time. Yaro (male) or Ava (female).",
+    description: "Voice-to-voice AI therapy in your language, with real-time emotional and clinical pattern reading. Yaro (male) or Ava (female).",
     path: "/consultation/audio",
   });
 
