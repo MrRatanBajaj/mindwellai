@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Free, open-standard voice therapy — real turn-taking.
- * Speech-in  : Web Speech API (SpeechRecognition), single-utterance turns (no echo loop).
- * Brain      : ai-counselor edge function — open-source LLaMA 3.3 70B first, with
- *              real-time DSM-5 / PHQ-9 / GAD-7 / PCL-5 / C-SSRS pattern analysis per turn.
- * Speech-out : SpeechSynthesis, gendered voice. Mic is hard-stopped while she/he speaks.
+ * Voice therapy with real turn-taking.
+ * Two-way spoken conversation with per-turn DSM-5 / PHQ-9 / GAD-7 / PCL-5 / C-SSRS
+ * pattern analysis. The mic is hard-stopped while the counsellor speaks (no echo loop).
  */
 
 interface Props {

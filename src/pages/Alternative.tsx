@@ -94,7 +94,7 @@ const COMPETITORS: Record<string, Competitor> = {
     ],
     wellmindWins: [
       { title: "Clinical framework, not just chat", body: "Trained on DSM-5, ICD-11, PHQ-9, GAD-7 and PCL-5 — with C-SSRS crisis kill-switch." },
-      { title: "Multilingual voice", body: "Hume EVI voice with Yaro (male) and Ava (female) across English, Hindi, Hinglish, Tamil, Bengali and more." },
+      { title: "Multilingual voice", body: "Natural voice with Yaro (male) and Ava (female) across English, Hindi, Hinglish, Tamil, Bengali and more." },
       { title: "Under 1.5s latency", body: "Interim token streaming keeps conversation as natural as talking to a friend." },
       { title: "Judgement-free by design", body: "No profile browsing, no likes, no peer noise — just one calm space." },
     ],
