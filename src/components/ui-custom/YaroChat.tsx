@@ -152,11 +152,14 @@ export default function YaroChat({ embedded = false }: Props) {
       lang === "auto"
         ? "Mirror the user's language exactly."
         : `Respond primarily in ${LANGS.find((l) => l.code === lang)?.label}.`;
+    const voiceInstruction = voice
+      ? " [VOICE_NOTE: the user spoke this. Reply as a warm spoken voice note — 2-4 short sentences, plain speech, no markdown, no bullet lists, no emoji.]"
+      : "";
 
     try {
       const { data, error } = await supabase.functions.invoke("ai-counselor", {
         body: {
-          message: `${content}\n\n[LANG_HINT: ${langInstruction}]`,
+          message: `${content}\n\n[LANG_HINT: ${langInstruction}]${voiceInstruction}`,
           counselorId: "yaro",
           conversationHistory: next.slice(-12).map((m) => ({ sender: m.sender, content: m.content })),
         },
@@ -170,14 +173,18 @@ export default function YaroChat({ embedded = false }: Props) {
       const degraded = Boolean((data as any)?.degraded);
       setLastError(degraded ? "Primary AI credits/provider unavailable — safe local clinical fallback is active." : null);
       setEngineStatus(degraded ? "degraded" : "online");
+      const aiTs = Date.now();
       setMessages((m) =>
         m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({
           sender: "ai",
           content: String(reply),
-          ts: Date.now(),
+          ts: aiTs,
           status: "read",
+          spoken: Boolean(voice),
         }),
       );
+      if (voice) speakReply(aiTs, String(reply));
+
     } catch (e: any) {
       const msg = e?.message || "Connection failed";
       setLastError(msg);
