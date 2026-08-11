@@ -21,7 +21,9 @@ type Msg = {
   status?: "sent" | "delivered" | "read";
   audioUrl?: string;
   audioSeconds?: number;
+  spoken?: boolean; // AI voice-note style reply (spoken aloud)
 };
+
 type EngineStatus = "online" | "degraded" | "checking";
 
 const QUICK_EMOJI = ["😊","🙏","😔","😢","😨","😡","❤️","💪","✨","🌧️","☀️","🫂"];
