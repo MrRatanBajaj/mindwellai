@@ -201,6 +201,42 @@ export default function YaroChat({ embedded = false }: Props) {
   const fmtTime = (t: number) =>
     new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
+  /* ── Yaro replies back as a spoken voice note ── */
+  const [speakingTs, setSpeakingTs] = useState<number | null>(null);
+  const ttsLocale = () =>
+    lang === "hi" ? "hi-IN" : lang === "ta" ? "ta-IN" : lang === "bn" ? "bn-IN" : lang === "es" ? "es-ES" : "en-IN";
+
+  const stopSpeaking = () => {
+    try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    setSpeakingTs(null);
+  };
+
+  const speakReply = (ts: number, text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text.replace(/[*_#`]/g, ""));
+      const voices = window.speechSynthesis.getVoices();
+      const loc = ttsLocale();
+      const pool = voices.filter((v) => v.lang?.toLowerCase().startsWith(loc.slice(0, 2)));
+      u.voice = (pool.length ? pool : voices).find((v) => /male|ravi|rishi|daniel|alex|george|hemant/i.test(v.name))
+        ?? (pool.length ? pool : voices)[0] ?? null;
+      u.lang = loc;
+      u.rate = 0.98;
+      u.pitch = 0.92;
+      u.onend = () => setSpeakingTs((c) => (c === ts ? null : c));
+      u.onerror = () => setSpeakingTs((c) => (c === ts ? null : c));
+      setSpeakingTs(ts);
+      window.speechSynthesis.speak(u);
+    } catch {
+      setSpeakingTs(null);
+    }
+  };
+
+  useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch { /* noop */ } }, []);
+
+
+
   /* ── WhatsApp-style voice notes ── */
   const [recording, setRecording] = useState(false);
   const [recSeconds, setRecSeconds] = useState(0);
