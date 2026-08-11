@@ -250,6 +250,7 @@ export default function YaroChat({ embedded = false }: Props) {
   const transcriptRef = useRef("");
   const cancelledRef = useRef(false);
   const rafRef = useRef<number>();
+  const startedRecAtRef = useRef(0);
 
   const teardownRecorder = () => {
     try { recogRef.current?.stop(); } catch { /* noop */ }
@@ -267,32 +268,60 @@ export default function YaroChat({ embedded = false }: Props) {
     return () => clearInterval(t);
   }, [recording]);
 
+  /* server-side transcription fallback (works on Safari / any browser) */
+  const transcribeOnServer = async (blob: Blob): Promise<string> => {
+    try {
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      let binary = "";
+      const CH = 0x8000;
+      for (let i = 0; i < buf.length; i += CH) binary += String.fromCharCode(...buf.subarray(i, i + CH));
+      const base64 = btoa(binary);
+      const { data, error } = await supabase.functions.invoke("speech-to-text", {
+        body: {
+          audio: base64,
+          mimeType: (blob.type || "audio/webm").split(";")[0],
+          language: ["hi", "ta", "bn", "es", "en"].includes(lang) ? lang : undefined,
+        },
+      });
+      if (error) return "";
+      return String((data as any)?.text ?? "").trim();
+    } catch {
+      return "";
+    }
+  };
+
   const startRecording = async () => {
     if (locked || sending) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true },
       });
+      stopSpeaking();
       streamRef.current = stream;
       cancelledRef.current = false;
       transcriptRef.current = "";
       setVoiceNote("");
       setRecSeconds(0);
+      startedRecAtRef.current = Date.now();
       chunksRef.current = [];
 
-      const rec = new MediaRecorder(stream);
+      const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find(
+        (t) => (window as any).MediaRecorder?.isTypeSupported?.(t),
+      );
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
       recorderRef.current = rec;
       rec.ondataavailable = (e) => { if (e.data.size) chunksRef.current.push(e.data); };
       rec.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
-        const seconds = recSeconds;
+        const seconds = Math.max(1, Math.round((Date.now() - startedRecAtRef.current) / 1000));
         teardownRecorder();
         if (cancelledRef.current) return;
         const url = URL.createObjectURL(blob);
         setTranscribing(true);
-        // give the speech engine a beat to flush its final result
-        await new Promise((r) => setTimeout(r, 350));
-        const text = transcriptRef.current.trim();
+        // give the browser speech engine a beat to flush its final result
+        await new Promise((r) => setTimeout(r, 400));
+        let text = transcriptRef.current.trim();
+        if (!text) text = await transcribeOnServer(blob);
         setTranscribing(false);
         setVoiceNote("");
         if (!text) {
@@ -303,10 +332,11 @@ export default function YaroChat({ embedded = false }: Props) {
           }]);
           return;
         }
-        send(text, { url, seconds: Math.max(1, seconds) });
+        send(text, { url, seconds });
       };
       rec.start();
       setRecording(true);
+
 
       // live transcription while recording
       const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
