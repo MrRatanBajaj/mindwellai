@@ -64,7 +64,6 @@ export default function YaroChat({ embedded = false }: Props) {
   const [clinical, setClinical] = useState<Clinical | null>(null);
   const [showClinical, setShowClinical] = useState(false);
   const [engineStatus, setEngineStatus] = useState<EngineStatus>("checking");
-  const [providerLabel, setProviderLabel] = useState("multilingual model");
   const [lastError, setLastError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -120,7 +119,6 @@ export default function YaroChat({ embedded = false }: Props) {
         if (error || !data) setEngineStatus("degraded");
         else {
           setEngineStatus((data as any)?.degraded ? "degraded" : "online");
-          setProviderLabel(`${(data as any)?.provider || "Lovable AI"} · ${(data as any)?.model || "Gemini"}`);
           if ((data as any)?.degraded) setLastError("Primary AI credits/provider unavailable — safe local clinical fallback is active.");
         }
       } catch {
@@ -171,7 +169,6 @@ export default function YaroChat({ embedded = false }: Props) {
       if (cl) setClinical(cl);
       const degraded = Boolean((data as any)?.degraded);
       setLastError(degraded ? "Primary AI credits/provider unavailable — safe local clinical fallback is active." : null);
-      setProviderLabel(`${(data as any)?.provider || "Lovable AI"} · ${(data as any)?.model || "Gemini"}`);
       setEngineStatus(degraded ? "degraded" : "online");
       setMessages((m) =>
         m.map((x) => (x === userMsg ? { ...x, status: "read" as const } : x)).concat({
@@ -338,7 +335,7 @@ export default function YaroChat({ embedded = false }: Props) {
       >
         {engineStatus === "degraded" ? <AlertTriangle className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
         <span className="truncate">
-          {engineStatus === "online" && `Clinical engine online · ${providerLabel} · DSM-5 · PHQ-9 · GAD-7 · PCL-5 · Crisis kill-switch active`}
+          {engineStatus === "online" && `Clinical engine online · DSM-5 · PHQ-9 · GAD-7 · PCL-5 · Crisis kill-switch active`}
           {engineStatus === "checking" && "Connecting to clinical engine…"}
           {engineStatus === "degraded" && (lastError || "Engine degraded — retrying on next message")}
         </span>
@@ -356,7 +353,7 @@ export default function YaroChat({ embedded = false }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-medium leading-tight truncate">Yaro · WellMindAI</div>
-          <div className="text-[11px] text-emerald-400 leading-tight truncate">{engineStatus === "online" ? "online" : "protected"} · {providerLabel}</div>
+          <div className="text-[11px] text-emerald-400 leading-tight truncate">{engineStatus === "online" ? "online" : "protected"} · clinical mode</div>
         </div>
         <button
           onClick={() => navigate("/consultation/video")}
