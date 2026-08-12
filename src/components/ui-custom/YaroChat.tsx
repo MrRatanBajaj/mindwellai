@@ -597,7 +597,7 @@ export default function YaroChat({ embedded = false }: Props) {
                 )}
                 {m.sender === "ai" && m.spoken && (
                   <button
-                    onClick={() => (speakingTs === m.ts ? stopSpeaking() : speakReply(m.ts, m.content))}
+                    onClick={() => (speakingTs === m.ts ? stopSpeaking() : speakReply(m.ts, m.content, m.replyAudioUrl))}
                     className="flex items-center gap-2 mb-1.5 w-full text-left"
                     aria-label={speakingTs === m.ts ? "Stop voice reply" : "Play voice reply"}
                   >
@@ -608,14 +608,18 @@ export default function YaroChat({ embedded = false }: Props) {
                       {Array.from({ length: 22 }).map((_, k) => (
                         <span
                           key={k}
-                          className={`flex-1 rounded-full ${speakingTs === m.ts ? "bg-emerald-300" : "bg-white/30"}`}
-                          style={{ height: 4 + ((k * 7) % 16) }}
+                          className={`flex-1 rounded-full ${speakingTs === m.ts ? "bg-emerald-300 animate-pulse" : "bg-white/30"}`}
+                          style={{
+                            height: 4 + ((k * 7) % 16),
+                            animationDelay: speakingTs === m.ts ? `${(k % 6) * 90}ms` : undefined,
+                          }}
                         />
                       ))}
                     </span>
                     <span className="text-[10px] text-white/50">voice</span>
                   </button>
                 )}
+
                 {m.audioUrl ? <span className="text-white/85 italic">{m.content}</span> : m.content}
 
                 <div className="flex items-center justify-end gap-1 mt-1 -mb-0.5">
