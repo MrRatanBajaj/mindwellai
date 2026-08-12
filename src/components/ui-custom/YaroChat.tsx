@@ -634,13 +634,37 @@ export default function YaroChat({ embedded = false }: Props) {
             </motion.div>
           ))}
         </AnimatePresence>
-        {sending && (
+        {transcribing && (
+          <div className="flex justify-end">
+            <div className="bg-[#005c4b] text-white/80 px-3 py-2 rounded-2xl rounded-tr-sm text-sm flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Transcribing…
+            </div>
+          </div>
+        )}
+        {sending && !synthesizing && (
           <div className="flex justify-start">
             <div className="bg-[#202c33] text-white/70 px-3 py-2 rounded-2xl rounded-tl-sm text-sm flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Yaro is typing…
             </div>
           </div>
         )}
+        {(synthesizing || speakingTs !== null) && (
+          <div className="flex justify-start">
+            <div className="bg-[#202c33] text-emerald-300 px-3 py-2 rounded-2xl rounded-tl-sm text-sm flex items-center gap-2">
+              <span className="flex items-end gap-[2px] h-4">
+                {Array.from({ length: 6 }).map((_, k) => (
+                  <span
+                    key={k}
+                    className="w-[3px] rounded-full bg-emerald-400 animate-pulse"
+                    style={{ height: 6 + ((k * 5) % 12), animationDelay: `${k * 110}ms` }}
+                  />
+                ))}
+              </span>
+              {synthesizing ? "Preparing Yaro's voice note…" : "Yaro is speaking…"}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Emoji strip */}
