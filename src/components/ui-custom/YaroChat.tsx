@@ -132,7 +132,10 @@ export default function YaroChat({ embedded = false }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
-  const send = async (text?: string, voice?: { url: string; seconds: number }) => {
+  const send = async (
+    text?: string,
+    voice?: { url: string; seconds: number; sttMs?: number; sttSource?: "browser" | "server" },
+  ) => {
     const content = (text ?? input).trim();
     if (!content || sending || locked) return;
     if (!user && secondsLeft === null) {
@@ -154,9 +157,10 @@ export default function YaroChat({ embedded = false }: Props) {
         ? "Mirror the user's language exactly."
         : `Respond primarily in ${LANGS.find((l) => l.code === lang)?.label}.`;
     const voiceInstruction = voice
-      ? " [VOICE_NOTE: the user spoke this. Reply as a warm spoken voice note — 2-4 short sentences, plain speech, no markdown, no bullet lists, no emoji.]"
+      ? " [VOICE_NOTE: the user spoke this. Reply as a warm spoken voice note — acknowledge the emotion first, then one gentle CBT-grounded reflection or question. 2-3 short sentences, plain speech, no markdown, no bullet lists, no emoji.]"
       : "";
 
+    const tLlm = performance.now();
     try {
       const { data, error } = await supabase.functions.invoke("ai-counselor", {
         body: {
@@ -168,6 +172,7 @@ export default function YaroChat({ embedded = false }: Props) {
       if (error) throw new Error(error.message || "Network error");
       const errMsg = (data as any)?.error;
       if (errMsg) throw new Error(String(errMsg));
+      const llmMs = Math.round(performance.now() - tLlm);
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
       const cl = (data as any)?.clinical as Clinical | undefined;
       if (cl) setClinical(cl);
@@ -184,12 +189,40 @@ export default function YaroChat({ embedded = false }: Props) {
           spoken: Boolean(voice),
         }),
       );
-      if (voice) speakReply(aiTs, String(reply));
+
+      if (voice) {
+        setSynthesizing(true);
+        const tTts = performance.now();
+        const url = await synthesizeVoice(String(reply));
+        const ttsMs = Math.round(performance.now() - tTts);
+        setSynthesizing(false);
+        if (url) setMessages((m) => m.map((x) => (x.ts === aiTs ? { ...x, replyAudioUrl: url } : x)));
+        speakReply(aiTs, String(reply), url || undefined);
+
+        const { score, flags } = scoreAdherence(String(reply));
+        void logVoiceMetric({
+          channel: "voice_note",
+          language: lang === "auto" ? null : lang,
+          stt_source: voice.sttSource ?? "browser",
+          stt_ms: voice.sttMs ?? 0,
+          stt_chars: content.length,
+          llm_ms: llmMs,
+          tts_ms: ttsMs,
+          tts_source: url ? "server" : "browser",
+          total_ms: (voice.sttMs ?? 0) + llmMs + ttsMs,
+          reply_words: String(reply).split(/\s+/).filter(Boolean).length,
+          adherence_score: score,
+          adherence_flags: flags,
+          crisis_flag: Boolean(cl?.crisis),
+          degraded: degraded || !url,
+        });
+      }
 
     } catch (e: any) {
       const msg = e?.message || "Connection failed";
       setLastError(msg);
       setEngineStatus("degraded");
+      setSynthesizing(false);
       setMessages((m) => [
         ...m,
         { sender: "ai", content: `${msg}. Try once more — I'm not going anywhere.`, ts: Date.now(), status: "read" },
@@ -198,6 +231,7 @@ export default function YaroChat({ embedded = false }: Props) {
       setSending(false);
     }
   };
+
 
   const fmtTime = (t: number) =>
     new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
