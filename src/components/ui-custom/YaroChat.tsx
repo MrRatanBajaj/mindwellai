@@ -203,15 +203,47 @@ export default function YaroChat({ embedded = false }: Props) {
 
   /* ── Yaro replies back as a spoken voice note ── */
   const [speakingTs, setSpeakingTs] = useState<number | null>(null);
+  const aiAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsLocale = () =>
     lang === "hi" ? "hi-IN" : lang === "ta" ? "ta-IN" : lang === "bn" ? "bn-IN" : lang === "es" ? "es-ES" : "en-IN";
 
   const stopSpeaking = () => {
     try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    try { aiAudioRef.current?.pause(); } catch { /* noop */ }
+    aiAudioRef.current = null;
     setSpeakingTs(null);
   };
 
-  const speakReply = (ts: number, text: string) => {
+  /** Server-side clinical therapist voice. Returns an object URL, or "" on failure. */
+  const synthesizeVoice = async (text: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("yaro-tts", {
+        body: { text, counselorId: "yaro" },
+      });
+      const b64 = (data as any)?.audioContent;
+      if (error || !b64) return "";
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
+    } catch {
+      return "";
+    }
+  };
+
+  const playVoiceUrl = (ts: number, url: string) => {
+    stopSpeaking();
+    const el = new Audio(url);
+    aiAudioRef.current = el;
+    el.onended = () => setSpeakingTs((c) => (c === ts ? null : c));
+    el.onerror = () => setSpeakingTs((c) => (c === ts ? null : c));
+    setSpeakingTs(ts);
+    el.play().catch(() => setSpeakingTs((c) => (c === ts ? null : c)));
+  };
+
+  /** Browser fallback when the server voice is unavailable. */
+  const speakReply = (ts: number, text: string, url?: string) => {
+    if (url) return playVoiceUrl(ts, url);
     if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
@@ -233,7 +265,8 @@ export default function YaroChat({ embedded = false }: Props) {
     }
   };
 
-  useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch { /* noop */ } }, []);
+  useEffect(() => () => { stopSpeaking(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
 
 
