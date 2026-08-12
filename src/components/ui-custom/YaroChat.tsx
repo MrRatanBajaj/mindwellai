@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { generateSessionReportPDF } from "@/lib/sessionReport";
+import { logVoiceMetric, scoreAdherence } from "@/lib/clinicalMetrics";
 
 
 type Clinical = {
@@ -22,6 +23,7 @@ type Msg = {
   audioUrl?: string;
   audioSeconds?: number;
   spoken?: boolean; // AI voice-note style reply (spoken aloud)
+  replyAudioUrl?: string; // server-synthesised therapist voice note
 };
 
 type EngineStatus = "online" | "degraded" | "checking";
@@ -60,6 +62,7 @@ export default function YaroChat({ embedded = false }: Props) {
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [synthesizing, setSynthesizing] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [clinical, setClinical] = useState<Clinical | null>(null);
   const [showClinical, setShowClinical] = useState(false);
@@ -131,7 +134,10 @@ export default function YaroChat({ embedded = false }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
-  const send = async (text?: string, voice?: { url: string; seconds: number }) => {
+  const send = async (
+    text?: string,
+    voice?: { url: string; seconds: number; sttMs?: number; sttSource?: "browser" | "server" },
+  ) => {
     const content = (text ?? input).trim();
     if (!content || sending || locked) return;
     if (!user && secondsLeft === null) {
@@ -153,9 +159,10 @@ export default function YaroChat({ embedded = false }: Props) {
         ? "Mirror the user's language exactly."
         : `Respond primarily in ${LANGS.find((l) => l.code === lang)?.label}.`;
     const voiceInstruction = voice
-      ? " [VOICE_NOTE: the user spoke this. Reply as a warm spoken voice note — 2-4 short sentences, plain speech, no markdown, no bullet lists, no emoji.]"
+      ? " [VOICE_NOTE: the user spoke this. Reply as a warm spoken voice note — acknowledge the emotion first, then one gentle CBT-grounded reflection or question. 2-3 short sentences, plain speech, no markdown, no bullet lists, no emoji.]"
       : "";
 
+    const tLlm = performance.now();
     try {
       const { data, error } = await supabase.functions.invoke("ai-counselor", {
         body: {
@@ -167,6 +174,7 @@ export default function YaroChat({ embedded = false }: Props) {
       if (error) throw new Error(error.message || "Network error");
       const errMsg = (data as any)?.error;
       if (errMsg) throw new Error(String(errMsg));
+      const llmMs = Math.round(performance.now() - tLlm);
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
       const cl = (data as any)?.clinical as Clinical | undefined;
       if (cl) setClinical(cl);
@@ -183,12 +191,40 @@ export default function YaroChat({ embedded = false }: Props) {
           spoken: Boolean(voice),
         }),
       );
-      if (voice) speakReply(aiTs, String(reply));
+
+      if (voice) {
+        setSynthesizing(true);
+        const tTts = performance.now();
+        const url = await synthesizeVoice(String(reply));
+        const ttsMs = Math.round(performance.now() - tTts);
+        setSynthesizing(false);
+        if (url) setMessages((m) => m.map((x) => (x.ts === aiTs ? { ...x, replyAudioUrl: url } : x)));
+        speakReply(aiTs, String(reply), url || undefined);
+
+        const { score, flags } = scoreAdherence(String(reply));
+        void logVoiceMetric({
+          channel: "voice_note",
+          language: lang === "auto" ? null : lang,
+          stt_source: voice.sttSource ?? "browser",
+          stt_ms: voice.sttMs ?? 0,
+          stt_chars: content.length,
+          llm_ms: llmMs,
+          tts_ms: ttsMs,
+          tts_source: url ? "server" : "browser",
+          total_ms: (voice.sttMs ?? 0) + llmMs + ttsMs,
+          reply_words: String(reply).split(/\s+/).filter(Boolean).length,
+          adherence_score: score,
+          adherence_flags: flags,
+          crisis_flag: Boolean(cl?.crisis),
+          degraded: degraded || !url,
+        });
+      }
 
     } catch (e: any) {
       const msg = e?.message || "Connection failed";
       setLastError(msg);
       setEngineStatus("degraded");
+      setSynthesizing(false);
       setMessages((m) => [
         ...m,
         { sender: "ai", content: `${msg}. Try once more — I'm not going anywhere.`, ts: Date.now(), status: "read" },
@@ -198,20 +234,53 @@ export default function YaroChat({ embedded = false }: Props) {
     }
   };
 
+
   const fmtTime = (t: number) =>
     new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   /* ── Yaro replies back as a spoken voice note ── */
   const [speakingTs, setSpeakingTs] = useState<number | null>(null);
+  const aiAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsLocale = () =>
     lang === "hi" ? "hi-IN" : lang === "ta" ? "ta-IN" : lang === "bn" ? "bn-IN" : lang === "es" ? "es-ES" : "en-IN";
 
   const stopSpeaking = () => {
     try { window.speechSynthesis?.cancel(); } catch { /* noop */ }
+    try { aiAudioRef.current?.pause(); } catch { /* noop */ }
+    aiAudioRef.current = null;
     setSpeakingTs(null);
   };
 
-  const speakReply = (ts: number, text: string) => {
+  /** Server-side clinical therapist voice. Returns an object URL, or "" on failure. */
+  const synthesizeVoice = async (text: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("yaro-tts", {
+        body: { text, counselorId: "yaro" },
+      });
+      const b64 = (data as any)?.audioContent;
+      if (error || !b64) return "";
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
+    } catch {
+      return "";
+    }
+  };
+
+  const playVoiceUrl = (ts: number, url: string) => {
+    stopSpeaking();
+    const el = new Audio(url);
+    aiAudioRef.current = el;
+    el.onended = () => setSpeakingTs((c) => (c === ts ? null : c));
+    el.onerror = () => setSpeakingTs((c) => (c === ts ? null : c));
+    setSpeakingTs(ts);
+    el.play().catch(() => setSpeakingTs((c) => (c === ts ? null : c)));
+  };
+
+  /** Browser fallback when the server voice is unavailable. */
+  const speakReply = (ts: number, text: string, url?: string) => {
+    if (url) return playVoiceUrl(ts, url);
     if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
@@ -233,7 +302,8 @@ export default function YaroChat({ embedded = false }: Props) {
     }
   };
 
-  useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch { /* noop */ } }, []);
+  useEffect(() => () => { stopSpeaking(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
 
 
@@ -318,12 +388,16 @@ export default function YaroChat({ embedded = false }: Props) {
         if (cancelledRef.current) return;
         const url = URL.createObjectURL(blob);
         setTranscribing(true);
+        const tStt = performance.now();
         // give the browser speech engine a beat to flush its final result
         await new Promise((r) => setTimeout(r, 400));
         let text = transcriptRef.current.trim();
-        if (!text) text = await transcribeOnServer(blob);
+        let sttSource: "browser" | "server" = "browser";
+        if (!text) { text = await transcribeOnServer(blob); sttSource = "server"; }
+        const sttMs = Math.round(performance.now() - tStt);
         setTranscribing(false);
         setVoiceNote("");
+
         if (!text) {
           setMessages((m) => [...m, {
             sender: "ai",
@@ -332,7 +406,7 @@ export default function YaroChat({ embedded = false }: Props) {
           }]);
           return;
         }
-        send(text, { url, seconds });
+        send(text, { url, seconds, sttMs, sttSource });
       };
       rec.start();
       setRecording(true);
@@ -523,7 +597,7 @@ export default function YaroChat({ embedded = false }: Props) {
                 )}
                 {m.sender === "ai" && m.spoken && (
                   <button
-                    onClick={() => (speakingTs === m.ts ? stopSpeaking() : speakReply(m.ts, m.content))}
+                    onClick={() => (speakingTs === m.ts ? stopSpeaking() : speakReply(m.ts, m.content, m.replyAudioUrl))}
                     className="flex items-center gap-2 mb-1.5 w-full text-left"
                     aria-label={speakingTs === m.ts ? "Stop voice reply" : "Play voice reply"}
                   >
@@ -534,14 +608,18 @@ export default function YaroChat({ embedded = false }: Props) {
                       {Array.from({ length: 22 }).map((_, k) => (
                         <span
                           key={k}
-                          className={`flex-1 rounded-full ${speakingTs === m.ts ? "bg-emerald-300" : "bg-white/30"}`}
-                          style={{ height: 4 + ((k * 7) % 16) }}
+                          className={`flex-1 rounded-full ${speakingTs === m.ts ? "bg-emerald-300 animate-pulse" : "bg-white/30"}`}
+                          style={{
+                            height: 4 + ((k * 7) % 16),
+                            animationDelay: speakingTs === m.ts ? `${(k % 6) * 90}ms` : undefined,
+                          }}
                         />
                       ))}
                     </span>
                     <span className="text-[10px] text-white/50">voice</span>
                   </button>
                 )}
+
                 {m.audioUrl ? <span className="text-white/85 italic">{m.content}</span> : m.content}
 
                 <div className="flex items-center justify-end gap-1 mt-1 -mb-0.5">
@@ -556,13 +634,37 @@ export default function YaroChat({ embedded = false }: Props) {
             </motion.div>
           ))}
         </AnimatePresence>
-        {sending && (
+        {transcribing && (
+          <div className="flex justify-end">
+            <div className="bg-[#005c4b] text-white/80 px-3 py-2 rounded-2xl rounded-tr-sm text-sm flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Transcribing…
+            </div>
+          </div>
+        )}
+        {sending && !synthesizing && (
           <div className="flex justify-start">
             <div className="bg-[#202c33] text-white/70 px-3 py-2 rounded-2xl rounded-tl-sm text-sm flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Yaro is typing…
             </div>
           </div>
         )}
+        {(synthesizing || speakingTs !== null) && (
+          <div className="flex justify-start">
+            <div className="bg-[#202c33] text-emerald-300 px-3 py-2 rounded-2xl rounded-tl-sm text-sm flex items-center gap-2">
+              <span className="flex items-end gap-[2px] h-4">
+                {Array.from({ length: 6 }).map((_, k) => (
+                  <span
+                    key={k}
+                    className="w-[3px] rounded-full bg-emerald-400 animate-pulse"
+                    style={{ height: 6 + ((k * 5) % 12), animationDelay: `${k * 110}ms` }}
+                  />
+                ))}
+              </span>
+              {synthesizing ? "Preparing Yaro's voice note…" : "Yaro is speaking…"}
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Emoji strip */}

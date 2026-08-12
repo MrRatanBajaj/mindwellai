@@ -34,6 +34,8 @@ import Alternative from "./pages/Alternative";
 import Admin from "./pages/Admin";
 import Compare from "./pages/Compare";
 import Research from "./pages/Research";
+import ClinicalValidation from "./pages/ClinicalValidation";
+
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,8 @@ const App = () => (
             <Route path="/chat" element={<YaroChatPage />} />
             <Route path="/alternatives/:slug" element={<Alternative />} />
             <Route path="/research" element={<Research />} />
+            <Route path="/clinical-validation" element={<ProtectedRoute><ClinicalValidation /></ProtectedRoute>} />
+
             <Route path="/compare" element={<Compare />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

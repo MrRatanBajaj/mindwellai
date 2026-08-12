@@ -76,6 +76,11 @@ verify_jwt = false
 [functions.speech-to-text]
 verify_jwt = false
 
+[functions.yaro-tts]
+verify_jwt = false
+
+
+
 [functions.verify-payment]
 verify_jwt = false
 
