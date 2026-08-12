@@ -22,6 +22,7 @@ type Msg = {
   audioUrl?: string;
   audioSeconds?: number;
   spoken?: boolean; // AI voice-note style reply (spoken aloud)
+  replyAudioUrl?: string; // server-synthesised therapist voice note
 };
 
 type EngineStatus = "online" | "degraded" | "checking";
