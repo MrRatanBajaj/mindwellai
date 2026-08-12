@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { generateSessionReportPDF } from "@/lib/sessionReport";
+import { logVoiceMetric, scoreAdherence } from "@/lib/clinicalMetrics";
 
 
 type Clinical = {
