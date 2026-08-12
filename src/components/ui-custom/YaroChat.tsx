@@ -62,6 +62,7 @@ export default function YaroChat({ embedded = false }: Props) {
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [synthesizing, setSynthesizing] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [clinical, setClinical] = useState<Clinical | null>(null);
   const [showClinical, setShowClinical] = useState(false);
