@@ -221,15 +221,14 @@ const Auth = () => {
       try {
         const refCode = new URLSearchParams(window.location.search).get("ref");
         if (refCode) {
-          const { data: refRow } = await supabase
-            .from("referral_codes")
-            .select("user_id")
-            .eq("code", refCode)
-            .maybeSingle();
-          if (refRow?.user_id) {
+          // Security-definer RPC: resolves only the referrer id, never the table.
+          const { data: referrerId } = await (supabase as any).rpc("resolve_referral_code", {
+            _code: refCode,
+          });
+          if (referrerId) {
             const { data: { user: newUser } } = await supabase.auth.getUser();
             await supabase.from("referrals").insert({
-              referrer_user_id: refRow.user_id,
+              referrer_user_id: referrerId as string,
               referred_user_id: newUser?.id,
               referred_email: email,
               code: refCode,
