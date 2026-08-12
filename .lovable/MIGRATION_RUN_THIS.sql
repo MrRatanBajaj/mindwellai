@@ -271,3 +271,92 @@ revoke select, update, delete on public.push_subscriptions from anon;
 grant insert on public.push_subscriptions to anon;
 grant select, insert, update, delete on public.push_subscriptions to authenticated;
 grant all on public.push_subscriptions to service_role;
+
+-- ============================================================
+-- 2026-08-12 · Clinical validation metrics + RLS hardening
+-- ============================================================
+
+-- 1. Blog posts: stop exposing author_email to every authenticated user.
+--    Public reads already go through the published_blog_posts view.
+drop policy if exists "Authenticated can read published posts" on public.blog_posts;
+
+-- 2. Referral codes: remove blanket SELECT (user_id enumeration).
+drop policy if exists "Authenticated users can lookup referral codes" on public.referral_codes;
+
+create or replace function public.resolve_referral_code(_code text)
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select user_id from public.referral_codes where code = _code limit 1;
+$$;
+
+revoke all on function public.resolve_referral_code(text) from public;
+grant execute on function public.resolve_referral_code(text) to anon, authenticated;
+
+-- 3. Anchor admin email checks (wildcards on both sides allowed spoofed domains).
+drop policy if exists "Admin users can view leads" on public.leads;
+drop policy if exists "Admin users can update leads" on public.leads;
+create policy "Admin users can view leads" on public.leads
+  for select to authenticated using (public.is_blog_admin(auth.jwt() ->> 'email'));
+create policy "Admin users can update leads" on public.leads
+  for update to authenticated using (public.is_blog_admin(auth.jwt() ->> 'email'));
+
+drop policy if exists "Admin users can view security events" on public.security_events;
+create policy "Admin users can view security events" on public.security_events
+  for select to authenticated using (public.is_blog_admin(auth.jwt() ->> 'email'));
+
+drop policy if exists "Admin users can update moderation alerts" on public.content_moderation_alerts;
+drop policy if exists "Admin users can view moderation alerts" on public.content_moderation_alerts;
+create policy "Admin users can view moderation alerts" on public.content_moderation_alerts
+  for select to authenticated using (public.is_blog_admin(auth.jwt() ->> 'email'));
+create policy "Admin users can update moderation alerts" on public.content_moderation_alerts
+  for update to authenticated using (public.is_blog_admin(auth.jwt() ->> 'email'));
+
+-- 4. Clinical validation metrics (voice pipeline telemetry)
+create table if not exists public.clinical_validation_metrics (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  user_id uuid references auth.users(id) on delete set null,
+  session_id text,
+  channel text not null default 'voice_note',
+  language text,
+  stt_source text,
+  stt_ms integer,
+  stt_chars integer,
+  stt_confidence numeric,
+  llm_ms integer,
+  tts_ms integer,
+  tts_source text,
+  total_ms integer,
+  reply_words integer,
+  adherence_score numeric,
+  adherence_flags jsonb not null default '[]'::jsonb,
+  crisis_flag boolean not null default false,
+  degraded boolean not null default false
+);
+
+grant select, insert on public.clinical_validation_metrics to authenticated;
+grant insert on public.clinical_validation_metrics to anon;
+grant all on public.clinical_validation_metrics to service_role;
+
+alter table public.clinical_validation_metrics enable row level security;
+
+drop policy if exists "Anyone can log a metric" on public.clinical_validation_metrics;
+create policy "Anyone can log a metric"
+  on public.clinical_validation_metrics for insert to anon, authenticated with check (true);
+
+drop policy if exists "Users read own metrics" on public.clinical_validation_metrics;
+create policy "Users read own metrics"
+  on public.clinical_validation_metrics for select to authenticated
+  using (auth.uid() = user_id);
+
+drop policy if exists "Admins read all metrics" on public.clinical_validation_metrics;
+create policy "Admins read all metrics"
+  on public.clinical_validation_metrics for select to authenticated
+  using (public.is_blog_admin(auth.jwt() ->> 'email'));
+
+create index if not exists clinical_validation_metrics_created_idx
+  on public.clinical_validation_metrics (created_at desc);
