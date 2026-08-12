@@ -34,6 +34,8 @@ import Alternative from "./pages/Alternative";
 import Admin from "./pages/Admin";
 import Compare from "./pages/Compare";
 import Research from "./pages/Research";
+import ClinicalValidation from "./pages/ClinicalValidation";
+
 
 const queryClient = new QueryClient();
 
