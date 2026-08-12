@@ -388,12 +388,16 @@ export default function YaroChat({ embedded = false }: Props) {
         if (cancelledRef.current) return;
         const url = URL.createObjectURL(blob);
         setTranscribing(true);
+        const tStt = performance.now();
         // give the browser speech engine a beat to flush its final result
         await new Promise((r) => setTimeout(r, 400));
         let text = transcriptRef.current.trim();
-        if (!text) text = await transcribeOnServer(blob);
+        let sttSource: "browser" | "server" = "browser";
+        if (!text) { text = await transcribeOnServer(blob); sttSource = "server"; }
+        const sttMs = Math.round(performance.now() - tStt);
         setTranscribing(false);
         setVoiceNote("");
+
         if (!text) {
           setMessages((m) => [...m, {
             sender: "ai",
