@@ -406,7 +406,7 @@ export default function YaroChat({ embedded = false }: Props) {
           }]);
           return;
         }
-        send(text, { url, seconds });
+        send(text, { url, seconds, sttMs, sttSource });
       };
       rec.start();
       setRecording(true);
