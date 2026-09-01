@@ -129,7 +129,8 @@ serve(async (req) => {
       );
     }
 
-    const { action, doctorType = 'general', personaId, conversationId } = await req.json();
+    const { action, doctorType = 'general', personaId, conversationId, userName } = await req.json();
+    const safeName = typeof userName === 'string' ? userName.trim().replace(/[^\p{L}\p{N} .'-]/gu, '').slice(0, 40) : '';
     console.log(`Tavus API action: ${action}, doctorType: ${doctorType}`);
 
     if (action === 'create_persona') {
@@ -175,7 +176,10 @@ serve(async (req) => {
           headers: { 'Content-Type': 'application/json', 'x-api-key': TAVUS_API_KEY },
           body: JSON.stringify({
             replica_id: replicaId,
-            custom_greeting: `Hello! I'm ${doctorConfig.persona_name.split(' - ')[0]}. How can I help you today?`,
+            custom_greeting: safeName
+              ? `Hi ${safeName}, I'm ${doctorConfig.persona_name.split(' - ')[0]}. I'm really glad you're here. What's been on your mind?`
+              : `Hello! I'm ${doctorConfig.persona_name.split(' - ')[0]}. How can I help you today?`,
+            conversational_context: safeName ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly.` : undefined,
             properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
           }),
         });
@@ -213,6 +217,7 @@ serve(async (req) => {
       }
 
       const replicaId = DOCTOR_REPLICAS[doctorType] || DOCTOR_REPLICAS.general;
+      const nameForGreeting = (DOCTOR_PERSONAS[doctorType] || DOCTOR_PERSONAS.general).persona_name.split(' - ')[0];
 
       const response = await fetch(`${TAVUS_API_URL}/conversations`, {
         method: 'POST',
@@ -220,6 +225,10 @@ serve(async (req) => {
         body: JSON.stringify({
           persona_id: personaId,
           replica_id: replicaId,
+          custom_greeting: safeName
+            ? `Hi ${safeName}, I'm ${nameForGreeting}. I'm really glad you're here. What's been on your mind?`
+            : `Hello, I'm ${nameForGreeting}. I'm glad you're here. What's been on your mind?`,
+          conversational_context: safeName ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly.` : undefined,
           properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
         }),
       });
