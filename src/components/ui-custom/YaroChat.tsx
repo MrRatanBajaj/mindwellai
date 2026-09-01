@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { generateSessionReportPDF } from "@/lib/sessionReport";
 import { logVoiceMetric, scoreAdherence } from "@/lib/clinicalMetrics";
+import yaroRobot from "@/assets/yaro-robot.png";
 
 
 type Clinical = {
@@ -469,7 +470,7 @@ export default function YaroChat({ embedded = false }: Props) {
   } as const;
 
   return (
-    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto h-[640px]" : "max-w-2xl w-full mx-auto h-[calc(100vh-8rem)] max-h-[820px] rounded-3xl overflow-hidden shadow-2xl border border-white/10"} flex flex-col ${bg}`}>
+    <div className={`${embedded ? "rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto h-[640px]" : "max-w-2xl w-full mx-auto h-[calc(100dvh-9rem)] min-h-[520px] max-h-[820px] rounded-[1.75rem] overflow-hidden shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] ring-1 ring-white/10"} flex flex-col ${bg}`}>
       {/* Health banner */}
       <div
         className={`flex items-center gap-2 px-3 py-1.5 text-[11px] border-b ${
@@ -495,7 +496,7 @@ export default function YaroChat({ embedded = false }: Props) {
           </button>
         )}
         <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-700 flex items-center justify-center font-display text-lg shadow-md">Y</div>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 flex items-center justify-center overflow-hidden shadow-md"><img src={yaroRobot} alt="Yaro" className="w-9 h-9 object-contain" loading="lazy" /></div>
           <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#202c33]" />
         </div>
         <div className="flex-1 min-w-0">
