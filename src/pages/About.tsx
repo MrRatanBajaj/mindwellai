@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import wellmindLogo from "@/assets/wellmind-logo-2.png";
 import { useSEO } from "@/hooks/useSEO";
+import TeamShowcase from "@/components/ui-custom/TeamShowcase";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -80,6 +81,8 @@ const About = () => {
           </motion.div>
         </div>
       </section>
+
+      <TeamShowcase />
 
       {/* Founder Section */}
       <section className="py-20 px-6 bg-background">

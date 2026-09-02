@@ -360,3 +360,37 @@ create policy "Admins read all metrics"
 
 create index if not exists clinical_validation_metrics_created_idx
   on public.clinical_validation_metrics (created_at desc);
+
+-- =====================================================================
+-- Security hardening (b2b_invites / blog_posts / prescriptions)
+-- =====================================================================
+DROP POLICY IF EXISTS "Anyone authed can read invite by token query" ON public.b2b_invites;
+CREATE POLICY "Invitee can read own invite"
+ON public.b2b_invites FOR SELECT TO authenticated
+USING (lower(email) = lower(coalesce(auth.jwt() ->> 'email', '')));
+
+REVOKE SELECT ON public.blog_posts FROM authenticated;
+REVOKE SELECT ON public.blog_posts FROM anon;
+GRANT SELECT (id, slug, title, excerpt, cover_image_url, body_markdown, tags, published, published_at, created_at, updated_at)
+  ON public.blog_posts TO authenticated;
+GRANT SELECT (id, slug, title, excerpt, cover_image_url, body_markdown, tags, published, published_at, created_at, updated_at)
+  ON public.blog_posts TO anon;
+GRANT ALL ON public.blog_posts TO service_role;
+
+CREATE OR REPLACE FUNCTION public.prevent_prescription_self_verification()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF auth.role() = 'service_role' THEN RETURN NEW; END IF;
+  NEW.verification_status    := OLD.verification_status;
+  NEW.ai_verification_result := OLD.ai_verification_result;
+  NEW.verified_at            := OLD.verified_at;
+  NEW.expires_at             := OLD.expires_at;
+  NEW.doctor_name            := OLD.doctor_name;
+  NEW.doctor_license         := OLD.doctor_license;
+  RETURN NEW;
+END; $$;
+
+DROP TRIGGER IF EXISTS prescriptions_lock_verification ON public.prescriptions;
+CREATE TRIGGER prescriptions_lock_verification
+BEFORE UPDATE ON public.prescriptions
+FOR EACH ROW EXECUTE FUNCTION public.prevent_prescription_self_verification();
