@@ -88,13 +88,17 @@ const TeamShowcase = () => (
           {/* Team image block */}
           <div className="mt-9 overflow-hidden rounded-3xl border border-border/40 bg-card/70 backdrop-blur-md">
             <div className="grid gap-0 sm:grid-cols-3">
-              {["Listening", "Building", "Reviewing"].map((label, i) => (
+              {[
+                { label: "Listening", Icon: User },
+                { label: "Building", Icon: Code2 },
+                { label: "Reviewing", Icon: Stethoscope },
+              ].map(({ label, Icon }) => (
                 <div
                   key={label}
                   className="flex aspect-[4/3] flex-col items-center justify-center gap-3 border-border/40 p-6 text-center sm:aspect-auto sm:min-h-[190px] sm:border-r last:sm:border-r-0"
                 >
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-calm-sage/15">
-                    {[User, Code2, Stethoscope][i]({ className: "w-5 h-5 text-calm-sage" } as never)}
+                    <Icon className="h-5 w-5 text-calm-sage" />
                   </div>
                   <p className="font-display text-lg text-foreground">{label}</p>
                   <p className="text-xs leading-relaxed text-muted-foreground">
