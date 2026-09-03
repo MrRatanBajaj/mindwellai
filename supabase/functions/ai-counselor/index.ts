@@ -203,6 +203,8 @@ ${LIVE_SIGNALS}`,
           counselor: { name: selected.name },
           clinical,
           crisis: true,
+          language: lang.code,
+
           timestamp: new Date().toISOString(),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
