@@ -89,7 +89,45 @@ function analyzeClinical(userText: string, history: { sender: string; content: s
   };
 }
 
+/* ------------------- Multilingual auto-detect layer ------------------- */
+
+type LangInfo = { code: string; label: string };
+
+const SCRIPTS: [RegExp, string, string][] = [
+  [/[\u0900-\u097F]/, "hi", "Hindi (Devanagari script)"],
+  [/[\u0980-\u09FF]/, "bn", "Bengali"],
+  [/[\u0A00-\u0A7F]/, "pa", "Punjabi (Gurmukhi)"],
+  [/[\u0A80-\u0AFF]/, "gu", "Gujarati"],
+  [/[\u0B80-\u0BFF]/, "ta", "Tamil"],
+  [/[\u0C00-\u0C7F]/, "te", "Telugu"],
+  [/[\u0C80-\u0CFF]/, "kn", "Kannada"],
+  [/[\u0D00-\u0D7F]/, "ml", "Malayalam"],
+  [/[\u0600-\u06FF]/, "ur", "Urdu"],
+  [/[\u4E00-\u9FFF]/, "zh", "Chinese"],
+  [/[\u3040-\u30FF]/, "ja", "Japanese"],
+  [/[\u0400-\u04FF]/, "ru", "Russian"],
+];
+
+const HINGLISH = /\b(kya|nahi|nahin|hai|hoon|mujhe|mera|meri|yaar|bhai|tension|mann|dil|thoda|bahut|kaise|kyun|acha|theek|raha|rahi|karna|lagta)\b/i;
+const ROMANCE: [RegExp, string, string][] = [
+  [/\b(estoy|siento|porque|ansiedad|mucho|nada|triste)\b/i, "es", "Spanish"],
+  [/\b(je suis|parce que|beaucoup|triste|angoisse)\b/i, "fr", "French"],
+  [/\b(estou|porque|muito|triste|ansiedade)\b/i, "pt", "Portuguese"],
+];
+
+function detectLanguage(text: string): LangInfo {
+  for (const [rx, code, label] of SCRIPTS) if (rx.test(text)) return { code, label };
+  for (const [rx, code, label] of ROMANCE) if (rx.test(text)) return { code, label };
+  if (HINGLISH.test(text)) return { code: "hinglish", label: "Hinglish (Hindi written in Roman/Latin script)" };
+  return { code: "en", label: "English" };
+}
+
+function languageDirective(lang: LangInfo) {
+  return `LANGUAGE LOCK: The user is writing in ${lang.label}. Analyse the clinical content normally, but write your FINAL reply entirely in ${lang.label} — same script, same dialect, same register the user used. Do not translate to English, do not mix scripts, do not add a translation.`;
+}
+
 /* ---------------------------------- Handler ---------------------------------- */
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
