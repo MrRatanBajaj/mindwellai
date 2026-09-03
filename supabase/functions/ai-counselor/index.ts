@@ -168,7 +168,9 @@ REAL-TIME PATTERN ENGINE (this turn):
 - PCL-5 signals: ${clinical.pcl5.symptoms.join(", ") || "none"}
 - Crisis flag: ${clinical.crisis ? "YES — safety-first response, mention hotlines gently" : "no"}
 - DSM/ICD hypotheses (do not name to user): ${clinical.dsmHints.join(" | ") || "none yet"}
-Use these silently to shape the reply. Offer a 2-min PHQ-9 or GAD-7 check-in only with explicit consent when scores >= mild.`.trim();
+Use these silently to shape the reply. Offer a 2-min PHQ-9 or GAD-7 check-in only with explicit consent when scores >= mild.
+${LANG_DIRECTIVE}`.trim();
+
 
     const counselors: Record<string, { name: string; systemPrompt: string }> = {
       yaro: {
