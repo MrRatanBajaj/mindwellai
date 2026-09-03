@@ -61,6 +61,7 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
   const rafRef = useRef<number>();
 
   const locale = LOCALE[language] ?? "en-IN";
+  const replyLocaleRef = useRef(locale);
 
   /* ── mic level meter (visual proof the mic is live) ── */
   const startMeter = useCallback(async () => {
@@ -98,14 +99,15 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
         if (!("speechSynthesis" in window)) return resolve();
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
+        const spokenLocale = replyLocaleRef.current || locale;
         const voices = window.speechSynthesis.getVoices();
         const wanted = voiceGender === "male"
           ? /male|ravi|daniel|alex|rishi|george|hemant/i
           : /female|kalpana|samantha|veena|zira|karen|lekha|swara/i;
-        const byLang = voices.filter((v) => v.lang?.toLowerCase().startsWith(locale.slice(0, 2)));
+        const byLang = voices.filter((v) => v.lang?.toLowerCase().startsWith(spokenLocale.slice(0, 2)));
         const pool = byLang.length ? byLang : voices;
         u.voice = pool.find((v) => wanted.test(v.name)) ?? pool[0] ?? null;
-        u.lang = locale;
+        u.lang = spokenLocale;
         u.rate = 0.97;
         u.pitch = voiceGender === "male" ? 0.9 : 1.1;
         let done = false;
@@ -149,6 +151,8 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
         });
         if (error) throw error;
         reply = String((data as any)?.response || (data as any)?.message || "");
+        const detected = String((data as any)?.language || "");
+        if (detected) replyLocaleRef.current = LOCALE[detected] ?? locale;
         const cl = (data as any)?.clinical as Clinical | undefined;
         if (cl) setClinical(cl);
         setNotice((data as any)?.degraded ? "Running on the safe local clinical fallback right now." : null);
@@ -164,7 +168,7 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
       busyRef.current = false;
       if (aliveRef.current) startMic();
     },
-    [speak, systemPrompt, voiceGender, startMic, stopMic],
+    [speak, systemPrompt, voiceGender, startMic, stopMic, locale],
   );
 
   /* ── set up recognition once per locale ── */
