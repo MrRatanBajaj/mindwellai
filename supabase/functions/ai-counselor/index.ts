@@ -392,7 +392,7 @@ ${LIVE_SIGNALS}`,
     };
 
     let aiResult: ProviderResult | null = null;
-    for (const call of [callGroq, callLovableGemini, callOpenRouter, callChatGPT]) {
+    for (const call of [callMindCore, callGroq, callLovableGemini, callOpenRouter, callChatGPT]) {
       try {
         aiResult = await call();
         break;
