@@ -542,6 +542,25 @@ export default function YaroChat({ embedded = false }: Props) {
         </div>
       )}
 
+      {/* C-SSRS emergency SOS badge */}
+      {clinical?.crisis && (
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-rose-600/95 text-white text-[12px] font-medium">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold tracking-wide">
+            <AlertTriangle className="w-3 h-3" /> SOS
+          </span>
+          <span>You don't have to hold this alone — talk to a human now.</span>
+          <a href="tel:14416" className="underline underline-offset-2 font-semibold">Tele-MANAS 14416</a>
+          <span className="opacity-60">·</span>
+          <a href="tel:988" className="underline underline-offset-2 font-semibold">988</a>
+        </div>
+      )}
+
+      {/* Clinical disclaimer */}
+      <div className="px-3 py-1.5 bg-[#0f1c22] border-b border-white/5 text-[10px] leading-snug text-white/45">
+        MindCore-3B provides clinical decision-support and CBT/DBT grounding, not direct medical prescriptions.
+      </div>
+
+
       {/* Language strip */}
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#111b21] border-b border-white/5 overflow-x-auto">
         <Globe className="w-3.5 h-3.5 text-emerald-400 shrink-0" />

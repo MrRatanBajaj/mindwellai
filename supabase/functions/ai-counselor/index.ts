@@ -89,7 +89,45 @@ function analyzeClinical(userText: string, history: { sender: string; content: s
   };
 }
 
+/* ------------------- Multilingual auto-detect layer ------------------- */
+
+type LangInfo = { code: string; label: string };
+
+const SCRIPTS: [RegExp, string, string][] = [
+  [/[\u0900-\u097F]/, "hi", "Hindi (Devanagari script)"],
+  [/[\u0980-\u09FF]/, "bn", "Bengali"],
+  [/[\u0A00-\u0A7F]/, "pa", "Punjabi (Gurmukhi)"],
+  [/[\u0A80-\u0AFF]/, "gu", "Gujarati"],
+  [/[\u0B80-\u0BFF]/, "ta", "Tamil"],
+  [/[\u0C00-\u0C7F]/, "te", "Telugu"],
+  [/[\u0C80-\u0CFF]/, "kn", "Kannada"],
+  [/[\u0D00-\u0D7F]/, "ml", "Malayalam"],
+  [/[\u0600-\u06FF]/, "ur", "Urdu"],
+  [/[\u4E00-\u9FFF]/, "zh", "Chinese"],
+  [/[\u3040-\u30FF]/, "ja", "Japanese"],
+  [/[\u0400-\u04FF]/, "ru", "Russian"],
+];
+
+const HINGLISH = /\b(kya|nahi|nahin|hai|hoon|mujhe|mera|meri|yaar|bhai|tension|mann|dil|thoda|bahut|kaise|kyun|acha|theek|raha|rahi|karna|lagta)\b/i;
+const ROMANCE: [RegExp, string, string][] = [
+  [/\b(estoy|siento|porque|ansiedad|mucho|nada|triste)\b/i, "es", "Spanish"],
+  [/\b(je suis|parce que|beaucoup|triste|angoisse)\b/i, "fr", "French"],
+  [/\b(estou|porque|muito|triste|ansiedade)\b/i, "pt", "Portuguese"],
+];
+
+function detectLanguage(text: string): LangInfo {
+  for (const [rx, code, label] of SCRIPTS) if (rx.test(text)) return { code, label };
+  for (const [rx, code, label] of ROMANCE) if (rx.test(text)) return { code, label };
+  if (HINGLISH.test(text)) return { code: "hinglish", label: "Hinglish (Hindi written in Roman/Latin script)" };
+  return { code: "en", label: "English" };
+}
+
+function languageDirective(lang: LangInfo) {
+  return `LANGUAGE LOCK: The user is writing in ${lang.label}. Analyse the clinical content normally, but write your FINAL reply entirely in ${lang.label} — same script, same dialect, same register the user used. Do not translate to English, do not mix scripts, do not add a translation.`;
+}
+
 /* ---------------------------------- Handler ---------------------------------- */
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -110,8 +148,11 @@ serve(async (req) => {
     );
 
     const clinical = analyzeClinical(message, conversationHistory);
+    const lang = detectLanguage(message);
+    const LANG_DIRECTIVE = languageDirective(lang);
 
     const CLINICAL_TRAINING = `
+
 CLINICAL FRAMEWORKS (apply silently, never diagnose):
 - DSM-5 & ICD-11 pattern recognition
 - PHQ-9 (depression 0-27): 0-4 minimal / 5-9 mild / 10-14 moderate / 15-19 mod-severe / 20-27 severe (item 9 > 0 → C-SSRS)
@@ -127,7 +168,9 @@ REAL-TIME PATTERN ENGINE (this turn):
 - PCL-5 signals: ${clinical.pcl5.symptoms.join(", ") || "none"}
 - Crisis flag: ${clinical.crisis ? "YES — safety-first response, mention hotlines gently" : "no"}
 - DSM/ICD hypotheses (do not name to user): ${clinical.dsmHints.join(" | ") || "none yet"}
-Use these silently to shape the reply. Offer a 2-min PHQ-9 or GAD-7 check-in only with explicit consent when scores >= mild.`.trim();
+Use these silently to shape the reply. Offer a 2-min PHQ-9 or GAD-7 check-in only with explicit consent when scores >= mild.
+${LANG_DIRECTIVE}`.trim();
+
 
     const counselors: Record<string, { name: string; systemPrompt: string }> = {
       yaro: {
@@ -160,6 +203,8 @@ ${LIVE_SIGNALS}`,
           counselor: { name: selected.name },
           clinical,
           crisis: true,
+          language: lang.code,
+
           timestamp: new Date().toISOString(),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -177,6 +222,67 @@ ${LIVE_SIGNALS}`,
 
     type ProviderResult = { text: string; provider: string; model: string; degraded?: boolean };
     const providerErrors: string[] = [];
+
+    /* ---- MindCore-3B — our custom clinical psychiatric model on a Hugging Face Space ---- */
+    const MINDCORE_SPACE = "https://mrbajaj-mindcore-3b-api.hf.space";
+
+    const callMindCore = async (): Promise<ProviderResult> => {
+      const token = Deno.env.get("HF_TOKEN");
+      if (!token) throw new Error("HF_TOKEN missing for MindCore-3B");
+
+      // Clinical context + the language lock travel with the query so the core engine
+      // analyses correctly and answers in the user's own language.
+      const user_query = `${message}\n\n[${LANG_DIRECTIVE}]`;
+      const patient_history = [
+        selected.systemPrompt,
+        "",
+        "CONVERSATION SO FAR:",
+        ...conversationHistory.slice(-12).map((m) => `${m.sender === "user" ? "Patient" : "Clinician"}: ${m.content}`),
+      ].join("\n");
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      const start = await fetch(`${MINDCORE_SPACE}/gradio_api/call/predict`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ data: [user_query, patient_history] }),
+        signal: AbortSignal.timeout(45000),
+      });
+      if (!start.ok) throw new Error(`MindCore ${start.status}: ${(await start.text()).slice(0, 200)}`);
+      const eventId = (await start.json())?.event_id;
+      if (!eventId) throw new Error("MindCore returned no event id");
+
+      const stream = await fetch(`${MINDCORE_SPACE}/gradio_api/call/predict/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(90000),
+      });
+      if (!stream.ok) throw new Error(`MindCore stream ${stream.status}`);
+      const raw = await stream.text();
+
+      // Gradio SSE: `event: complete` followed by `data: [ ... ]`
+      let payload: unknown = null;
+      for (const block of raw.split("\n\n")) {
+        if (!/^event:\s*complete/m.test(block)) continue;
+        const line = block.split("\n").find((l) => l.startsWith("data:"));
+        if (line) payload = JSON.parse(line.slice(5).trim());
+      }
+      if (payload === null) {
+        const err = raw.match(/^event:\s*error[\s\S]*/m)?.[0] ?? raw.slice(0, 200);
+        throw new Error(`MindCore no completion: ${err}`);
+      }
+
+      const flat = Array.isArray(payload) ? payload[0] : payload;
+      const text = typeof flat === "string"
+        ? flat.trim()
+        : String((flat as any)?.response ?? (flat as any)?.text ?? "").trim();
+      if (!text) throw new Error("MindCore empty response");
+
+      return { text, provider: "MindCore", model: "MindCore-3B" };
+    };
+
 
     const callLovableGemini = async (): Promise<ProviderResult> => {
       const key = Deno.env.get("LOVABLE_API_KEY");
@@ -288,7 +394,7 @@ ${LIVE_SIGNALS}`,
     };
 
     let aiResult: ProviderResult | null = null;
-    for (const call of [callGroq, callLovableGemini, callOpenRouter, callChatGPT]) {
+    for (const call of [callMindCore, callGroq, callLovableGemini, callOpenRouter, callChatGPT]) {
       try {
         aiResult = await call();
         break;
@@ -348,6 +454,8 @@ ${LIVE_SIGNALS}`,
           providerErrors: aiResult.degraded ? Array.from(new Set(providerErrors)).slice(0, 2) : [],
         clinical,
         crisis: false,
+        language: lang.code,
+
         sessionId,
         timestamp: new Date().toISOString(),
       }),
