@@ -330,8 +330,11 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
             <span className="px-2 py-1 rounded-full bg-secondary text-foreground/70">PCL-5 signals {clinical.pcl5.symptoms.length}</span>
           )}
           {clinical.crisis && (
-            <span className="px-2 py-1 rounded-full bg-destructive/15 text-destructive font-medium">safety check active</span>
+            <a href="tel:14416" className="px-2 py-1 rounded-full bg-destructive text-destructive-foreground font-semibold">
+              SOS · call Tele-MANAS 14416
+            </a>
           )}
+
         </div>
       )}
 
