@@ -221,6 +221,67 @@ ${LIVE_SIGNALS}`,
     type ProviderResult = { text: string; provider: string; model: string; degraded?: boolean };
     const providerErrors: string[] = [];
 
+    /* ---- MindCore-3B — our custom clinical psychiatric model on a Hugging Face Space ---- */
+    const MINDCORE_SPACE = "https://mrbajaj-mindcore-3b-api.hf.space";
+
+    const callMindCore = async (): Promise<ProviderResult> => {
+      const token = Deno.env.get("HF_TOKEN");
+      if (!token) throw new Error("HF_TOKEN missing for MindCore-3B");
+
+      // Clinical context + the language lock travel with the query so the core engine
+      // analyses correctly and answers in the user's own language.
+      const user_query = `${message}\n\n[${LANG_DIRECTIVE}]`;
+      const patient_history = [
+        selected.systemPrompt,
+        "",
+        "CONVERSATION SO FAR:",
+        ...conversationHistory.slice(-12).map((m) => `${m.sender === "user" ? "Patient" : "Clinician"}: ${m.content}`),
+      ].join("\n");
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      const start = await fetch(`${MINDCORE_SPACE}/gradio_api/call/predict`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ data: [user_query, patient_history] }),
+        signal: AbortSignal.timeout(45000),
+      });
+      if (!start.ok) throw new Error(`MindCore ${start.status}: ${(await start.text()).slice(0, 200)}`);
+      const eventId = (await start.json())?.event_id;
+      if (!eventId) throw new Error("MindCore returned no event id");
+
+      const stream = await fetch(`${MINDCORE_SPACE}/gradio_api/call/predict/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(90000),
+      });
+      if (!stream.ok) throw new Error(`MindCore stream ${stream.status}`);
+      const raw = await stream.text();
+
+      // Gradio SSE: `event: complete` followed by `data: [ ... ]`
+      let payload: unknown = null;
+      for (const block of raw.split("\n\n")) {
+        if (!/^event:\s*complete/m.test(block)) continue;
+        const line = block.split("\n").find((l) => l.startsWith("data:"));
+        if (line) payload = JSON.parse(line.slice(5).trim());
+      }
+      if (payload === null) {
+        const err = raw.match(/^event:\s*error[\s\S]*/m)?.[0] ?? raw.slice(0, 200);
+        throw new Error(`MindCore no completion: ${err}`);
+      }
+
+      const flat = Array.isArray(payload) ? payload[0] : payload;
+      const text = typeof flat === "string"
+        ? flat.trim()
+        : String((flat as any)?.response ?? (flat as any)?.text ?? "").trim();
+      if (!text) throw new Error("MindCore empty response");
+
+      return { text, provider: "MindCore", model: "MindCore-3B" };
+    };
+
+
     const callLovableGemini = async (): Promise<ProviderResult> => {
       const key = Deno.env.get("LOVABLE_API_KEY");
       if (!key) throw new Error("Lovable AI key missing");
