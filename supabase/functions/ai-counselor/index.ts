@@ -452,6 +452,8 @@ ${LIVE_SIGNALS}`,
           providerErrors: aiResult.degraded ? Array.from(new Set(providerErrors)).slice(0, 2) : [],
         clinical,
         crisis: false,
+        language: lang.code,
+
         sessionId,
         timestamp: new Date().toISOString(),
       }),
