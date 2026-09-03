@@ -148,8 +148,10 @@ serve(async (req) => {
     );
 
     const clinical = analyzeClinical(message, conversationHistory);
+    const lang = detectLanguage(message);
+    const LANG_DIRECTIVE = languageDirective(lang);
 
-    const CLINICAL_TRAINING = `
+
 CLINICAL FRAMEWORKS (apply silently, never diagnose):
 - DSM-5 & ICD-11 pattern recognition
 - PHQ-9 (depression 0-27): 0-4 minimal / 5-9 mild / 10-14 moderate / 15-19 mod-severe / 20-27 severe (item 9 > 0 → C-SSRS)
