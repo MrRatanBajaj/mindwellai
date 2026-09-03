@@ -359,8 +359,10 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
         </Button>
       </div>
       <p className="mt-4 text-[11px] text-foreground/45">
-        Open-source model · CBT / DBT grounding · PHQ-9 · GAD-7 · nothing recorded · crisis? Tele-MANAS 14416
+        MindCore-3B provides clinical decision-support and CBT/DBT grounding, not direct medical prescriptions ·
+        nothing recorded · crisis? Tele-MANAS 14416
       </p>
+
     </div>
   );
 };
