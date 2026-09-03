@@ -151,6 +151,7 @@ serve(async (req) => {
     const lang = detectLanguage(message);
     const LANG_DIRECTIVE = languageDirective(lang);
 
+    const CLINICAL_TRAINING = `
 
 CLINICAL FRAMEWORKS (apply silently, never diagnose):
 - DSM-5 & ICD-11 pattern recognition
