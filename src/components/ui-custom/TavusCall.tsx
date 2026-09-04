@@ -22,8 +22,10 @@ const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
   const [url, setUrl] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fallbackReason, setFallbackReason] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
   const startedRef = useRef(false);
+
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ||
