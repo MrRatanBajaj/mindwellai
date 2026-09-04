@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, PhoneOff, ShieldCheck, Clock, AlertCircle } from "lucide-react";
+import { Loader2, PhoneOff, ShieldCheck, Clock, AlertCircle, MessageCircle, Mic } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,11 +20,14 @@ interface TavusCallProps {
  */
 const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [url, setUrl] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fallbackReason, setFallbackReason] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(0);
   const startedRef = useRef(false);
+
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ||
@@ -35,35 +39,44 @@ const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
   const start = useCallback(async () => {
     setError(null);
     try {
-      const { data: persona, error: pErr } = await supabase.functions.invoke("tavus-conversation", {
-        body: { action: "create_persona", doctorType: counselorId, userName: firstName },
+      const { data, error: fnErr } = await supabase.functions.invoke("tavus-conversation", {
+        body: { action: "start_session", doctorType: counselorId, userName: firstName },
       });
-      if (pErr) throw pErr;
-      if (persona?.error) throw new Error(persona.error);
 
-      if (persona?.conversation_url) {
-        setUrl(persona.conversation_url);
-        setConversationId(persona.conversation_id ?? null);
+      // Never let a non-2xx bubble up as an unhandled crash — read the real body.
+      if (fnErr) {
+        let detail = fnErr.message;
+        const ctx = (fnErr as unknown as { context?: Response }).context;
+        if (ctx && typeof ctx.text === "function") {
+          try {
+            const raw = await ctx.text();
+            console.error("[TavusCall] edge function error body:", raw);
+            const parsed = JSON.parse(raw);
+            detail = parsed?.error || parsed?.message || raw;
+          } catch (parseErr) {
+            console.error("[TavusCall] could not parse error body", parseErr);
+          }
+        }
+        console.error("[TavusCall] invoke failed:", detail);
+        throw new Error(detail);
+      }
+
+      if (data?.ok === false || data?.error) {
+        console.error("[TavusCall] session refused:", data);
+        setFallbackReason(String(data.error || "Video session could not be started."));
         return;
       }
 
-      const { data: conv, error: cErr } = await supabase.functions.invoke("tavus-conversation", {
-        body: {
-          action: "create_conversation",
-          doctorType: counselorId,
-          personaId: persona?.persona_id,
-          userName: firstName,
-        },
-      });
-      if (cErr) throw cErr;
-      if (conv?.error) throw new Error(conv.error);
-      if (!conv?.conversation_url) throw new Error("No session URL returned");
-      setUrl(conv.conversation_url);
-      setConversationId(conv.conversation_id ?? null);
+      if (!data?.conversation_url) throw new Error("No session URL returned");
+      setUrl(data.conversation_url);
+      setConversationId(data.conversation_id ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not start the session");
+      const msg = e instanceof Error ? e.message : "Could not start the session";
+      console.error("[TavusCall] start failed:", msg);
+      setFallbackReason(msg);
     }
   }, [counselorId, firstName]);
+
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -92,8 +105,54 @@ const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
 
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
+  if (fallbackReason) {
+    return (
+      <div className="mx-auto w-full max-w-xl">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-[2rem] border border-foreground/10 bg-card p-8 text-center shadow-xl"
+        >
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
+            <AlertCircle className="h-7 w-7 text-primary" />
+          </div>
+          <h2 className="font-display text-2xl text-foreground">Video session is updating</h2>
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Video session initialization is currently updating. You can continue with {counselorName} via real-time
+            text or voice chat — same clinical support, no waiting.
+          </p>
+          <p className="mt-3 text-[11px] text-muted-foreground/70">{fallbackReason}</p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Button onClick={() => navigate("/chat/yaro")} className="h-11 rounded-full px-6">
+              <MessageCircle className="mr-2 h-4 w-4" /> Continue in chat
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/consultation/audio")}
+              className="h-11 rounded-full px-6"
+            >
+              <Mic className="mr-2 h-4 w-4" /> Voice session
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setFallbackReason(null);
+                startedRef.current = true;
+                start();
+              }}
+              className="h-11 rounded-full px-5"
+            >
+              Try video again
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-4xl">
+
       <div className="overflow-hidden rounded-[2rem] border border-foreground/10 bg-[#14100E] shadow-2xl">
         <div className="flex items-center justify-between gap-3 px-4 py-3 text-[#F5EFE6] sm:px-6">
           <div className="min-w-0">
