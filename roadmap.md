@@ -1,12 +1,12 @@
 # WellMindAI roadmap
 
-## In progress
-- [ ] MindCore-3B (Hugging Face Space `MrBajaj/mindcore-3b-api`) as primary clinical model
-  - [ ] Server-side Gradio call from `ai-counselor` edge function with `HF_TOKEN`
-  - [ ] Language auto-detect + same-language reply directive
-  - [ ] Chat / voice / video all routed through it
-  - [ ] C-SSRS SOS badge + MindCore clinical disclaimer in UI
-- [ ] OG + Twitter card meta with preview banner image
+## Done
+- [x] MindCore-3B (HF Space `MrBajaj/mindcore-3b-api`) as primary clinical model
+  - [x] Server-side Gradio call from `ai-counselor` with `HF_TOKEN` (verified live)
+  - [x] Language auto-detect + same-language reply lock (chat, voice, video all route here)
+  - [x] C-SSRS SOS badge + MindCore clinical disclaimer in chat & voice UI
+- [x] OG + Twitter card meta with `public/og-banner.jpg`
+
 
 ## Queued
 - [ ] Chat with Yaro: new chat interface UI/UX, nav always visible, fix unwanted auto-login redirect
