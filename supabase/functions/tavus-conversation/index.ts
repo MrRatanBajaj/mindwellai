@@ -116,6 +116,49 @@ const DOCTOR_PERSONAS: Record<string, { persona_name: string; system_prompt: str
 // support ~125 free sessions across users instead of letting one user burn 60 min.
 const MAX_CALL_DURATION_SECONDS = 480;
 
+type Fail = { ok: false; code: string; error: string; detail?: string };
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
+/** Classify an upstream Tavus failure into a stable code the UI can branch on. */
+function classify(status: number, text: string): Fail {
+  const lower = (text || '').toLowerCase();
+  if (lower.includes('conversational credits') || status === 402) {
+    return {
+      ok: false,
+      code: 'no_credits',
+      error: 'The video avatar service has no session credits left right now.',
+      detail: text.slice(0, 300),
+    };
+  }
+  if (status === 401 || status === 403) {
+    return { ok: false, code: 'bad_credentials', error: 'Video avatar credentials were rejected.', detail: text.slice(0, 300) };
+  }
+  if (lower.includes('maximum concurrent') || lower.includes('concurrency')) {
+    return { ok: false, code: 'busy', error: 'All video rooms are busy. Please try again in a minute.', detail: text.slice(0, 300) };
+  }
+  return { ok: false, code: 'upstream_error', error: 'Video session could not be started.', detail: text.slice(0, 300) };
+}
+
+async function tavus(path: string, init: RequestInit) {
+  const res = await fetch(`${TAVUS_API_URL}${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', 'x-api-key': TAVUS_API_KEY as string, ...(init.headers || {}) },
+    signal: AbortSignal.timeout(30000),
+  });
+  return { res, text: await res.text() };
+}
+
+function greeting(name: string, safeName: string) {
+  return safeName
+    ? `Hi ${safeName}, I'm ${name}. I'm really glad you're here. What's been on your mind?`
+    : `Hello, I'm ${name}. I'm glad you're here. What's been on your mind?`;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -123,154 +166,120 @@ serve(async (req) => {
 
   try {
     if (!TAVUS_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: 'TAVUS_API_KEY is not configured.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return json({ ok: false, code: 'missing_secret', error: 'Video avatar service is not configured (TAVUS_API_KEY missing).' } satisfies Fail);
     }
 
-    const { action, doctorType = 'general', personaId, conversationId, userName } = await req.json();
-    const safeName = typeof userName === 'string' ? userName.trim().replace(/[^\p{L}\p{N} .'-]/gu, '').slice(0, 40) : '';
-    console.log(`Tavus API action: ${action}, doctorType: ${doctorType}`);
+    let body: Record<string, unknown> = {};
+    try {
+      body = await req.json();
+    } catch {
+      return json({ ok: false, code: 'bad_request', error: 'Invalid JSON body.' } satisfies Fail);
+    }
 
-    if (action === 'create_persona') {
-      const replicaId = DOCTOR_REPLICAS[doctorType] || DOCTOR_REPLICAS.general;
-      const voiceId = DOCTOR_VOICES[doctorType] || DOCTOR_VOICES.general;
-      const doctorConfig = DOCTOR_PERSONAS[doctorType] || DOCTOR_PERSONAS.general;
+    const action = String(body.action ?? '');
+    const doctorType = String(body.doctorType ?? 'general');
+    const personaId = body.personaId ? String(body.personaId) : '';
+    const conversationId = body.conversationId ? String(body.conversationId) : '';
+    const safeName =
+      typeof body.userName === 'string' ? body.userName.trim().replace(/[^\p{L}\p{N} .'-]/gu, '').slice(0, 40) : '';
 
-      console.log(`Using replica: ${replicaId} for ${doctorType}`);
+    console.log(`Tavus action=${action} doctorType=${doctorType}`);
 
-      // NOTE: Do NOT specify layers.llm.model — Tavus rejects custom model names
-      // with 500. Let Tavus pick its default LLM. Only attach TTS if we have a key.
-      const personaPayload: any = {
+    const replicaId = DOCTOR_REPLICAS[doctorType] || DOCTOR_REPLICAS.general;
+    const voiceId = DOCTOR_VOICES[doctorType] || DOCTOR_VOICES.general;
+    const doctorConfig = DOCTOR_PERSONAS[doctorType] || DOCTOR_PERSONAS.general;
+    const shortName = doctorConfig.persona_name.split(' - ')[0];
+
+    const conversationProps = {
+      custom_greeting: greeting(shortName, safeName),
+      conversational_context: safeName
+        ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly. Never ask them to type or state their name.`
+        : 'Do not ask the person to type their name.',
+      properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
+    };
+
+    // One-shot: build (or reuse) the persona, then immediately open the room.
+    if (action === 'create_persona' || action === 'start_session') {
+      let createdPersonaId = '';
+
+      const personaPayload: Record<string, unknown> = {
         persona_name: doctorConfig.persona_name,
         system_prompt: doctorConfig.system_prompt,
         context: doctorConfig.context,
         default_replica_id: replicaId,
       };
-
       if (ELEVENLABS_API_KEY) {
         personaPayload.layers = {
-          tts: {
-            tts_engine: "elevenlabs",
-            elevenlabs_voice_id: voiceId,
-            elevenlabs_api_key: ELEVENLABS_API_KEY,
-          },
+          tts: { tts_engine: 'elevenlabs', elevenlabs_voice_id: voiceId, elevenlabs_api_key: ELEVENLABS_API_KEY },
         };
       }
 
-      const response = await fetch(`${TAVUS_API_URL}/personas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': TAVUS_API_KEY },
-        body: JSON.stringify(personaPayload),
-      });
-
-      const responseText = await response.text();
-      console.log('Tavus persona response:', response.status, responseText);
-
-      if (!response.ok) {
-        // Fallback: direct conversation with replica only
-        console.log('Persona creation failed, attempting direct conversation...');
-        const convResponse = await fetch(`${TAVUS_API_URL}/conversations`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-api-key': TAVUS_API_KEY },
-          body: JSON.stringify({
-            replica_id: replicaId,
-            custom_greeting: safeName
-              ? `Hi ${safeName}, I'm ${doctorConfig.persona_name.split(' - ')[0]}. I'm really glad you're here. What's been on your mind?`
-              : `Hello! I'm ${doctorConfig.persona_name.split(' - ')[0]}. How can I help you today?`,
-            conversational_context: safeName ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly.` : undefined,
-            properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
-          }),
-        });
-
-        const convText = await convResponse.text();
-        if (!convResponse.ok) {
-          return new Response(
-            JSON.stringify({ error: `Failed to create video session: ${convText}` }),
-            { status: convResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        const convData = JSON.parse(convText);
-        return new Response(
-          JSON.stringify({
-            persona_id: 'direct',
-            conversation_id: convData.conversation_id,
-            conversation_url: convData.conversation_url,
-            direct: true,
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      const persona = await tavus('/personas', { method: 'POST', body: JSON.stringify(personaPayload) });
+      console.log('persona status', persona.res.status);
+      if (persona.res.ok) {
+        try {
+          createdPersonaId = JSON.parse(persona.text)?.persona_id ?? '';
+        } catch { /* ignore */ }
       }
 
-      return new Response(responseText, {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      const conv = await tavus('/conversations', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...(createdPersonaId ? { persona_id: createdPersonaId } : {}),
+          replica_id: replicaId,
+          ...conversationProps,
+        }),
+      });
+
+      if (!conv.res.ok) {
+        console.error('conversation failed', conv.res.status, conv.text);
+        return json(classify(conv.res.status, conv.text));
+      }
+
+      const data = JSON.parse(conv.text);
+      return json({
+        ok: true,
+        persona_id: createdPersonaId || 'direct',
+        conversation_id: data.conversation_id,
+        conversation_url: data.conversation_url,
       });
     }
 
     if (action === 'create_conversation') {
-      if (!personaId) {
-        return new Response(
-          JSON.stringify({ error: 'personaId is required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const replicaId = DOCTOR_REPLICAS[doctorType] || DOCTOR_REPLICAS.general;
-      const nameForGreeting = (DOCTOR_PERSONAS[doctorType] || DOCTOR_PERSONAS.general).persona_name.split(' - ')[0];
-
-      const response = await fetch(`${TAVUS_API_URL}/conversations`, {
+      const conv = await tavus('/conversations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': TAVUS_API_KEY },
         body: JSON.stringify({
-          persona_id: personaId,
+          ...(personaId && personaId !== 'direct' ? { persona_id: personaId } : {}),
           replica_id: replicaId,
-          custom_greeting: safeName
-            ? `Hi ${safeName}, I'm ${nameForGreeting}. I'm really glad you're here. What's been on your mind?`
-            : `Hello, I'm ${nameForGreeting}. I'm glad you're here. What's been on your mind?`,
-          conversational_context: safeName ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly.` : undefined,
-          properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
+          ...conversationProps,
         }),
       });
-
-      const responseText = await response.text();
-      if (!response.ok) {
-        return new Response(
-          JSON.stringify({ error: `Failed to create conversation: ${responseText}` }),
-          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (!conv.res.ok) {
+        console.error('conversation failed', conv.res.status, conv.text);
+        return json(classify(conv.res.status, conv.text));
       }
-      return new Response(responseText, {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      const data = JSON.parse(conv.text);
+      return json({ ok: true, conversation_id: data.conversation_id, conversation_url: data.conversation_url });
     }
 
     if (action === 'end_conversation') {
-      if (!conversationId) {
-        return new Response(
-          JSON.stringify({ error: 'conversationId is required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (!conversationId) return json({ ok: false, code: 'bad_request', error: 'conversationId is required' } satisfies Fail);
+      try {
+        await tavus(`/conversations/${conversationId}/end`, { method: 'POST' });
+      } catch (e) {
+        console.error('end failed', e);
       }
-      await fetch(`${TAVUS_API_URL}/conversations/${conversationId}/end`, {
-        method: 'POST',
-        headers: { 'x-api-key': TAVUS_API_KEY },
-      });
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ ok: true });
     }
 
-    return new Response(
-      JSON.stringify({ error: `Unknown action: ${action}` }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return json({ ok: false, code: 'bad_request', error: `Unknown action: ${action}` } satisfies Fail);
   } catch (error) {
     console.error('Tavus conversation error:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return json({
+      ok: false,
+      code: 'unhandled',
+      error: 'Video session could not be started right now.',
+      detail: error instanceof Error ? error.message : String(error),
+    } satisfies Fail);
   }
 });
