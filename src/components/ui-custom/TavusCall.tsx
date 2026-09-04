@@ -103,8 +103,54 @@ const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
 
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
+  if (fallbackReason) {
+    return (
+      <div className="mx-auto w-full max-w-xl">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-[2rem] border border-foreground/10 bg-card p-8 text-center shadow-xl"
+        >
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
+            <AlertCircle className="h-7 w-7 text-primary" />
+          </div>
+          <h2 className="font-display text-2xl text-foreground">Video session is updating</h2>
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Video session initialization is currently updating. You can continue with {counselorName} via real-time
+            text or voice chat — same clinical support, no waiting.
+          </p>
+          <p className="mt-3 text-[11px] text-muted-foreground/70">{fallbackReason}</p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Button onClick={() => navigate("/chat/yaro")} className="h-11 rounded-full px-6">
+              <MessageCircle className="mr-2 h-4 w-4" /> Continue in chat
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/consultation/audio")}
+              className="h-11 rounded-full px-6"
+            >
+              <Mic className="mr-2 h-4 w-4" /> Voice session
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setFallbackReason(null);
+                startedRef.current = true;
+                start();
+              }}
+              className="h-11 rounded-full px-5"
+            >
+              Try video again
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-4xl">
+
       <div className="overflow-hidden rounded-[2rem] border border-foreground/10 bg-[#14100E] shadow-2xl">
         <div className="flex items-center justify-between gap-3 px-4 py-3 text-[#F5EFE6] sm:px-6">
           <div className="min-w-0">
