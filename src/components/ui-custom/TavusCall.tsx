@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Loader2, PhoneOff, ShieldCheck, Clock, AlertCircle } from "lucide-react";
+import { Loader2, PhoneOff, ShieldCheck, Clock, AlertCircle, MessageCircle, Mic } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +20,7 @@ interface TavusCallProps {
  */
 const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [url, setUrl] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
