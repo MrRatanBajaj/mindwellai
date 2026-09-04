@@ -35,35 +35,44 @@ const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
   const start = useCallback(async () => {
     setError(null);
     try {
-      const { data: persona, error: pErr } = await supabase.functions.invoke("tavus-conversation", {
-        body: { action: "create_persona", doctorType: counselorId, userName: firstName },
+      const { data, error: fnErr } = await supabase.functions.invoke("tavus-conversation", {
+        body: { action: "start_session", doctorType: counselorId, userName: firstName },
       });
-      if (pErr) throw pErr;
-      if (persona?.error) throw new Error(persona.error);
 
-      if (persona?.conversation_url) {
-        setUrl(persona.conversation_url);
-        setConversationId(persona.conversation_id ?? null);
+      // Never let a non-2xx bubble up as an unhandled crash — read the real body.
+      if (fnErr) {
+        let detail = fnErr.message;
+        const ctx = (fnErr as unknown as { context?: Response }).context;
+        if (ctx && typeof ctx.text === "function") {
+          try {
+            const raw = await ctx.text();
+            console.error("[TavusCall] edge function error body:", raw);
+            const parsed = JSON.parse(raw);
+            detail = parsed?.error || parsed?.message || raw;
+          } catch (parseErr) {
+            console.error("[TavusCall] could not parse error body", parseErr);
+          }
+        }
+        console.error("[TavusCall] invoke failed:", detail);
+        throw new Error(detail);
+      }
+
+      if (data?.ok === false || data?.error) {
+        console.error("[TavusCall] session refused:", data);
+        setFallbackReason(String(data.error || "Video session could not be started."));
         return;
       }
 
-      const { data: conv, error: cErr } = await supabase.functions.invoke("tavus-conversation", {
-        body: {
-          action: "create_conversation",
-          doctorType: counselorId,
-          personaId: persona?.persona_id,
-          userName: firstName,
-        },
-      });
-      if (cErr) throw cErr;
-      if (conv?.error) throw new Error(conv.error);
-      if (!conv?.conversation_url) throw new Error("No session URL returned");
-      setUrl(conv.conversation_url);
-      setConversationId(conv.conversation_id ?? null);
+      if (!data?.conversation_url) throw new Error("No session URL returned");
+      setUrl(data.conversation_url);
+      setConversationId(data.conversation_id ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not start the session");
+      const msg = e instanceof Error ? e.message : "Could not start the session";
+      console.error("[TavusCall] start failed:", msg);
+      setFallbackReason(msg);
     }
   }, [counselorId, firstName]);
+
 
   useEffect(() => {
     if (startedRef.current) return;
