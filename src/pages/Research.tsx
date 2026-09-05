@@ -159,90 +159,88 @@ const Research = () => {
     <div className="min-h-screen bg-background text-foreground">
       <LandingNav />
       <main className="pt-24">
-        {/* Statement hero — cream card with watercolour botanicals */}
-        <section className="px-4 pb-14 sm:px-6">
-          <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] bg-[#F6EFE3] px-6 pb-40 pt-20 text-center">
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#2A2522]/10 bg-white/70 px-4 py-1.5 text-xs uppercase tracking-[0.18em] text-[#2A2522]/70">
-              <Sparkles className="h-3.5 w-3.5" /> Research
-            </span>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="mx-auto max-w-3xl font-display text-3xl leading-snug text-[#2A2522] sm:text-4xl md:text-5xl"
-            >
-              On average, people using WellMindAI gained at least one person they felt they could rely on.
-            </motion.p>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-center gap-2 opacity-90">
-              <Leaf className="h-28 w-20 sm:h-40 sm:w-28" />
-              <Leaf className="h-40 w-28 sm:h-56 sm:w-40" flip />
-              <Leaf className="h-24 w-16 sm:h-36 sm:w-24" />
-              <Leaf className="hidden h-48 w-32 sm:block" flip />
-              <Leaf className="hidden h-28 w-20 sm:block" />
-            </div>
-          </div>
-        </section>
-
-        {/* Intro */}
-        <section className="px-6 pb-14">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="font-display text-4xl md:text-5xl">What we measure, and what we don't yet know</h1>
-            <p className="mt-4 text-foreground/70">
-              Written plainly, published openly. If a number is not defensible, it does not appear on this page.
+        {/* Header */}
+        <section className="px-6 pb-12 pt-4">
+          <div className="mx-auto max-w-5xl">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Research</p>
+            <h1 className="mt-3 max-w-3xl font-display text-4xl leading-tight md:text-5xl">
+              What we measure, and what we don&apos;t yet know
+            </h1>
+            <p className="mt-4 max-w-2xl text-foreground/70">
+              Written plainly, published openly. If a number is not defensible, it does not appear here.
             </p>
           </div>
         </section>
 
-        {/* Principles */}
+        {/* Paper library — horizontal cards */}
         <section className="px-6 pb-20">
-          <div className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2">
-            {pillars.map((p, i) => (
-              <motion.div
-                key={p.title}
-                initial={{ opacity: 0, y: 18 }}
+          <div className="mx-auto max-w-5xl space-y-4">
+            {papers.map((p, i) => (
+              <motion.article
+                key={p.id}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-                className="rounded-3xl border border-foreground/10 bg-card p-7"
+                transition={{ delay: i * 0.05 }}
+                className="group flex flex-col gap-5 rounded-[1.75rem] border border-foreground/10 bg-card p-6 transition-shadow hover:shadow-lg sm:flex-row sm:items-center sm:p-7"
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary">
-                  <p.icon className="h-5 w-5 text-secondary-foreground" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-secondary">
+                  <FileText className="h-5 w-5 text-secondary-foreground" />
                 </div>
-                <h2 className="font-display text-2xl">{p.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-foreground/70">{p.body}</p>
-              </motion.div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-display text-xl leading-snug sm:text-2xl">{p.title}</h2>
+                  {p.summary && <p className="mt-2 text-sm leading-relaxed text-foreground/70">{p.summary}</p>}
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    {p.authors ?? "WellMindAI"}
+                    {p.published_at
+                      ? ` · ${new Date(p.published_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}`
+                      : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <Button onClick={() => setReading(p)} className="h-10 rounded-full px-5 text-sm">
+                    Read paper
+                  </Button>
+                  {p.file_url && (
+                    <a
+                      href={p.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-sm font-medium text-primary"
+                    >
+                      Download <ArrowUpRight className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              </motion.article>
             ))}
           </div>
         </section>
 
-        {/* Research team — by function */}
+        {/* Researcher profiles — role and position only */}
         <section className="px-6 pb-20">
           <div className="mx-auto max-w-5xl">
-            <div className="mb-10 max-w-2xl">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">The research team</p>
-              <h2 className="mt-3 font-display text-3xl md:text-4xl">Built around functions, not job titles</h2>
-              <p className="mt-3 text-foreground/70">
-                We are early, and we would rather show you the shape of the work than a wall of headshots. These are the
-                seats that review everything before it reaches a person.
-              </p>
-            </div>
+            <h2 className="font-display text-3xl md:text-4xl">The people behind the work</h2>
+            <p className="mt-3 max-w-2xl text-foreground/70">
+              Every note above is reviewed by these seats before it reaches a person.
+            </p>
 
-            <div className="space-y-6">
+            <div className="mt-8 space-y-4">
               {teamSections.map((section, i) => (
                 <motion.div
                   key={section.heading}
-                  initial={{ opacity: 0, y: 18 }}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.06 }}
-                  className="rounded-[2rem] border border-foreground/10 bg-card p-7 md:p-9"
+                  className="rounded-[1.75rem] border border-foreground/10 bg-card p-6 sm:p-8"
                 >
-                  <div className="mb-6 flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-secondary">
+                  <div className="mb-5 flex items-start gap-4">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary">
                       <section.icon className="h-5 w-5 text-secondary-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-display text-2xl">{section.heading}</h3>
+                      <h3 className="font-display text-xl sm:text-2xl">{section.heading}</h3>
                       <p className="text-sm text-foreground/60">{section.caption}</p>
                     </div>
                   </div>
@@ -258,12 +256,10 @@ const Research = () => {
               ))}
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-dashed border-foreground/20 p-7">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[1.75rem] border border-dashed border-foreground/20 p-6">
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-primary" />
-                <p className="text-sm text-foreground/70">
-                  These seats are open. If this is your life's work, we would like to hear from you.
-                </p>
+                <p className="text-sm text-foreground/70">These seats are open.</p>
               </div>
               <Button asChild variant="outline" className="rounded-full">
                 <Link to="/careers">See open roles</Link>
@@ -272,74 +268,8 @@ const Research = () => {
           </div>
         </section>
 
-        {/* Manifesto block above the library */}
-        <section className="px-4 pb-14 sm:px-6">
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] bg-[#14100E] px-7 py-12 text-[#F5EFE6] md:px-14 md:py-16">
-            <p className="text-xs uppercase tracking-[0.2em] text-[#F5EFE6]/50">Our position</p>
-            <h2 className="mt-4 max-w-3xl font-display text-3xl leading-snug md:text-4xl">
-              Machines that talk to people in pain must be held to a higher bar than machines that sell them shoes.
-            </h2>
-            <div className="mt-6 grid gap-6 text-sm leading-relaxed text-[#F5EFE6]/75 md:grid-cols-2">
-              <p>
-                We think the honest way to build this is in public: publish the method, publish the failure rate, and let
-                clinicians tear it apart. A system that cannot survive that review should not be sitting with someone at
-                3 a.m.
-              </p>
-              <p>
-                So we hold three lines. Safety outranks engagement — always. A person is never scored without consent. And
-                no model output is allowed to stand between someone in danger and a human being who can help.
-              </p>
-            </div>
-            <p className="mt-8 text-xs text-[#F5EFE6]/45">
-              Everything below is a working note. Read it, disagree with it, write to us.
-            </p>
-          </div>
-        </section>
+        <section className="px-6 pb-20">
 
-        {/* Paper library */}
-        <section className="px-6 pb-24">
-          <div className="mx-auto mb-8 max-w-5xl">
-            <h2 className="font-display text-3xl md:text-4xl">Papers &amp; working notes</h2>
-            <p className="mt-2 text-sm text-foreground/65">Open any paper to read it right here — no download needed.</p>
-          </div>
-
-          <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2">
-            {papers.map((p) => (
-              <article
-                key={p.id}
-                className="group flex flex-col rounded-3xl border border-foreground/10 bg-card p-7 transition-shadow hover:shadow-xl"
-              >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary">
-                  <FileText className="h-5 w-5 text-secondary-foreground" />
-                </div>
-                <h3 className="font-display text-2xl leading-snug">{p.title}</h3>
-                {p.summary && <p className="mt-3 text-sm leading-relaxed text-foreground/70">{p.summary}</p>}
-                <div className="mt-5 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{p.authors ?? "WellMindAI"}</span>
-                  <span>
-                    {p.published_at
-                      ? new Date(p.published_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
-                      : ""}
-                  </span>
-                </div>
-                <div className="mt-5 flex items-center gap-3 pt-1">
-                  <Button onClick={() => setReading(p)} className="h-10 rounded-full px-5 text-sm">
-                    Read paper
-                  </Button>
-                  {p.file_url && (
-                    <a
-                      href={p.file_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-sm font-medium text-primary"
-                    >
-                      Download <ArrowUpRight className="h-4 w-4" />
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
 
           <div className="mt-14 text-center">
             <Button asChild className="h-12 rounded-full px-8">
