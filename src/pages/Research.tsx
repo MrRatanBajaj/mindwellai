@@ -61,45 +61,8 @@ const FALLBACK: Paper[] = [
   },
 ];
 
-/* Soft watercolour botanical, drawn inline so it stays crisp and weightless. */
-const Leaf = ({ className = "", flip = false }: { className?: string; flip?: boolean }) => (
-  <svg viewBox="0 0 200 260" className={className} style={flip ? { transform: "scaleX(-1)" } : undefined} aria-hidden>
-    <g fill="none" stroke="#8CA47A" strokeWidth="2" opacity="0.85">
-      <path d="M100 255 C100 180 100 110 100 20" />
-      <path d="M100 210 C70 200 50 175 46 145 C80 148 98 175 100 210Z" fill="#B7CBA3" fillOpacity="0.55" stroke="none" />
-      <path d="M100 210 C130 200 150 175 154 145 C120 148 102 175 100 210Z" fill="#9DB88A" fillOpacity="0.5" stroke="none" />
-      <path d="M100 160 C72 150 54 126 50 98 C82 101 98 127 100 160Z" fill="#C6D7B4" fillOpacity="0.55" stroke="none" />
-      <path d="M100 160 C128 150 146 126 150 98 C118 101 102 127 100 160Z" fill="#A8C295" fillOpacity="0.5" stroke="none" />
-      <path d="M100 110 C78 102 64 82 61 60 C86 63 98 84 100 110Z" fill="#D2E0C2" fillOpacity="0.6" stroke="none" />
-      <path d="M100 110 C122 102 136 82 139 60 C114 63 102 84 100 110Z" fill="#B4CCA0" fillOpacity="0.5" stroke="none" />
-    </g>
-  </svg>
-);
-
-const pillars = [
-  {
-    icon: Microscope,
-    title: "Measurement",
-    body: "Every claim we publish traces back to an instrument — PHQ-9, GAD-7, PCL-5 — never to a feeling about the product.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Safety first",
-    body: "Risk language never waits for a model. It routes straight to human crisis pathways, and we publish how often that fires.",
-  },
-  {
-    icon: Brain,
-    title: "Clinical grounding",
-    body: "Framing follows DSM-5 and ICD-11 language conventions. Pattern recognition is silent, consented, and never a diagnosis.",
-  },
-  {
-    icon: Scale,
-    title: "Honest limits",
-    body: "We write down what we could not measure. Negative and null results are published alongside the encouraging ones.",
-  },
-];
-
 /* Team is described by function, not by faces — roles we staff and hire into. */
+
 const teamSections = [
   {
     heading: "Clinical research",
