@@ -77,16 +77,24 @@ export default function YaroChat({ embedded = false }: Props) {
   const KEY = "wm_yaro_trial_started_at";
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
-  const locked = !user && secondsLeft === 0;
+  const locked = !user && secondsLeft === 0 && messages.some((m) => m.sender === "user");
 
   useEffect(() => {
     if (user) { setSecondsLeft(null); return; }
     const saved = localStorage.getItem(KEY);
     if (!saved) return;
-    setStartedAt(Number(saved));
-    const left = Math.max(0, TRIAL - Math.floor((Date.now() - Number(saved)) / 1000));
+    const startedMs = Number(saved);
+    // A visit a day later deserves a fresh window — never greet a returning
+    // visitor with a locked screen they did nothing to trigger.
+    if (!Number.isFinite(startedMs) || Date.now() - startedMs > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(KEY);
+      return;
+    }
+    setStartedAt(startedMs);
+    const left = Math.max(0, TRIAL - Math.floor((Date.now() - startedMs) / 1000));
     setSecondsLeft(left);
   }, [user]);
+
 
   useEffect(() => {
     if (user || secondsLeft === null || secondsLeft <= 0) return;
