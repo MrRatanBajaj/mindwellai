@@ -29,12 +29,15 @@ function setCanonical(href: string) {
   el.setAttribute("href", href);
 }
 
+const OG_IMAGE = `${BASE_URL}/og-preview.png`;
+
 export function useSEO({ title, description, path, ogType = "website" }: SEOOptions) {
   useEffect(() => {
     const url = `${BASE_URL}${path}`;
     const desc = description.length > 160 ? description.slice(0, 157) + "..." : description;
 
     document.title = title;
+    setMeta("name", "title", title);
     setMeta("name", "description", desc);
     setCanonical(url);
 
@@ -42,8 +45,15 @@ export function useSEO({ title, description, path, ogType = "website" }: SEOOpti
     setMeta("property", "og:description", desc);
     setMeta("property", "og:type", ogType);
     setMeta("property", "og:url", url);
+    setMeta("property", "og:image", OG_IMAGE);
+    setMeta("property", "og:image:width", "1200");
+    setMeta("property", "og:image:height", "630");
 
+    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:url", url);
     setMeta("name", "twitter:title", title);
     setMeta("name", "twitter:description", desc);
+    setMeta("name", "twitter:image", OG_IMAGE);
   }, [title, description, path, ogType]);
 }
+
