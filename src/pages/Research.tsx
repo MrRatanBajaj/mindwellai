@@ -12,15 +12,12 @@ import {
   ArrowUpRight,
   Download,
   X,
-  Microscope,
-  ShieldCheck,
-  Brain,
   Users,
   Stethoscope,
   LineChart,
   Scale,
-  Sparkles,
 } from "lucide-react";
+
 
 interface Paper {
   id: string;
