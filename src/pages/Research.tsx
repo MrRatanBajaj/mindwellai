@@ -271,6 +271,7 @@ const Research = () => {
         <section className="px-6 pb-20">
 
 
+
           <div className="mt-14 text-center">
             <Button asChild className="h-12 rounded-full px-8">
               <Link to="/chat/yaro">Try a conversation</Link>
