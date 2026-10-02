@@ -7,7 +7,7 @@ import { Video, ArrowLeft, Heart, Shield, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { COUNSELORS, getCounselor, type CounselorId } from "@/lib/counselors";
 import { useSEO } from "@/hooks/useSEO";
-import TavusCall from "@/components/ui-custom/TavusCall";
+import LiveAvatarSession from "@/components/ui-custom/LiveAvatarSession";
 
 const VideoConsultation = () => {
   const navigate = useNavigate();
@@ -97,7 +97,7 @@ const VideoConsultation = () => {
               <Button variant="ghost" onClick={() => setMode("selection")} className="mb-3 rounded-full">
                 <ArrowLeft className="mr-1 h-4 w-4" /> end &amp; back
               </Button>
-              <TavusCall counselorId={activeId} counselorName={counselor.name} onEnd={() => setMode("done")} />
+              <LiveAvatarSession counselorId={activeId} counselorName={counselor.name} onEnd={() => setMode("done")} />
             </motion.div>
           )}
 
