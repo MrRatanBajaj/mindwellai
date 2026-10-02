@@ -1124,6 +1124,148 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_payout_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          partner_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          partner_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          partner_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_payout_requests_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_sessions: {
+        Row: {
+          created_at: string
+          gad7_score: number | null
+          id: string
+          partner_id: string
+          phq9_score: number | null
+          revenue_amount: number
+          session_duration_minutes: number
+          session_id: string
+          session_type: string
+          severity_band: string | null
+          visitor_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          gad7_score?: number | null
+          id?: string
+          partner_id: string
+          phq9_score?: number | null
+          revenue_amount?: number
+          session_duration_minutes?: number
+          session_id?: string
+          session_type?: string
+          severity_band?: string | null
+          visitor_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          gad7_score?: number | null
+          id?: string
+          partner_id?: string
+          phq9_score?: number | null
+          revenue_amount?: number
+          session_duration_minutes?: number
+          session_id?: string
+          session_type?: string
+          severity_band?: string | null
+          visitor_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_sessions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          commission_percentage: number
+          contact_email: string
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          payout_details: Json | null
+          primary_color: string
+          slug: string
+          tagline: string | null
+          total_earnings: number
+          total_paid_out: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          commission_percentage?: number
+          contact_email: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          payout_details?: Json | null
+          primary_color?: string
+          slug: string
+          tagline?: string | null
+          total_earnings?: number
+          total_paid_out?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          commission_percentage?: number
+          contact_email?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          payout_details?: Json | null
+          primary_color?: string
+          slug?: string
+          tagline?: string | null
+          total_earnings?: number
+          total_paid_out?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -1519,6 +1661,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           created_at: string
@@ -1671,7 +1834,15 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_sessions: { Args: never; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_blog_admin: { Args: { _email: string }; Returns: boolean }
+      is_super_admin: { Args: { _user_id?: string }; Returns: boolean }
       log_security_event: {
         Args: {
           p_event_type: string
@@ -1684,7 +1855,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user" | "partner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1811,6 +1982,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user", "partner"],
+    },
   },
 } as const
