@@ -16,6 +16,12 @@ interface Props {
   language: string;
   systemPrompt?: string;
   onEnd?: () => void;
+  /** reports live turn state, e.g. for a video avatar */
+  onPhase?: (phase: "idle" | "listening" | "thinking" | "speaking" | "error") => void;
+  /** reports clinical scores after each turn */
+  onClinical?: (c: { phq9: number; gad7: number; crisis: boolean }) => void;
+  /** custom spoken greeting (e.g. partner clinic welcome) */
+  greeting?: string;
 }
 
 type Clinical = {
@@ -40,7 +46,7 @@ const LOCALE: Record<string, string> = {
 type Turn = { who: "you" | "them"; text: string };
 type Phase = "idle" | "listening" | "thinking" | "speaking" | "error";
 
-const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, onEnd }: Props) => {
+const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, onEnd, onPhase, onClinical, greeting }: Props) => {
   const [supported, setSupported] = useState(true);
   const [phase, setPhase] = useState<Phase>("idle");
   const [micDenied, setMicDenied] = useState(false);
@@ -61,6 +67,10 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
   const rafRef = useRef<number>();
 
   const locale = LOCALE[language] ?? "en-IN";
+  useEffect(() => { onPhase?.(phase); }, [phase, onPhase]);
+  useEffect(() => {
+    if (clinical) onClinical?.({ phq9: clinical.phq9.score, gad7: clinical.gad7.score, crisis: clinical.crisis });
+  }, [clinical, onClinical]);
   const replyLocaleRef = useRef(locale);
 
   /* ── mic level meter (visual proof the mic is live) ── */
@@ -227,7 +237,7 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
       busyRef.current = true;
       setPhase("speaking");
       await speak(
-        voiceGender === "male"
+        greeting ? greeting : voiceGender === "male"
           ? `Hey, I'm ${counselorName}. I'm listening — take your time, speak in whatever language feels natural.`
           : `Hi, I'm ${counselorName}. I'm right here — take your time, speak in whatever language feels natural.`,
       );
