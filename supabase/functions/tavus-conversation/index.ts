@@ -190,11 +190,19 @@ serve(async (req) => {
     const doctorConfig = DOCTOR_PERSONAS[doctorType] || DOCTOR_PERSONAS.general;
     const shortName = doctorConfig.persona_name.split(' - ')[0];
 
+    const EMOTIONS: Record<string, string> = {
+      empathetic: 'The person seems low. Be deeply empathetic: soft voice, slow pace, warm gentle facial expression, slight head tilt, nod often.',
+      calm: 'The person seems anxious. Be calm and grounding: steady slow speech, relaxed open face, still posture, offer a breathing pause.',
+      attentive: 'Be attentive and curious: lean in slightly, keep eye contact, nod, reflect back what they say.',
+      supportive: 'The person may be in crisis. Be very supportive and present: serious caring expression, short clear sentences, gently share helpline Tele-MANAS 14416.',
+    };
+    const emotion = EMOTIONS[String(body.emotion ?? '')] ? String(body.emotion) : 'attentive';
     const conversationProps = {
       custom_greeting: greeting(shortName, safeName),
-      conversational_context: safeName
-        ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly. Never ask them to type or state their name.`
-        : 'Do not ask the person to type their name.',
+      conversational_context:
+        (safeName
+          ? `The person you are speaking with is named ${safeName}. Use their first name naturally and warmly. Never ask them to type or state their name. `
+          : 'Do not ask the person to type their name. ') + `EMOTIONAL STATE: ${EMOTIONS[emotion]}`,
       properties: { max_call_duration: MAX_CALL_DURATION_SECONDS, enable_recording: true },
     };
 

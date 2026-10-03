@@ -35,6 +35,12 @@ import Admin from "./pages/Admin";
 import Compare from "./pages/Compare";
 import Research from "./pages/Research";
 import ClinicalValidation from "./pages/ClinicalValidation";
+import PartnerPortal from "./pages/PartnerPortal";
+import PartnerLogin from "./pages/PartnerLogin";
+import PartnerDashboard from "./pages/PartnerDashboard";
+import SuperAdminPartners from "./pages/SuperAdminPartners";
+import NpsPrompt from "@/components/ui-custom/NpsPrompt";
+import AnalyticsTracker from "@/components/ui-custom/AnalyticsTracker";
 
 
 const queryClient = new QueryClient();
@@ -42,6 +48,8 @@ const queryClient = new QueryClient();
 const AppChrome = () => (
   <>
     <CookieBanner />
+    <NpsPrompt />
+    <AnalyticsTracker />
   </>
 );
 
@@ -83,6 +91,11 @@ const App = () => (
             <Route path="/compare" element={<Compare />} />
             <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/partner/login" element={<PartnerLogin />} />
+            <Route path="/partner/dashboard" element={<PartnerDashboard />} />
+            <Route path="/partner/settings" element={<PartnerDashboard />} />
+            <Route path="/admin/super" element={<ProtectedRoute><SuperAdminPartners /></ProtectedRoute>} />
+            <Route path="/:slug" element={<PartnerPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <AppChrome />

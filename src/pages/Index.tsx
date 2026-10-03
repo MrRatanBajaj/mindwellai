@@ -76,7 +76,7 @@ const TrustStrip = () => (
   <section className="px-6 pb-6">
     <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3">
       {[
-        { icon: Shield, k: "Clinically grounded", v: "DSM-5 · ICD-11 · PHQ-9" },
+        { icon: Shield, k: "Clinically grounded", v: "Built with psychologists" },
         { icon: Star, k: "Real stories", v: "People who kept going" },
         { icon: Globe, k: "Multilingual", v: "Hindi · Hinglish · Tamil +" },
         { icon: Leaf, k: "Gentle pace", v: "No pressure, ever" },
@@ -197,8 +197,8 @@ const FeatureGrid = () => (
 /* ───────── Live chat: 2 free minutes → report → account ───────── */
 const steps = [
   { n: "1", t: "Say one honest sentence", d: "No form, no name. Just start." },
-  { n: "2", t: "2 minutes, fully free", d: "Yaro listens and quietly reads PHQ-9 / GAD-7 / PCL-5 signals." },
-  { n: "3", t: "Get your Wellbeing Snapshot", d: "A real PDF report with your scores — logo, watermark, next steps." },
+  { n: "2", t: "2 minutes, fully free", d: "Yaro listens, gently, without judging." },
+  { n: "3", t: "Get your Wellbeing Snapshot", d: "A simple summary of how you are doing, with next steps." },
   { n: "4", t: "Log in and keep going", d: "Nothing you said is lost. Voice and video unlock from ₹99/week." },
 ];
 
@@ -251,7 +251,7 @@ const ChatTherapySection = () => (
 
 const faqs = [
   { q: "Is chat therapy really free without signup?", a: "Yes. Open Yaro Chat from the landing page and start talking — no account needed. Voice and video plans start at ₹99/week." },
-  { q: "Who are the counselors?", a: "Yaro (male, calm and grounded) and Ava (female, soft and warm). Trained on DSM-5, ICD-11, PHQ-9, GAD-7 and PCL-5." },
+  { q: "Who are the counselors?", a: "Yaro (male, calm and grounded) and Ava (female, soft and warm). Guided by proven therapy methods and reviewed by psychologists." },
   { q: "What languages do they speak?", a: "English, Hindi, Hinglish, Tamil, Bengali, Marathi, Spanish and more — auto-detected." },
   { q: "Is video counseling private?", a: "Sessions are gated by your account and privacy-first storage." },
   { q: "Is this a replacement for emergency care?", a: "No. In a crisis, contact Tele-MANAS 14416, iCall 9152987821 or Vandrevala 1860-266-2345." },

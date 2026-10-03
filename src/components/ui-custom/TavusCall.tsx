@@ -40,7 +40,7 @@ const TavusCall = ({ counselorId, counselorName, onEnd }: TavusCallProps) => {
     setError(null);
     try {
       const { data, error: fnErr } = await supabase.functions.invoke("tavus-conversation", {
-        body: { action: "start_session", doctorType: counselorId, userName: firstName },
+        body: { action: "start_session", doctorType: counselorId, userName: firstName, emotion: localStorage.getItem("wm_last_emotion") || "calm" },
       });
 
       // Never let a non-2xx bubble up as an unhandled crash — read the real body.

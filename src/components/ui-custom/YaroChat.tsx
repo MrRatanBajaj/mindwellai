@@ -186,7 +186,12 @@ export default function YaroChat({ embedded = false }: Props) {
       const llmMs = Math.round(performance.now() - tLlm);
       const reply = (data as any)?.response || (data as any)?.message || "I'm here. Tell me more.";
       const cl = (data as any)?.clinical as Clinical | undefined;
-      if (cl) setClinical(cl);
+      if (cl) {
+        setClinical(cl);
+        const c = cl as any;
+        const emo = c.crisis ? "supportive" : (c.phq9 ?? 0) >= 10 ? "empathetic" : (c.gad7 ?? 0) >= 10 ? "calm" : "attentive";
+        try { localStorage.setItem("wm_last_emotion", emo); } catch { /* ignore */ }
+      }
       const degraded = Boolean((data as any)?.degraded);
       setLastError(degraded ? "Primary AI credits/provider unavailable — safe local clinical fallback is active." : null);
       setEngineStatus(degraded ? "degraded" : "online");
