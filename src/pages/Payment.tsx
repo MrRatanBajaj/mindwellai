@@ -220,7 +220,7 @@ const Payment = () => {
                   <div className="mt-6 flex items-center gap-4 text-[11px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1"><Lock className="w-3 h-3" /> 256-bit SSL</span>
                     <span className="inline-flex items-center gap-1"><Shield className="w-3 h-3" /> PCI DSS</span>
-                    <span className="inline-flex items-center gap-1"><Sparkles className="w-3 h-3" /> Razorpay</span>
+                    <span className="inline-flex items-center gap-1"><Sparkles className="w-3 h-3" /> Secure checkout</span>
                   </div>
                 </motion.aside>
 
