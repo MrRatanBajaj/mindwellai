@@ -394,3 +394,23 @@ DROP TRIGGER IF EXISTS prescriptions_lock_verification ON public.prescriptions;
 CREATE TRIGGER prescriptions_lock_verification
 BEFORE UPDATE ON public.prescriptions
 FOR EACH ROW EXECUTE FUNCTION public.prevent_prescription_self_verification();
+
+-- ===== NPS + security fixes (Oct 2026) =====
+CREATE TABLE IF NOT EXISTS public.nps_responses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid, score integer NOT NULL,
+  comment text, page text, created_at timestamptz NOT NULL DEFAULT now());
+GRANT INSERT ON public.nps_responses TO anon;
+GRANT SELECT, INSERT ON public.nps_responses TO authenticated;
+GRANT ALL ON public.nps_responses TO service_role;
+ALTER TABLE public.nps_responses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Submit own NPS" ON public.nps_responses FOR INSERT TO anon, authenticated
+  WITH CHECK (score BETWEEN 0 AND 10 AND (user_id IS NULL OR user_id = auth.uid()) AND (comment IS NULL OR length(comment) <= 1000));
+CREATE POLICY "Admins read NPS" ON public.nps_responses FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+DROP POLICY IF EXISTS "Authenticated users can lookup referral codes" ON public.referral_codes;
+CREATE OR REPLACE FUNCTION public.referral_code_exists(_code text) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT EXISTS (SELECT 1 FROM public.referral_codes WHERE code = _code); $$;
+GRANT EXECUTE ON FUNCTION public.referral_code_exists(text) TO anon, authenticated;
+DROP POLICY IF EXISTS "Anyone can create session" ON public.inbound_chat_sessions;
+CREATE POLICY "Anyone can create valid session" ON public.inbound_chat_sessions FOR INSERT TO anon, authenticated
+  WITH CHECK (length(session_token) BETWEEN 16 AND 128 AND jsonb_typeof(messages) = 'array' AND coalesce(qualified,false) = false AND coalesce(booked_trial,false) = false);
+DROP POLICY IF EXISTS "Public read access to mindwellai" ON public.mindwellai;
