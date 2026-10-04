@@ -6,10 +6,9 @@ import Footer from "@/components/layout/Footer";
 import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 import {
-  Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, BookHeart, Video, Lock,
-  HeartHandshake, Languages, Heart, CloudRain, Users, Clock, Leaf, Star,
+  Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Video, Lock,
+  HeartHandshake, Languages, Clock, Leaf, Star,
 } from "lucide-react";
-import YaroChat from "@/components/ui-custom/YaroChat";
 
 
 /* ───────── Hero ───────── */
