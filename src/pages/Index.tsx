@@ -6,8 +6,8 @@ import Footer from "@/components/layout/Footer";
 import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 import {
-  Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, BookHeart, Video, Lock,
-  HeartHandshake, Languages, Heart, CloudRain, Users, Clock, Leaf, Star,
+  Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Video, Lock,
+  HeartHandshake, Languages, Clock, Leaf, Star,
 } from "lucide-react";
 import YaroChat from "@/components/ui-custom/YaroChat";
 
@@ -86,39 +86,6 @@ const TrustStrip = () => (
           <p className="text-xs text-muted-foreground">{t.v}</p>
         </div>
       ))}
-    </div>
-  </section>
-);
-
-/* ───────── Grief counselling section ───────── */
-const GriefSection = () => (
-  <section className="px-6 py-20 bg-secondary/40">
-    <div className="max-w-6xl mx-auto">
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card text-primary text-xs font-medium mb-4 border border-border">
-          <Heart className="w-3.5 h-3.5" /> Grief support
-        </div>
-        <h2 className="font-display text-4xl md:text-5xl text-balance">Grief doesn't follow a timeline. Neither do we.</h2>
-        <p className="mt-4 text-foreground/70">No pressure to move on. Just someone there when the wave hits.</p>
-      </div>
-      <div className="grid md:grid-cols-3 gap-5">
-        {[
-          { icon: CloudRain, title: "Complicated grief", body: "Prolonged grief patterns are quietly mapped so you feel heard, not diagnosed." },
-          { icon: HeartHandshake, title: "Anticipatory grief", body: "For caregivers — the mourning that begins long before goodbye." },
-          { icon: Users, title: "Non-death losses", body: "Divorce, estrangement, health, identity, home. Every loss counts here." },
-        ].map((it) => (
-          <div key={it.title} className="rounded-[2rem] bg-card border border-border p-7 hover-lift">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-5"><it.icon className="w-6 h-6 text-primary" /></div>
-            <h3 className="font-display text-2xl mb-2">{it.title}</h3>
-            <p className="text-sm text-foreground/70 leading-relaxed">{it.body}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-12 text-center">
-        <Button asChild className="h-12 px-8 rounded-full bg-primary text-primary-foreground">
-          <Link to="/chat/yaro">Talk to Yaro about grief</Link>
-        </Button>
-      </div>
     </div>
   </section>
 );
@@ -302,8 +269,6 @@ const Index = () => {
       <main>
         <Hero />
         <TrustStrip />
-        <GriefSection />
-        
         <CompanionSection />
         <FeatureGrid />
         <ChatTherapySection />
