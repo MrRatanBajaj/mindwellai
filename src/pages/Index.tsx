@@ -7,7 +7,7 @@ import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 import {
   Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Video, Lock,
-  HeartHandshake, Languages, Clock, Leaf, Star,
+  Languages, Clock, Leaf, Star,
 } from "lucide-react";
 import YaroChat from "@/components/ui-custom/YaroChat";
 
@@ -86,31 +86,6 @@ const TrustStrip = () => (
           <p className="text-xs text-muted-foreground">{t.v}</p>
         </div>
       ))}
-    </div>
-  </section>
-);
-
-/* ───────── Yaro/Ava companion pillars ───────── */
-const CompanionSection = () => (
-  <section className="px-6 py-20">
-    <div className="max-w-6xl mx-auto">
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <h2 className="font-display text-4xl md:text-5xl text-balance">Yaro &amp; Ava: your no-judgement zone</h2>
-        <p className="mt-4 text-foreground/70">A private space to vent, reflect, or just be heard.</p>
-      </div>
-      <div className="grid md:grid-cols-3 gap-5">
-        {[
-          { icon: Languages, title: "Speaks your language", body: "Hindi, English, Hinglish, Tamil, Bengali, Marathi, Spanish — auto-detected." },
-          { icon: HeartHandshake, title: "No unsolicited advice", body: "Pure listening and validation. One gentle next step, only if you want it." },
-          { icon: Lock, title: "100% incognito", body: "Anonymous-first and encrypted, built for honest emotional release." },
-        ].map((it) => (
-          <div key={it.title} className="rounded-[2rem] bg-card border border-border p-7 hover-lift">
-            <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--calm-sky))] flex items-center justify-center mb-5"><it.icon className="w-6 h-6 text-accent" /></div>
-            <h3 className="font-display text-2xl mb-2">{it.title}</h3>
-            <p className="text-sm text-foreground/70 leading-relaxed">{it.body}</p>
-          </div>
-        ))}
-      </div>
     </div>
   </section>
 );
@@ -269,7 +244,6 @@ const Index = () => {
       <main>
         <Hero />
         <TrustStrip />
-        <CompanionSection />
         <FeatureGrid />
         <ChatTherapySection />
         <FAQ />
