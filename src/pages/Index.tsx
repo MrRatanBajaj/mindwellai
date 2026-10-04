@@ -7,7 +7,7 @@ import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 import {
   Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Video, Lock,
-  HeartHandshake, Languages, Clock, Leaf, Star,
+  Languages, Clock, Leaf, Star,
 } from "lucide-react";
 import YaroChat from "@/components/ui-custom/YaroChat";
 
