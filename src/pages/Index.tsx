@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import YaroChat from "@/components/ui-custom/YaroChat";
 
-import CalmStreak from "@/components/ui-custom/CalmStreak";
 
 /* ───────── Hero ───────── */
 const Hero = () => (
@@ -303,7 +302,6 @@ const Index = () => {
       <main>
         <Hero />
         <TrustStrip />
-        <CalmStreak />
         <GriefSection />
         
         <CompanionSection />
