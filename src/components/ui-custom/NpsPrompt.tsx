@@ -37,9 +37,9 @@ const NpsPrompt = () => {
     const text = comment.trim().slice(0, 1000);
     const { error } = await supabase.from("feedback").insert({
       category: "nps",
-      rating: score,
+      rating: Math.min(5, Math.max(1, Math.round(score / 2))),
       feedback: text || `NPS score ${score}`,
-      suggestions: `page:${pathname}${user?.id ? ` user:${user.id}` : ""}`,
+      suggestions: `nps:${score} page:${pathname}${user?.id ? ` user:${user.id}` : ""}`,
       email: user?.email ?? null,
     });
     if (error) console.error("NPS save failed", error);
