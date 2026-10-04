@@ -14,7 +14,7 @@ serve(async (req) => {
 
   try {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) {
+    if (!apiKey && !Deno.env.get("OPENAI_API_KEY")) {
       return new Response(JSON.stringify({ error: "Voice service not configured", success: false }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -35,19 +35,27 @@ serve(async (req) => {
     const isAva = (body?.counselorId ?? "yaro").toLowerCase() === "ava";
     const voice = isAva ? "shimmer" : "onyx";
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "openai/gpt-4o-mini-tts",
-        input: text,
-        voice,
-        response_format: "mp3",
-        speed: 0.96,
-        instructions:
-          "Speak as a calm, empathetic, evidence-based therapist. Warm and unhurried, gentle pauses between sentences, low steady pitch, never clinical-cold and never over-cheerful.",
-      }),
-    });
+    const instructions =
+      "Speak like a real, warm human therapist in a natural conversation — relaxed breathing, gentle pauses, soft emphasis, empathetic and unhurried. Match the language of the text naturally. Never robotic, never over-cheerful.";
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    let res: Response;
+    if (openaiKey) {
+      res = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "gpt-4o-mini-tts", input: text, voice: isAva ? "coral" : "ash", response_format: "mp3", instructions }),
+      });
+      if (!res.ok) console.error("openai tts error", res.status, await res.clone().text().catch(() => ""));
+    } else {
+      res = new Response(null, { status: 500 });
+    }
+    if (!res.ok) {
+      res = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "openai/gpt-4o-mini-tts", input: text, voice, response_format: "mp3", instructions }),
+      });
+    }
 
     if (!res.ok) {
       const detail = await res.text().catch(() => "");

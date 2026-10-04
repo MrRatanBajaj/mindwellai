@@ -34,9 +34,15 @@ const NpsPrompt = () => {
   const submit = async () => {
     if (score === null) return;
     track("nps_submitted", { score, category: score >= 9 ? "promoter" : score >= 7 ? "passive" : "detractor", page: pathname });
-    await supabase.from("nps_responses" as any).insert({
-      score, comment: comment.trim().slice(0, 1000) || null, page: pathname, user_id: user?.id ?? null,
-    } as any);
+    const text = comment.trim().slice(0, 1000);
+    const { error } = await supabase.from("feedback").insert({
+      category: "nps",
+      rating: score,
+      feedback: text || `NPS score ${score}`,
+      suggestions: `page:${pathname}${user?.id ? ` user:${user.id}` : ""}`,
+      email: user?.email ?? null,
+    });
+    if (error) console.error("NPS save failed", error);
     setSent(true);
     setTimeout(close, 1800);
   };

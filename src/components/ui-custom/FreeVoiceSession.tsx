@@ -102,8 +102,8 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
     }
   }, []);
 
-  /* ── speak, with mic hard-stopped so it never hears itself ── */
-  const speak = useCallback(
+  /* ── browser fallback voice ── */
+  const speakBrowser = useCallback(
     (text: string) =>
       new Promise<void>((resolve) => {
         if (!("speechSynthesis" in window)) return resolve();
@@ -125,10 +125,33 @@ const FreeVoiceSession = ({ counselorName, voiceGender, language, systemPrompt, 
         u.onend = finish;
         u.onerror = finish;
         window.speechSynthesis.speak(u);
-        // safety net: some browsers never fire onend
         setTimeout(finish, Math.min(30000, 2500 + text.length * 75));
       }),
     [voiceGender, locale],
+  );
+
+  /* ── speak with realistic human voice, mic hard-stopped so it never hears itself ── */
+  const speak = useCallback(
+    async (text: string) => {
+      try {
+        const { data, error } = await supabase.functions.invoke("yaro-tts", {
+          body: { text, counselorId: voiceGender === "male" ? "yaro" : "ava" },
+        });
+        if (error || !data?.audioContent) throw error ?? new Error("no audio");
+        const audio = new Audio(`data:${data.contentType || "audio/mpeg"};base64,${data.audioContent}`);
+        await new Promise<void>((resolve) => {
+          let done = false;
+          const finish = () => { if (!done) { done = true; resolve(); } };
+          audio.onended = finish;
+          audio.onerror = finish;
+          audio.play().catch(finish);
+          setTimeout(finish, Math.min(60000, 4000 + text.length * 90));
+        });
+      } catch {
+        await speakBrowser(text);
+      }
+    },
+    [voiceGender, speakBrowser],
   );
 
   const stopMic = useCallback(() => {
