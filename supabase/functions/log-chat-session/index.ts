@@ -42,7 +42,10 @@ Deno.serve(async (req) => {
     if (email) row.visitor_email = email;
     if (phone) row.visitor_phone = phone;
 
-    const { error } = await sb.from("inbound_chat_sessions").upsert(row, { onConflict: "session_token" });
+    const { data: existing } = await sb.from("inbound_chat_sessions").select("id").eq("session_token", token).maybeSingle();
+    const { error } = existing
+      ? await sb.from("inbound_chat_sessions").update(row).eq("id", existing.id)
+      : await sb.from("inbound_chat_sessions").insert(row);
     if (error) {
       console.error("save failed", error);
       return json({ error: error.message }, 500);
