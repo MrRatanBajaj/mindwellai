@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { generateSessionReportPDF } from "@/lib/sessionReport";
 import { logVoiceMetric, scoreAdherence } from "@/lib/clinicalMetrics";
 import yaroRobot from "@/assets/yaro-robot.png";
+import { getAttribution, getGuestProfile, getVisitorId } from "@/lib/visitor";
+import { track } from "@/lib/analytics";
 
 
 type Clinical = {
@@ -142,6 +144,33 @@ export default function YaroChat({ embedded = false }: Props) {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
+
+  /* Save every chat (guests included) so no session is lost or shown as "anonymous". */
+  useEffect(() => {
+    if (!messages.some((m) => m.sender === "user")) return;
+    const t = setTimeout(() => {
+      let token = sessionStorage.getItem("wm_chat_session");
+      if (!token) { token = `cs_${getVisitorId()}_${Date.now().toString(36)}`.slice(0, 80); sessionStorage.setItem("wm_chat_session", token); }
+      const attr = getAttribution();
+      const guest = getGuestProfile();
+      void supabase.functions.invoke("log-chat-session", {
+        body: {
+          sessionToken: token,
+          visitorId: getVisitorId(),
+          userId: user?.id ?? null,
+          name: (user?.user_metadata?.display_name as string) || guest.name || null,
+          email: user?.email || guest.email || null,
+          lang,
+          page: location.pathname,
+          referrer: attr.referrer,
+          utm: attr.utm,
+          messages: messages.map((m) => ({ sender: m.sender, content: m.content, ts: m.ts })),
+        },
+      });
+      track("chat_message_saved", { messages: messages.length, guest: !user });
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [messages, user, lang]);
 
   const send = async (
     text?: string,
@@ -283,6 +312,7 @@ export default function YaroChat({ embedded = false }: Props) {
   };
 
   const playVoiceUrl = (ts: number, url: string) => {
+    if (!mountedRef.current) return; // page changed while the voice was loading
     stopSpeaking();
     const el = new Audio(url);
     aiAudioRef.current = el;
@@ -294,6 +324,7 @@ export default function YaroChat({ embedded = false }: Props) {
 
   /** Browser fallback when the server voice is unavailable. */
   const speakReply = (ts: number, text: string, url?: string) => {
+    if (!mountedRef.current) return;
     if (url) return playVoiceUrl(ts, url);
     if (!("speechSynthesis" in window)) return;
     try {
@@ -316,7 +347,11 @@ export default function YaroChat({ embedded = false }: Props) {
     }
   };
 
-  useEffect(() => () => { stopSpeaking(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; stopSpeaking(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
 
