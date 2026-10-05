@@ -283,6 +283,7 @@ export default function YaroChat({ embedded = false }: Props) {
   };
 
   const playVoiceUrl = (ts: number, url: string) => {
+    if (!mountedRef.current) return; // page changed while the voice was loading
     stopSpeaking();
     const el = new Audio(url);
     aiAudioRef.current = el;
@@ -294,6 +295,7 @@ export default function YaroChat({ embedded = false }: Props) {
 
   /** Browser fallback when the server voice is unavailable. */
   const speakReply = (ts: number, text: string, url?: string) => {
+    if (!mountedRef.current) return;
     if (url) return playVoiceUrl(ts, url);
     if (!("speechSynthesis" in window)) return;
     try {
@@ -316,7 +318,11 @@ export default function YaroChat({ embedded = false }: Props) {
     }
   };
 
-  useEffect(() => () => { stopSpeaking(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; stopSpeaking(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
 
