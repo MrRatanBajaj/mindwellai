@@ -125,3 +125,6 @@ vector_port = 54328
 backend = "postgres"
 [functions.realtime-voice-session]
 verify_jwt = false
+
+[functions.log-chat-session]
+verify_jwt = false
