@@ -80,9 +80,9 @@ const RealtimeVoiceSession = ({ counselorName, voiceGender, systemPrompt, onEnd,
             if (m.type === "output_audio_buffer.started") setPhase("speaking");
             if (m.type === "output_audio_buffer.stopped" || m.type === "input_audio_buffer.speech_started") setPhase("listening");
             if (m.type === "response.output_audio_transcript.done" && m.transcript)
-              setLines((l) => [...l, { who: "them", text: m.transcript }].slice(-8));
+              setLines((l) => [...l, { who: "them" as const, text: String(m.transcript) }].slice(-8));
             if (m.type === "conversation.item.input_audio_transcription.completed" && m.transcript?.trim())
-              setLines((l) => [...l, { who: "you", text: m.transcript.trim() }].slice(-8));
+              setLines((l) => [...l, { who: "you" as const, text: String(m.transcript).trim() }].slice(-8));
           } catch { /* ignore */ }
         };
 
