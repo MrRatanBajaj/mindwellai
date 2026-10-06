@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FreeVoiceSession from "@/components/ui-custom/FreeVoiceSession";
+import RealtimeVoiceSession from "@/components/ui-custom/RealtimeVoiceSession";
 import { Button } from "@/components/ui/button";
 import { Phone, ArrowLeft, Heart, Mic, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +26,7 @@ const AudioConsultation = () => {
   const [mode, setMode] = useState<"selection" | "live" | "done">("selection");
   const [activeId, setActiveId] = useState<CounselorId>("ava");
   const [language, setLanguage] = useState<string>("auto");
+  const [useBackup, setUseBackup] = useState(false);
   const counselor = getCounselor(activeId);
 
   useSEO({
@@ -52,10 +54,10 @@ const AudioConsultation = () => {
               <div className="text-center mb-8">
                 <p className="font-hand text-3xl text-primary mb-2">audio therapy.</p>
                 <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground">
-                  Talk it out. <span className="hand-underline">We listen.</span>
+                  Say it out loud. <span className="hand-underline">Someone&apos;s here.</span>
                 </h1>
                 <p className="text-foreground/70 mt-3">
-                  Voice-to-voice with real emotion detection — in your language.
+                  A real conversation, like calling a friend who happens to be a therapist. Pause, cry, ramble — it&apos;s all okay.
                 </p>
               </div>
 
@@ -101,7 +103,7 @@ const AudioConsultation = () => {
                       </p>
                       <p className="text-sm text-[#F5EFE6]/70 mt-2 max-w-xs">{c.tagline}</p>
                       <Button
-                        onClick={() => { setActiveId(c.id); setMode("live"); }}
+                        onClick={() => { setActiveId(c.id); setUseBackup(false); setMode("live"); }}
                         className="mt-6 h-12 px-6 rounded-full bg-[#F5EFE6] text-[#2A2522] hover:bg-[#F5EFE6]/90 font-semibold"
                       >
                         <Phone className="w-4 h-4 mr-2" /> Call {c.name}
@@ -118,6 +120,15 @@ const AudioConsultation = () => {
               <Button variant="ghost" onClick={() => setMode("selection")} className="mb-4 rounded-full">
                 <ArrowLeft className="w-4 h-4 mr-1" /> back
               </Button>
+              {!useBackup ? (
+                <RealtimeVoiceSession
+                  counselorName={counselor.name}
+                  voiceGender={counselor.pronoun === "he" ? "male" : "female"}
+                  systemPrompt={`${counselor.audioPrompt}\n\nLANGUAGE: ${languageInstruction}`}
+                  onEnd={() => setMode("done")}
+                  onFallback={() => setUseBackup(true)}
+                />
+              ) : (
               <FreeVoiceSession
                 counselorName={counselor.name}
                 voiceGender={counselor.pronoun === "he" ? "male" : "female"}
@@ -125,6 +136,7 @@ const AudioConsultation = () => {
                 systemPrompt={`${counselor.audioPrompt}\n\nLANGUAGE: ${languageInstruction}`}
                 onEnd={() => setMode("done")}
               />
+              )}
 
             </motion.div>
           )}

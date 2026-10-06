@@ -10,4 +10,7 @@ import '@fontsource/nunito/400.css'
 import '@fontsource/nunito/600.css'
 import '@fontsource/nunito/700.css'
 
+import { installAudioGuard } from './lib/audioGuard'
+
+installAudioGuard();
 createRoot(document.getElementById("root")!).render(<App />);
