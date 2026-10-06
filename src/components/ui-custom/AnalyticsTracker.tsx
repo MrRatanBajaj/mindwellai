@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { identify, initAnalytics, pageview, resetIdentity, track } from "@/lib/analytics";
+import { stopAllAudio } from "@/lib/audioGuard";
 
 /** Investor funnel: homepage → demo chat → signup → subscription, plus session events by page. */
 const FUNNEL: Record<string, string> = {
@@ -23,6 +24,7 @@ const AnalyticsTracker = () => {
   useEffect(() => { initAnalytics(); }, []);
 
   useEffect(() => {
+    stopAllAudio(); // any counsellor voice from the previous page stops here
     pageview(pathname);
     const ev = FUNNEL[pathname];
     if (ev) track(ev, { path: pathname });
