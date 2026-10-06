@@ -4,7 +4,8 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { track } from "@/lib/analytics";
+import { setPerson, track } from "@/lib/analytics";
+import { getGuestProfile, getVisitorId, setGuestProfile } from "@/lib/visitor";
 
 const KEY = "wm_nps_done";
 
@@ -16,6 +17,8 @@ const NpsPrompt = () => {
   const [score, setScore] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [sent, setSent] = useState(false);
+  const [gName, setGName] = useState(getGuestProfile().name ?? "");
+  const [gEmail, setGEmail] = useState(getGuestProfile().email ?? "");
 
   useEffect(() => {
     const k = user ? `${KEY}:${user.id}` : KEY;
@@ -35,12 +38,17 @@ const NpsPrompt = () => {
     if (score === null) return;
     track("nps_submitted", { score, category: score >= 9 ? "promoter" : score >= 7 ? "passive" : "detractor", page: pathname });
     const text = comment.trim().slice(0, 1000);
+    const name = (user?.user_metadata?.display_name as string) || gName.trim().slice(0, 100) || null;
+    const email = user?.email || (/^\S+@\S+\.\S+$/.test(gEmail.trim()) ? gEmail.trim().slice(0, 200) : null);
+    if (!user) setGuestProfile({ name: name ?? undefined, email: email ?? undefined });
+    setPerson({ ...(name ? { name } : {}), ...(email ? { email } : {}), nps_score: score });
     const { error } = await supabase.from("feedback").insert({
       category: "nps",
       rating: Math.min(5, Math.max(1, Math.round(score / 2))),
       feedback: text || `NPS score ${score}`,
-      suggestions: `nps:${score} page:${pathname}${user?.id ? ` user:${user.id}` : ""}`,
-      email: user?.email ?? null,
+      suggestions: `nps:${score} page:${pathname} visitor:${getVisitorId()}${user?.id ? ` user:${user.id}` : ""}`,
+      email,
+      name,
     });
     if (error) console.error("NPS save failed", error);
     setSent(true);
@@ -77,6 +85,12 @@ const NpsPrompt = () => {
               placeholder="What's the main reason for your score? (optional)"
               className="mt-3 h-20 w-full resize-none rounded-xl border border-border bg-background p-3 text-sm"
             />
+          )}
+          {score !== null && !user && (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <input value={gName} onChange={(e) => setGName(e.target.value)} maxLength={100} placeholder="Your name" className="h-10 rounded-xl border border-border bg-background px-3 text-sm" />
+              <input value={gEmail} onChange={(e) => setGEmail(e.target.value)} maxLength={200} type="email" placeholder="Email" className="h-10 rounded-xl border border-border bg-background px-3 text-sm" />
+            </div>
           )}
           <Button onClick={submit} disabled={score === null} className="mt-3 w-full rounded-full">Send</Button>
         </>
