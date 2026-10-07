@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { SubscriptionRoute } from "@/components/auth/SubscriptionRoute";
 import CookieBanner from "@/components/ui-custom/CookieBanner";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -69,21 +70,21 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsConditions />} />
             <Route path="/careers" element={<Careers />} />
-            <Route path="/memorial-chat" element={<MemorialChat />} />
+            <Route path="/memorial-chat" element={<ProtectedRoute><MemorialChat /></ProtectedRoute>} />
             <Route path="/plans" element={<Plans />} />
             <Route path="/business/buy" element={<B2BBillingEngine />} />
             <Route path="/business/dashboard" element={<ProtectedRoute><B2BAdminDashboard /></ProtectedRoute>} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/expired" element={<UpsellExpired />} />
-            <Route path="/journal" element={<Journal />} />
-            <Route path="/subscription" element={<Subscription />} />
-            <Route path="/phone-counselor" element={<PhoneCounselor />} />
-            <Route path="/consultation" element={<Consultation />} />
-            <Route path="/consultation/video" element={<VideoConsultation />} />
-            <Route path="/consultation/audio" element={<AudioConsultation />} />
+            <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+            <Route path="/phone-counselor" element={<ProtectedRoute><PhoneCounselor /></ProtectedRoute>} />
+            <Route path="/consultation" element={<ProtectedRoute><Consultation /></ProtectedRoute>} />
+            <Route path="/consultation/video" element={<SubscriptionRoute><VideoConsultation /></SubscriptionRoute>} />
+            <Route path="/consultation/audio" element={<SubscriptionRoute><AudioConsultation /></SubscriptionRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/chat/yaro" element={<YaroChatPage />} />
-            <Route path="/chat" element={<YaroChatPage />} />
+            <Route path="/chat/yaro" element={<ProtectedRoute><YaroChatPage /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><YaroChatPage /></ProtectedRoute>} />
             <Route path="/alternatives/:slug" element={<Alternative />} />
             <Route path="/research" element={<Research />} />
             <Route path="/clinical-validation" element={<ProtectedRoute><ClinicalValidation /></ProtectedRoute>} />

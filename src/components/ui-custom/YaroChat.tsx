@@ -178,6 +178,7 @@ export default function YaroChat({ embedded = false }: Props) {
   ) => {
     const content = (text ?? input).trim();
     if (!content || sending || locked) return;
+    if (!user) { navigate("/auth?redirect=/chat/yaro"); return; } // sign-in required for every feature
     if (!user && secondsLeft === null) {
       const now = Date.now();
       localStorage.setItem(KEY, String(now));
