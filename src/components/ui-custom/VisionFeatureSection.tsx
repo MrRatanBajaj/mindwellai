@@ -6,7 +6,7 @@ const features = [
   {
     icon: Phone,
     title: "Phone-call counseling",
-    desc: "A real ringing call. Pick up at 3 AM. Talk to Dr. Aria over a true voice line, powered by ElevenLabs.",
+    desc: "A real ringing call. Pick up at 3 AM. Talk to Dr. Aria over a true voice line — natural, human-like voice.",
     tint: "from-emerald-400/30 to-emerald-600/10",
     accent: "text-emerald-500",
     Anim: PhoneRingAnim,
@@ -14,7 +14,7 @@ const features = [
   {
     icon: Video,
     title: "Face-to-face video",
-    desc: "Real-face AI therapist via Tavus. Sessions auto-recorded for your private history.",
+    desc: "Real-face AI therapist, face to face. Sessions auto-recorded for your private history.",
     tint: "from-sky-400/30 to-sky-600/10",
     accent: "text-sky-500",
     Anim: VideoWaveAnim,
