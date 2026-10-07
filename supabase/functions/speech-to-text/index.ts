@@ -38,6 +38,17 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    {
+      const { createClient: _cc } = await import("npm:@supabase/supabase-js@2");
+      const _sb = _cc(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
+      const _jwt = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
+      const { data: _u } = await _sb.auth.getUser(_jwt);
+      if (!_u?.user) {
+        return new Response(JSON.stringify({ error: "Please sign in to continue.", success: false }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Transcription service not configured", success: false }), {
