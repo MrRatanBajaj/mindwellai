@@ -40,7 +40,7 @@ export function identify(id: string, props?: Record<string, unknown>) {
 
 /** Send queued events immediately (uses beacon transport on page hide). */
 export function flush() {
-  try { if (ready) (posthog as unknown as { _send_request?: unknown; capture: typeof posthog.capture }); } catch { /* ignore */ }
+  /* events are already sent one by one via beacon (request_batching off) */
 }
 
 export function setPerson(props: Record<string, unknown>) {

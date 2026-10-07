@@ -146,6 +146,8 @@ export default function YaroChat({ embedded = false }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
+  useChatSessionTracking(messages.filter((m) => m.sender === "user").length, "Yaro");
+
   /* Save every chat (guests included) so no session is lost or shown as "anonymous". */
   useEffect(() => {
     if (!messages.some((m) => m.sender === "user")) return;
