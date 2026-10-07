@@ -9,6 +9,7 @@ import { logVoiceMetric, scoreAdherence } from "@/lib/clinicalMetrics";
 import yaroRobot from "@/assets/yaro-robot.png";
 import { getAttribution, getGuestProfile, getVisitorId } from "@/lib/visitor";
 import { track } from "@/lib/analytics";
+import { useChatSessionTracking } from "@/hooks/usePageTracking";
 
 
 type Clinical = {

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { identify, initAnalytics, pageview, resetIdentity, track } from "@/lib/analytics";
 import { stopAllAudio } from "@/lib/audioGuard";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 /** Investor funnel: homepage → demo chat → signup → subscription, plus session events by page. */
 const FUNNEL: Record<string, string> = {
@@ -20,6 +21,7 @@ const AnalyticsTracker = () => {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const lastUser = useRef<string | null>(null);
+  usePageTracking();
 
   useEffect(() => { initAnalytics(); }, []);
 
