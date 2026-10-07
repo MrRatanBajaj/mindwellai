@@ -147,6 +147,16 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
+    // Sign-in required: no feature is usable without an account.
+    const jwt = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
+    const { data: authData } = jwt ? await supabase.auth.getUser(jwt) : { data: { user: null } };
+    if (!authData?.user) {
+      return new Response(JSON.stringify({ error: "Please sign in to continue." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const clinical = analyzeClinical(message, conversationHistory);
     const lang = detectLanguage(message);
     const LANG_DIRECTIVE = languageDirective(lang);
