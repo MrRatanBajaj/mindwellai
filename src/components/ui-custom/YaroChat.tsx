@@ -9,6 +9,7 @@ import { logVoiceMetric, scoreAdherence } from "@/lib/clinicalMetrics";
 import yaroRobot from "@/assets/yaro-robot.png";
 import { getAttribution, getGuestProfile, getVisitorId } from "@/lib/visitor";
 import { track } from "@/lib/analytics";
+import { useChatSessionTracking } from "@/hooks/usePageTracking";
 
 
 type Clinical = {
@@ -145,6 +146,8 @@ export default function YaroChat({ embedded = false }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
 
+  useChatSessionTracking(messages.filter((m) => m.sender === "user").length, "Yaro");
+
   /* Save every chat (guests included) so no session is lost or shown as "anonymous". */
   useEffect(() => {
     if (!messages.some((m) => m.sender === "user")) return;
@@ -178,6 +181,7 @@ export default function YaroChat({ embedded = false }: Props) {
   ) => {
     const content = (text ?? input).trim();
     if (!content || sending || locked) return;
+    if (!user) { navigate("/auth?redirect=/chat/yaro"); return; } // sign-in required for every feature
     if (!user && secondsLeft === null) {
       const now = Date.now();
       localStorage.setItem(KEY, String(now));

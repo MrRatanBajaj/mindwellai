@@ -15,6 +15,7 @@ export function initAnalytics() {
     defaults: "2025-05-24",
     capture_pageview: "history_change", // automatic $pageview on every route change
     capture_pageleave: true,
+    request_batching: false, // each event sent immediately so long sessions are never lost
     autocapture: true,
     person_profiles: "always", // guests get a real person profile, not "anonymous"
     persistence: consent === "reject" ? "memory" : "localStorage+cookie",
@@ -27,7 +28,7 @@ export function initAnalytics() {
 }
 
 export function track(event: string, props?: Record<string, unknown>) {
-  if (ready) posthog.capture(event, props);
+  try { if (ready) posthog.capture(event, props, { transport: "sendBeacon" } as never); } catch { /* blocked by ad-blocker */ }
 }
 
 /** Kept for compatibility — $pageview is captured automatically on route change. */
@@ -35,6 +36,11 @@ export function pageview(_path: string) {}
 
 export function identify(id: string, props?: Record<string, unknown>) {
   if (ready) posthog.identify(id, props);
+}
+
+/** Send queued events immediately (uses beacon transport on page hide). */
+export function flush() {
+  /* events are already sent one by one via beacon (request_batching off) */
 }
 
 export function setPerson(props: Record<string, unknown>) {

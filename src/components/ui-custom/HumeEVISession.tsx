@@ -50,7 +50,7 @@ const Inner = ({
           ...(configId ? { configId } : {}),
         });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Could not connect to Hume EVI";
+        const msg = e instanceof Error ? e.message : "Could not connect to the voice service";
         onError?.(msg);
         toast.error(msg);
       }
@@ -98,7 +98,7 @@ const Inner = ({
   return (
     <div className="relative mx-auto max-w-md w-full rounded-[2rem] overflow-hidden bg-[#2A2522] text-[#F5EFE6] shadow-elegant">
       <div className="flex items-center justify-between px-6 pt-6 text-[11px] uppercase tracking-[0.18em] opacity-80">
-        <span>Hume EVI · Emotion-aware</span>
+        <span>Emotion-aware voice</span>
         <span className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full ${live ? "bg-emerald-400 animate-pulse" : "bg-amber-400 animate-pulse"}`} />
           {live ? "Encrypted call" : status.value === "connecting" ? "Connecting…" : status.value === "error" ? "Error" : "Idle"}

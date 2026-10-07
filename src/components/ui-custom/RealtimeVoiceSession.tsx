@@ -121,7 +121,6 @@ const RealtimeVoiceSession = ({ counselorName, voiceGender, systemPrompt, onEnd,
 
   const end = () => { hangup(); onEnd?.(); };
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  const lastThem = [...lines].reverse().find((l) => l.who === "them");
 
   return (
     <div className="w-full max-w-xl">
@@ -146,19 +145,8 @@ const RealtimeVoiceSession = ({ counselorName, voiceGender, systemPrompt, onEnd,
 
         <h2 className="font-display text-3xl text-foreground">{counselorName}</h2>
         <p className="mt-2 min-h-[3rem] text-base leading-relaxed text-foreground/75">
-          {phase === "speaking" && lastThem ? `“${lastThem.text}”` : PHASE_COPY[phase] || (muted ? "You're muted. Unmute whenever you're ready." : "")}
+          {phase === "speaking" ? `${counselorName} is with you…` : PHASE_COPY[phase] || (muted ? "You're muted. Unmute whenever you're ready." : "")}
         </p>
-
-        {lines.length > 0 && (
-          <div className="mt-6 max-h-48 space-y-2 overflow-y-auto rounded-2xl bg-secondary/50 p-4 text-left text-sm">
-            {lines.map((l, i) => (
-              <p key={i} className={l.who === "you" ? "text-foreground" : "text-foreground/70"}>
-                <span className="mr-2 text-xs font-medium text-muted-foreground">{l.who === "you" ? "You" : counselorName}</span>
-                {l.text}
-              </p>
-            ))}
-          </div>
-        )}
 
         <div className="mt-8 flex items-center justify-center gap-4">
           <Button variant="outline" onClick={toggleMute} disabled={phase === "connecting"} className="h-14 w-14 rounded-full p-0" aria-label={muted ? "Unmute" : "Mute"}>
