@@ -50,7 +50,7 @@ const Inner = ({
           ...(configId ? { configId } : {}),
         });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Could not connect to Hume EVI";
+        const msg = e instanceof Error ? e.message : "Could not connect to the voice service";
         onError?.(msg);
         toast.error(msg);
       }
