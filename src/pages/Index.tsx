@@ -9,70 +9,10 @@ import {
   Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Video, Lock,
   Languages, Clock, Leaf, Star,
 } from "lucide-react";
-import YaroChat from "@/components/ui-custom/YaroChat";
+import HeroScenes from "@/components/ui-custom/HeroScenes";
 
 
-/* ───────── Hero ───────── */
-const Hero = () => (
-  <section id="home" className="relative pt-28 pb-20 px-6 overflow-hidden">
-    <div className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-primary/10 blur-3xl" aria-hidden />
-    <div className="absolute top-10 -right-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" aria-hidden />
-
-    <div className="relative max-w-6xl mx-auto grid items-center gap-10 lg:grid-cols-[1fr_440px]">
-      <div className="text-center lg:text-left">
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground/70"
-        >
-          <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          Free to start · no signup · 100% private
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}
-          className="mt-6 font-display text-4xl md:text-6xl font-normal leading-[1.05] text-foreground tracking-tight text-balance"
-        >
-          When the weight of the day feels too heavy to carry alone.
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}
-          className="mt-6 text-lg md:text-xl text-foreground/70 max-w-xl mx-auto lg:mx-0"
-        >
-          Talk to <strong className="text-foreground">Yaro</strong> or <strong className="text-foreground">Ava</strong>.
-          Any hour, any language, no judgement.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
-          className="mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-3"
-        >
-          <Button asChild className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-base shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.8)]">
-            <Link to="/chat/yaro"><MessageCircle className="mr-2 h-5 w-5" /> Start talking — free</Link>
-          </Button>
-          <Button asChild variant="outline" className="h-14 px-6 rounded-full text-base border-border bg-card">
-            <Link to="/payment?plan=starter_weekly"><Video className="mr-2 h-5 w-5" /> Video session ₹99</Link>
-          </Button>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
-          className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground"
-        >
-          <span className="inline-flex items-center gap-1.5"><Lock className="h-4 w-4 text-primary" /> Encrypted &amp; anonymous</span>
-          <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> Replies in seconds, 24/7</span>
-          <span className="inline-flex items-center gap-1.5"><Languages className="h-4 w-4 text-primary" /> 7+ languages</span>
-        </motion.div>
-      </div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.6 }} className="relative">
-        <div className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-primary/15 via-secondary/40 to-accent/20 blur-2xl" aria-hidden />
-        <div className="relative"><YaroChat embedded /></div>
-      </motion.div>
-    </div>
-  </section>
-);
+/* ───────── Hero: synchronized story scenes (see HeroScenes) ───────── */
 
 /* ───────── Trust strip ───────── */
 const TrustStrip = () => (
