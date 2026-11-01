@@ -282,30 +282,28 @@ const HeroScenes = () => {
 
           {/* character layer */}
           <div className="relative h-[30rem] sm:h-[34rem] flex items-end justify-center">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={scene.id}
-                src={scene.img}
-                alt={scene.alt}
-                width={1024}
-                height={1536}
-                draggable={false}
-                initial={{ opacity: 0, y: 28, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.98 }}
-                transition={{ duration: reduceMotion ? 0.2 : 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="relative z-10 max-h-full w-auto object-contain drop-shadow-[0_24px_36px_hsl(var(--foreground)/0.18)]"
+            <div className="relative z-10 max-h-full">
+              <motion.div
+                animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
+                transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                {/* subtle breathing / idle life */}
-                {!reduceMotion && (
-                  <motion.span
-                    className="absolute inset-0"
-                    animate={{ y: [0, -8, 0] }}
-                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={scene.id}
+                    src={scene.img}
+                    alt={scene.alt}
+                    width={1024}
+                    height={1536}
+                    draggable={false}
+                    initial={{ opacity: 0, y: 28, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -20, scale: 0.98 }}
+                    transition={{ duration: reduceMotion ? 0.2 : 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    className="max-h-[28rem] sm:max-h-[32rem] w-auto object-contain drop-shadow-[0_24px_36px_hsl(var(--foreground)/0.18)]"
                   />
-                )}
-              </motion.img>
-            </AnimatePresence>
+                </AnimatePresence>
+              </motion.div>
+            </div>
 
             {/* floating chat bubble, synced to the scene */}
             <div className="absolute inset-x-0 top-2 z-20 flex justify-center lg:justify-start lg:pl-2 pointer-events-none">
