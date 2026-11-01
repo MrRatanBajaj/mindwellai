@@ -182,7 +182,7 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground">
       <LandingNav />
       <main>
-        <Hero />
+        <HeroScenes />
         <TrustStrip />
         <FeatureGrid />
         <ChatTherapySection />
