@@ -305,8 +305,8 @@ const HeroScenes = () => {
               </motion.div>
             </div>
 
-            {/* floating chat bubble, synced to the scene */}
-            <div className="absolute inset-x-0 top-2 z-20 flex justify-center lg:justify-start lg:pl-2 pointer-events-none">
+            {/* floating chat bubble, synced to the scene — kept low-left so it never covers the character's face */}
+            <div className="absolute inset-x-0 bottom-9 z-20 flex justify-start px-3 lg:px-8 pointer-events-none">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={scene.id}

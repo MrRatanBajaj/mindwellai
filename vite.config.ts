@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // node_modules is symlinked to /persist in this sandbox; allow font files to be served
+    fs: { allow: [path.resolve(__dirname), "/persist"] },
   },
   plugins: [
     react(),
