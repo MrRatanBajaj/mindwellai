@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/Footer";
 import LandingNav from "@/components/layout/LandingNav";
 import { useSEO } from "@/hooks/useSEO";
 import {
-  Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Video, Lock,
-  Languages, Clock, Leaf, Star,
+  Mic, MessageCircle, Sparkles, ChevronDown, Shield, Globe, Clock, Leaf, Star,
 } from "lucide-react";
 import HeroScenes from "@/components/ui-custom/HeroScenes";
 
