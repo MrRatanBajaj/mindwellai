@@ -1853,6 +1853,7 @@ export type Database = {
         }
         Returns: string
       }
+      referral_code_exists: { Args: { _code: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "partner"
