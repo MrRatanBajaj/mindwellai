@@ -40,7 +40,7 @@ import PartnerPortal from "./pages/PartnerPortal";
 import PartnerLogin from "./pages/PartnerLogin";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import SuperAdminPartners from "./pages/SuperAdminPartners";
-import NpsPrompt from "@/components/ui-custom/NpsPrompt";
+import PostHogNps from "@/components/ui-custom/PostHogNps";
 import AnalyticsTracker from "@/components/ui-custom/AnalyticsTracker";
 
 
@@ -49,7 +49,7 @@ const queryClient = new QueryClient();
 const AppChrome = () => (
   <>
     <CookieBanner />
-    <NpsPrompt />
+    <PostHogNps />
     <AnalyticsTracker />
   </>
 );

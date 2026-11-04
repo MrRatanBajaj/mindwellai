@@ -414,3 +414,30 @@ DROP POLICY IF EXISTS "Anyone can create session" ON public.inbound_chat_session
 CREATE POLICY "Anyone can create valid session" ON public.inbound_chat_sessions FOR INSERT TO anon, authenticated
   WITH CHECK (length(session_token) BETWEEN 16 AND 128 AND jsonb_typeof(messages) = 'array' AND coalesce(qualified,false) = false AND coalesce(booked_trial,false) = false);
 DROP POLICY IF EXISTS "Public read access to mindwellai" ON public.mindwellai;
+
+-- ===== Security fixes (Nov 3, 2026) — RUN THIS SECTION =====
+-- partner_sessions: partner session logging stays open to visitors, but only
+-- valid records for an active partner can be written.
+DROP POLICY IF EXISTS "Anyone can record a partner session" ON public.partner_sessions;
+CREATE POLICY "Active partner sessions can be recorded"
+  ON public.partner_sessions FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.partners p WHERE p.id = partner_id AND p.is_active)
+    AND session_type IN ('chat','voice','video')
+    AND session_duration_minutes >= 0
+    AND session_duration_minutes <= 480
+    AND (visitor_key IS NULL OR length(visitor_key) <= 64)
+    AND (phq9_score IS NULL OR phq9_score BETWEEN 0 AND 27)
+    AND (gad7_score IS NULL OR gad7_score BETWEEN 0 AND 21)
+    AND (severity_band IS NULL OR severity_band IN ('minimal','mild','moderate','severe'))
+  );
+
+-- medications: medicine catalog readable by signed-in users only.
+DROP POLICY IF EXISTS "Anyone can view medications" ON public.medications;
+CREATE POLICY "Signed-in users can view the medication catalog"
+  ON public.medications FOR SELECT
+  TO authenticated
+  USING (true);
+REVOKE SELECT ON public.medications FROM anon;
+GRANT SELECT ON public.medications TO authenticated;

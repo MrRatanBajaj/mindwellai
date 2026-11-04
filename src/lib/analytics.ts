@@ -28,7 +28,13 @@ export function initAnalytics() {
 }
 
 export function track(event: string, props?: Record<string, unknown>) {
-  try { if (ready) posthog.capture(event, props, { transport: "sendBeacon" } as never); } catch { /* blocked by ad-blocker */ }
+  try {
+    if (ready) posthog.capture(event, props, { transport: "sendBeacon" } as never);
+    // Meaningful interactions unlock the right-timed PostHog survey moment (see PostHogNps).
+    if (/(_session_(completed|started)|signup_completed|chat_message_saved)$/.test(event)) {
+      window.dispatchEvent(new CustomEvent("wm:meaningful-moment"));
+    }
+  } catch { /* blocked by ad-blocker */ }
 }
 
 /** Kept for compatibility — $pageview is captured automatically on route change. */
