@@ -46,4 +46,4 @@ Allow: /
 User-agent: Meta-ExternalAgent
 Allow: /
 
-Sitemap: https://www.wellmindai.in/sitemap.xml
+Sitemap: https://wellmindai.in/sitemap.xml
