@@ -50,7 +50,7 @@ const PostHogNps = () => {
           );
           if (!survey) return;
           const check = posthog.canRenderSurvey(survey.id);
-          if (check?.ok) posthog.displaySurvey(survey.id);
+          if (check?.visible) posthog.displaySurvey(survey.id);
         });
       } catch {
         /* PostHog blocked or not loaded — no in-app fallback by design */
